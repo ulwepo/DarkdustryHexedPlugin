@@ -5,6 +5,7 @@ import arc.math.*;
 import arc.struct.*;
 import arc.util.*;
 import hexed.HexData.*;
+import mindustry.Vars;
 import mindustry.content.*;
 import mindustry.core.GameState.*;
 import mindustry.core.NetServer.*;
@@ -13,8 +14,11 @@ import mindustry.game.*;
 import mindustry.game.Schematic.*;
 import mindustry.game.Teams.*;
 import mindustry.gen.*;
+import mindustry.io.TypeIO;
+import mindustry.maps.Map;
 import mindustry.mod.*;
 import mindustry.net.Packets.*;
+import mindustry.net.WorldReloader;
 import mindustry.type.*;
 import mindustry.world.*;
 import mindustry.world.blocks.storage.*;
@@ -26,9 +30,9 @@ public class HexedMod extends Plugin{
     //in seconds
     public static final float spawnDelay = 60 * 4;
     //health requirement needed to capture a hex; no longer used
-    public static final float healthRequirement = 25000;
+    public static final float healthRequirement = 3500;
     //item requirement to captured a hex
-    public static final int itemRequirement = 2000;
+    public static final int itemRequirement = 210;
 
     public static final int messageTime = 1;
     //in ticks: 60 minutes
@@ -38,11 +42,12 @@ public class HexedMod extends Plugin{
 
     private final static int updateTime = 60 * 2;
 
-    private final static int winCondition = 50;
+    private final static int winCondition = 10;
 
     private final static int timerBoard = 0, timerUpdate = 1, timerWinCheck = 2;
 
     protected static HexedGenerator.Mode mode;
+    protected static Map next;
 
     private final Rules rules = new Rules();
     private Interval interval = new Interval(5);
@@ -58,17 +63,16 @@ public class HexedMod extends Plugin{
     public void init(){
         rules.pvp = true;
         rules.tags.put("hexed", "true");
-        rules.loadout = ItemStack.list(Items.copper, 500, Items.lead, 500, Items.graphite, 250, Items.metaglass, 150, Items.silicon, 250, Items.plastanium, 50);
+        rules.loadout = ItemStack.list(Items.copper, 300, Items.lead, 500, Items.graphite, 150, Items.metaglass, 150, Items.silicon, 150, Items.plastanium, 50);
         rules.buildCostMultiplier = 1f;
         rules.buildSpeedMultiplier = 1f / 2f;
         rules.blockHealthMultiplier = 1.2f;
-        rules.unitBuildSpeedMultiplier = 2.5f;
+        rules.unitBuildSpeedMultiplier = 1f;
         rules.polygonCoreProtection = true;
         rules.unitDamageMultiplier = 1.1f;
         rules.canGameOver = false;
-        rules.coreCapture = true;
 
-        start = Schematics.readBase64("bXNjaAF4nE2SS5LTMBCGW7JsPZxkJgfxPdizpFhoHEGlymO5ZIdhdlyFK1DFPcJ9gNCtP1WMlejXo/tTd0vU07EhM8fnROFd+ppO77dYNupPaR3LednOeSaibopPaVrp8OH6/frz17frD+k/7qkf87KkMrzEaaLjm8kwxfI5kRvz/CW95kJ2HeO2pUL9mnlvWOKcJmpiGck+1Z1X6p7TfGITd5mnHGW0G3NJw3wZp3RZ6fjG9X5AWPILHznnU6I+nsvwKY5bZhZR4j+p+iPNjT8DaSEdaVFLdeognuoXID1kB8oeswcxVBgrGTTcGSxWpgJTganAVMI0LD1kh8U77JG0+h8cNwYxt4ZemRpMDaYGU4OpwdTCtCx7UA4C1nKCZRQ7NSRNO+7alr21ZzsnyRpx7Xi9+hhUp6ZkWVophKGDU7e/hDrWsI2E3SHiAAeZVUYLkw5l6qRMvWTimtsfotvvGr3E0lHfUq2Hpb26l9TCSZJhE1tNfF1nqsSsJSlJRBsWA6n36lAv8ariIB57tV4O93q/ao9HIgZM8YB5wDxgHjAPmAfMA+ZRfI8L9ZK9yANMHkUCXktARQPQAegAdAA6AB3w/gLiDEAHvL+AE4Kc8A/s5VeN");
+        start = Schematics.readBase64("bXNjaAB4nE2SgY7CIAyGC2yDsXkXH2Tvcq+AkzMmc1tQz/j210JpXDL8hu3/lxYY4FtBs4ZbBLvG1ync4wGO87bvMU2vsCzTEtIlwvCxBW7e1r/43hKYkGY4nFN4XqbfMD+29IbhvmHOtIc1LjCmuIcrfm3X9QH2PofHIyYY5y3FaX3OS3ze4fiRwX7dLa5nDHTPddkCkT3l1DcA/OALihZNq4H6NHnV+HZCVshJXA9VYZC9kfVU+VQGKSsbjVT1lOgp1qO4rGIo9yvnquxH1ORIohap6HVIDbtpaNlDi4cWD80eFJdrNhbJc8W61Jzdqi/3wrRIRii7GYdelvWMZDQs1kNbqtYe9/KuGvDX5zD6d5SML66+5dwRqXgQee5GK3Edxw1ITfb3SJ71OomzUAdjuWsWqZyJavd8Issdb5BqVbaoGCVzJqrddaUGTWSFHPs67m6H5HlaTqbqpFc91Kfn+2eQSp9pr96/Xtx6cevZjeKKDuUOklvvXy9uPGdNZFjZi7IXZS/n8Hyf/wFbjj/q");
 
         Events.run(Trigger.update, () -> {
             if(active()){
@@ -78,8 +82,8 @@ public class HexedMod extends Plugin{
                     if(player.team() != Team.derelict && player.team().cores().isEmpty()){
                         player.clearUnit();
                         killTiles(player.team());
-                        Call.sendMessage("[yellow](!)[] [accent]" + player.name + "[lightgray] был аннигилирован![yellow] (!)");
-                        Call.infoMessage(player.con, "Твои ядра уничтожены. Ты проиграл.");
+                        Call.sendMessage("[yellow](!)[] [accent]" + player.name + "[lightgray] has been eliminated![yellow] (!)");
+                        Call.infoMessage(player.con, "Your cores have been destroyed. You are defeated.");
                         player.team(Team.derelict);
                     }
 
@@ -113,7 +117,7 @@ public class HexedMod extends Plugin{
 
                 counter += Time.delta;
 
-                //kick everyone and restart the script
+                //kick everyone and restart w/ the script
                 if(counter > roundTime && !restarting){
                     endGame();
                 }
@@ -153,7 +157,7 @@ public class HexedMod extends Plugin{
                 Core.app.post(() -> data.data(event.player).chosen = false);
                 hex.findController();
             }else{
-                Call.infoMessage(event.player.con, "Свободных хексов не найдено.\nТвой режим - наблюдатель.");
+                Call.infoMessage(event.player.con, "There are currently no empty hex spaces available.\nAssigning into spectator mode.");
                 event.player.unit().kill();
                 event.player.team(Team.derelict);
             }
@@ -196,16 +200,16 @@ public class HexedMod extends Plugin{
 
         if(team.location.controller == null){
             if(team.progressPercent > 0){
-                message.append("[lightgray]Прогресс захвата: [accent]").append((int)(team.progressPercent)).append("%");
+                message.append("[lightgray]Capture progress: [accent]").append((int)(team.progressPercent)).append("%");
             }else{
                 message.append("[lightgray][[Empty]");
             }
         }else if(team.location.controller == player.team()){
-            message.append("[yellow][[Захвачен]");
+            message.append("[yellow][[Captured]");
         }else if(team.location != null && team.location.controller != null && data.getPlayer(team.location.controller) != null){
-            message.append("[#").append(team.location.controller.color).append("]Захвачен игроком ").append(data.getPlayer(team.location.controller).name);
+            message.append("[#").append(team.location.controller.color).append("]Captured by ").append(data.getPlayer(team.location.controller).name);
         }else{
-            message.append("<Неизвестно>");
+            message.append("<Unknown>");
         }
 
         Call.setHudText(player.con, message.toString());
@@ -213,9 +217,17 @@ public class HexedMod extends Plugin{
 
     @Override
     public void registerServerCommands(CommandHandler handler){
-        handler.register("hexed", "[mode]", "Начать игру в режиме Хексов.", args -> {
+        handler.register("hexed", "[mode/list]", "Begin hosting with the Hexed gamemode.", args -> {
+            if(args.length > 0 && args[0].equalsIgnoreCase("list")){
+                Log.info("Available modes:");
+                for(HexedGenerator.Mode value : HexedGenerator.Mode.values()){
+                    Log.info("- @", value);
+                }
+                return;
+            }
+
             if(!state.is(State.menu)){
-                Log.err("Сначала выключи сервер.");
+                Log.err("Stop the server first.");
                 return;
             }
 
@@ -224,7 +236,7 @@ public class HexedMod extends Plugin{
                 try{
                     custom = HexedGenerator.Mode.valueOf(args[0]);
                 }catch(Throwable t){
-                    Log.err("Неправильное название режима.");
+                    Log.err("Inorrect mode name.");
                 }
             }
             mode = custom == null ? Structs.random(HexedGenerator.Mode.values()) : custom;
@@ -232,21 +244,21 @@ public class HexedMod extends Plugin{
             data = new HexData();
 
             logic.reset();
-            Log.info("Генерирую карту @...", mode);
+            Log.info("Generating map with mode @...", mode);
             HexedGenerator generator = new HexedGenerator();
             world.loadGenerator(Hex.size, Hex.size, generator);
             data.initHexes(generator.getHex());
-            info("Карта сгенерирована.");
+            info("Map generated.");
             state.rules = rules.copy();
             logic.play();
             netServer.openServer();
         });
 
-        handler.register("countdown", "Узнать время до конца раунда.", args -> {
-            Log.info("Время до конца раунда: &lc@ минут", (int)(roundTime - counter) / 60 / 60);
+        handler.register("countdown", "Get the hexed restart countdown.", args -> {
+            Log.info("Time until round ends: &lc@ minutes", (int)(roundTime - counter) / 60 / 60);
         });
 
-        handler.register("end", "Завершить игру.", args -> endGame());
+        handler.register("end", "End the game.", args -> endGame());
     }
 
     @Override
@@ -254,21 +266,21 @@ public class HexedMod extends Plugin{
         if(registered) return;
         registered = true;
 
-        handler.<Player>register("spectate", "Перейти в режим наблюдателя. Уничтожает твою базу.", (args, player) -> {
-             if(player.team() == Team.derelict){
-                 player.sendMessage("[scarlet]Ты уже наблюдатель!");
-             }else{
-                 killTiles(player.team());
-                 player.unit().kill();
-                 player.team(Team.derelict);
-             }
+        handler.<Player>register("spectate", "Enter spectator mode. This destroys your base.", (args, player) -> {
+            if(player.team() == Team.derelict){
+                player.sendMessage("[scarlet]You're already spectating.");
+            }else{
+                killTiles(player.team());
+                player.unit().kill();
+                player.team(Team.derelict);
+            }
         });
 
-        handler.<Player>register("captured", "Показать количество захваченных хексов.", (args, player) -> {
+        handler.<Player>register("captured", "Dispay the number of hexes you have captured.", (args, player) -> {
             if(player.team() == Team.derelict){
-                player.sendMessage("[scarlet]Ты наблюдатель.");
+                player.sendMessage("[scarlet]You're spectating.");
             }else{
-                player.sendMessage("[lightgray]Ты захватил[accent] " + data.getControlled(player).size + "[] хексов.");
+                player.sendMessage("[lightgray]You've captured[accent] " + data.getControlled(player).size + "[] hexes.");
             }
         });
 
@@ -276,21 +288,21 @@ public class HexedMod extends Plugin{
             player.sendMessage(getLeaderboard());
         });
 
-        handler.<Player>register("hexstatus", "Узнать состояние хекса.", (args, player) -> {
+        handler.<Player>register("hexstatus", "Get hex status at your position.", (args, player) -> {
             Hex hex = data.data(player).location;
             if(hex != null){
                 hex.updateController();
                 StringBuilder builder = new StringBuilder();
-                builder.append("| [lightgray]Хекс #").append(hex.id).append("[]\n");
-                builder.append("| [lightgray]Владелец:[] ").append(hex.controller != null && data.getPlayer(hex.controller) != null ? data.getPlayer(hex.controller).name : "<none>").append("\n");
+                builder.append("| [lightgray]Hex #").append(hex.id).append("[]\n");
+                builder.append("| [lightgray]Owner:[] ").append(hex.controller != null && data.getPlayer(hex.controller) != null ? data.getPlayer(hex.controller).name : "<none>").append("\n");
                 for(TeamData data : state.teams.getActive()){
                     if(hex.getProgressPercent(data.team) > 0){
-                        builder.append("|> [accent]").append(this.data.getPlayer(data.team).name).append("[lightgray]: ").append((int)hex.getProgressPercent(data.team)).append("% захвата\n");
+                        builder.append("|> [accent]").append(this.data.getPlayer(data.team).name).append("[lightgray]: ").append((int)hex.getProgressPercent(data.team)).append("% captured\n");
                     }
                 }
                 player.sendMessage(builder.toString());
             }else{
-                player.sendMessage("[scarlet]Хекс не найден.");
+                player.sendMessage("[scarlet]No hex found.");
             }
         });
     }
@@ -304,7 +316,7 @@ public class HexedMod extends Plugin{
         for(int i = 0; i < players.size && i < 3; i++){
             if(data.getControlled(players.get(i)).size > 1){
                 builder.append("[yellow]").append(i + 1).append(".[accent] ").append(players.get(i).name)
-                .append("[lightgray] (x").append(data.getControlled(players.get(i)).size).append(")[]\n");
+                        .append("[lightgray] (x").append(data.getControlled(players.get(i)).size).append(")[]\n");
             }
         }
 
@@ -312,26 +324,63 @@ public class HexedMod extends Plugin{
             boolean dominated = data.getControlled(players.first()).size == data.hexes().size;
 
             for(Player player : Groups.player){
-                Call.infoMessage(player.con, "[accent]--ИГРА ОКОНЧЕНА--\n\n[lightgray]"
-                + (player == players.first() ? "[accent]Ты[] оказался" : "[yellow]" + players.first().name + "[lightgray] оказался") +
-                " победителем, с [accent]" + data.getControlled(players.first()).size + "[lightgray] захваченных хексов." + (dominated ? "" : "\n\nФинальные очки:\n" + builder));
+                Call.infoMessage(player.con, "[accent]--ROUND OVER--\n\n[lightgray]"
+                        + (player == players.first() ? "[accent]You[] were" : "[yellow]" + players.first().name + "[lightgray] was") +
+                        " victorious, with [accent]" + data.getControlled(players.first()).size + "[lightgray] hexes conquered."
+                        + (dominated ? "" : "\n\nFinal scores:\n" + builder));
             }
         }
 
-        Log.info("&ly--РЕСТАРТ СЕРВЕРА--");
-        Time.runTask(60f * 10f, () -> {
-            netServer.kickAll(KickReason.serverRestarting);
-            Time.runTask(5f, () -> System.exit(2));
-        });
+        Time.runTask(60f * 10f, this::reload);
+    }
+
+    void reload(){
+        Seq<Player> players = new Seq<>();
+        for(Player p : Groups.player){
+            if(p.isLocal()) continue;
+            players.add(p);
+            p.clearUnit();
+        }
+
+        logic.reset();
+
+        Call.worldDataBegin();
+
+        mode = Structs.random(HexedGenerator.Mode.values());
+        data = new HexData();
+
+        Log.info("Regenerating map with mode @...", mode);
+
+        HexedGenerator generator = new HexedGenerator();
+        world.loadGenerator(Hex.size, Hex.size, generator);
+        data.initHexes(generator.getHex());
+        info("Map regenerated.");
+        state.rules = rules.copy();
+
+        logic.play();
+
+        for(Player p : players){
+            if(p.con == null) continue;
+
+            boolean wasAdmin = p.admin;
+            p.reset();
+            p.admin = wasAdmin;
+            if(state.rules.pvp){
+                p.team(netServer.assignTeam(p, new Seq.SeqIterable<>(players)));
+            }
+            netServer.sendWorldData(p);
+        }
+
+        restarting = false;
     }
 
     String getLeaderboard(){
         StringBuilder builder = new StringBuilder();
-        builder.append("[accent]Список лидеров\n[scarlet]").append(lastMin).append("[lightgray] минут до конца игры.\n\n");
+        builder.append("[accent]Leaderboard\n[scarlet]").append(lastMin).append("[lightgray] mins. remaining\n\n");
         int count = 0;
         for(Player player : data.getLeaderboard()){
             builder.append("[yellow]").append(++count).append(".[white] ")
-            .append(player.name).append("[orange] (").append(data.getControlled(player).size).append(" хексов)\n[white]");
+                    .append(player.name).append("[orange] (").append(data.getControlled(player).size).append(" hexes)\n[white]");
 
             if(count > 4) break;
         }
@@ -353,7 +402,7 @@ public class HexedMod extends Plugin{
 
     void loadout(Player player, int x, int y){
         Stile coreTile = start.tiles.find(s -> s.block instanceof CoreBlock);
-        if(coreTile == null) throw new IllegalArgumentException("В схеме не найдено ядро. Отключаю сервер.");
+        if(coreTile == null) throw new IllegalArgumentException("Schematic has no core tile. Exiting.");
         int ox = x - coreTile.x, oy = y - coreTile.y;
         start.tiles.each(st -> {
             Tile tile = world.tile(st.x + ox, st.y + oy);
@@ -379,6 +428,4 @@ public class HexedMod extends Plugin{
     public boolean active(){
         return state.rules.tags.getBool("hexed") && !state.is(State.menu);
     }
-
-
 }
