@@ -103,6 +103,7 @@ public class HexedMod extends Plugin{
 
                 if(interval.get(timerBoard, leaderboardTime)){
                     Call.infoToast(getLeaderboard(), 15f);
+                    rules.loadout.each(e => e.amount *= 1.033);
                 }
 
                 if(interval.get(timerUpdate, updateTime)){
