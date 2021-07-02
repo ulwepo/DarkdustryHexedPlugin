@@ -56,7 +56,7 @@ public class HexedMod extends Plugin{
 
     @Override
     public void init(){
-        // rules.pvp = true;
+        rules.pvp = true;
         rules.tags.put("hexed", "true");
         rules.loadout = ItemStack.list(Items.copper, 500, Items.lead, 500, Items.graphite, 250, Items.metaglass, 150, Items.silicon, 250, Items.plastanium, 50);
         rules.buildCostMultiplier = 1f;
