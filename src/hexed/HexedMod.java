@@ -83,8 +83,8 @@ public class HexedMod extends Plugin{
                     if(player.team() != Team.derelict && player.team().cores().isEmpty()){
                         player.clearUnit();
                         killTiles(player.team());
-                        Call.sendMessage("[yellow](!)[] [accent]" + player.name + "[lightgray] has been eliminated![yellow] (!)");
-                        Call.infoMessage(player.con, "Your cores have been destroyed. You are defeated.");
+                        Call.sendMessage("[yellow](!)[] [accent]" + player.name + "[lightgray] был уничтожен![yellow] (!)");
+                        Call.infoMessage(player.con, "Твои ядра уничтожены. Ты проиграл.");
                         player.team(Team.derelict);
                     }
 
@@ -158,7 +158,7 @@ public class HexedMod extends Plugin{
                 Core.app.post(() -> data.data(event.player).chosen = false);
                 hex.findController();
             }else{
-                Call.infoMessage(event.player.con, "There are currently no empty hex spaces available.\nAssigning into spectator mode.");
+                Call.infoMessage(event.player.con, "Не найдено свободных хексов для спавна.\nПереключение в режим наблюдателя...");
                 event.player.unit().kill();
                 event.player.team(Team.derelict);
             }
@@ -184,7 +184,7 @@ public class HexedMod extends Plugin{
                         return team;
                     }
                 }
-                Call.infoMessage(player.con, "There are currently no empty hex spaces available.\nAssigning into spectator mode.");
+                Call.infoMessage(player.con, "Свободных хексов для спавна не найдено.\nПереключение в режим наблюдателя...");
                 return Team.derelict;
             }else{
                 return prev.assign(player, players);
@@ -195,22 +195,22 @@ public class HexedMod extends Plugin{
     void updateText(Player player){
         HexTeam team = data.data(player);
 
-        StringBuilder message = new StringBuilder("[white]Hex #" + team.location.id + "\n");
+        StringBuilder message = new StringBuilder("[white]Хекс #" + team.location.id + "\n");
 
         if(!team.lastMessage.get()) return;
 
         if(team.location.controller == null){
             if(team.progressPercent > 0){
-                message.append("[lightgray]Capture progress: [accent]").append((int)(team.progressPercent)).append("%");
+                message.append("[lightgray]Прогресс захвата: [accent]").append((int)(team.progressPercent)).append("%");
             }else{
-                message.append("[lightgray][[Empty]");
+                message.append("[lightgray][[Пусто]");
             }
         }else if(team.location.controller == player.team()){
-            message.append("[yellow][[Captured]");
+            message.append("[yellow][[Захвачен]");
         }else if(team.location != null && team.location.controller != null && data.getPlayer(team.location.controller) != null){
-            message.append("[#").append(team.location.controller.color).append("]Captured by ").append(data.getPlayer(team.location.controller).name);
+            message.append("[#").append(team.location.controller.color).append("]Захвачен игроком ").append(data.getPlayer(team.location.controller).name);
         }else{
-            message.append("<Unknown>");
+            message.append("<Неизвестно>");
         }
 
         Call.setHudText(player.con, message.toString());
