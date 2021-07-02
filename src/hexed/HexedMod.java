@@ -78,7 +78,7 @@ public class HexedMod extends Plugin{
         Events.run(Trigger.update, () -> {
             if(active()){
                 data.updateStats();
-
+                
                 for(Player player : Groups.player){
                     if(player.team() != Team.derelict && player.team().cores().isEmpty()){
                         player.clearUnit();
@@ -118,7 +118,7 @@ public class HexedMod extends Plugin{
 
                 counter += Time.delta;
 
-                //kick everyone and restart w/ the script
+                //kick everyone and restart the script
                 if(counter > roundTime && !restarting){
                     endGame();
                 }
@@ -398,6 +398,9 @@ public class HexedMod extends Plugin{
                     Time.run(Mathf.random(60f * 6), tile.build::kill);
                 }
             }
+        }
+        for(Unit unit : Groups.unit){
+            if(unit.team() == team) unit.kill();
         }
     }
 
