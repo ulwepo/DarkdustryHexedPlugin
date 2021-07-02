@@ -1,0 +1,23 @@
+ 
+
+{
+
+  "name": "plugin",
+
+  "displayName": "Plugin",
+
+  "description": "-_-",
+
+  "author": "MinDurka",
+
+  "main": "mindurka.Template",
+
+  "hidden": false,
+
+  "java": true,
+
+  "version": "1.0",
+
+  "minGameVersion": 126.2
+
+}
