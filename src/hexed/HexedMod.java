@@ -47,7 +47,6 @@ public class HexedMod extends Plugin{
     private final static int timerBoard = 0, timerUpdate = 1, timerWinCheck = 2;
 
     protected static HexedGenerator.Mode mode;
-    protected static Map next;
 
     private final Rules rules = new Rules();
     private Interval interval = new Interval(5);
@@ -72,13 +71,13 @@ public class HexedMod extends Plugin{
         rules.unitDamageMultiplier = 1.4f;
         rules.canGameOver = false;
         rules.coreCapture = true;
-        
+
         start = Schematics.readBase64("bXNjaAB4nE2SgY7CIAyGC2yDsXkXH2Tvcq+AkzMmc1tQz/j210JpXDL8hu3/lxYY4FtBs4ZbBLvG1ync4wGO87bvMU2vsCzTEtIlwvCxBW7e1r/43hKYkGY4nFN4XqbfMD+29IbhvmHOtIc1LjCmuIcrfm3X9QH2PofHIyYY5y3FaX3OS3ze4fiRwX7dLa5nDHTPddkCkT3l1DcA/OALihZNq4H6NHnV+HZCVshJXA9VYZC9kfVU+VQGKSsbjVT1lOgp1qO4rGIo9yvnquxH1ORIohap6HVIDbtpaNlDi4cWD80eFJdrNhbJc8W61Jzdqi/3wrRIRii7GYdelvWMZDQs1kNbqtYe9/KuGvDX5zD6d5SML66+5dwRqXgQee5GK3Edxw1ITfb3SJ71OomzUAdjuWsWqZyJavd8Issdb5BqVbaoGCVzJqrddaUGTWSFHPs67m6H5HlaTqbqpFc91Kfn+2eQSp9pr96/Xtx6cevZjeKKDuUOklvvXy9uPGdNZFjZi7IXZS/n8Hyf/wFbjj/q");
-    
+
         Events.run(Trigger.update, () -> {
             if(active()){
                 data.updateStats();
-                
+
                 for(Player player : Groups.player){
                     if(player.team() != Team.derelict && player.team().cores().isEmpty()){
                         player.clearUnit();
@@ -120,7 +119,7 @@ public class HexedMod extends Plugin{
                 counter += Time.delta;
 
                 //kick everyone and restart the script
-                if(counter > roundTime && !restarting){
+                if(counter > roundTime){
                     endGame();
                 }
             }else{
@@ -372,6 +371,12 @@ public class HexedMod extends Plugin{
             }
             netServer.sendWorldData(p);
         }
+
+        for(int i = 0; i < 5; i++){
+            interval.reset(i, 0f);
+        }
+
+        counter = 0f;
 
         restarting = false;
     }
