@@ -84,12 +84,12 @@ public class HexedGenerator implements Cons<Tiles>{
 
         lavaLand(new Block[][]{
                 {Blocks.sand, Blocks.basalt, Blocks.sand, Blocks.basalt},
-                {Blocks.darksand, Blocks.hotrock, Blocks.sand, Blocks.magmarock},
-                {Blocks.darksand, Blocks.sand, Blocks.basalt, Blocks.craters},
+                {Blocks.darksand, Blocks.darksand, Blocks.sand, Blocks.darksand},
+                {Blocks.craters, Blocks.magmarock, Blocks.basalt, Blocks.hotrock},
                 {Blocks.slag, Blocks.sand, Blocks.slag, Blocks.darksand},
                 {Blocks.darksand, Blocks.magmarock, Blocks.darksand, Blocks.hotrock}
         }, new Block[][]{
-                {Blocks.sandWall, Blocks.stoneWall, Blocks.sandWall, Blocks.sandWall},
+                {Blocks.duneWall, Blocks.stoneWall, Blocks.sandWall, Blocks.sandWall},
                 {Blocks.duneWall, Blocks.sandWall, Blocks.sandWall, Blocks.stoneWall},
                 {Blocks.sandWall, Blocks.sandWall, Blocks.duneWall, Blocks.sandWall},
                 {Blocks.daciteWall, Blocks.sandWall, Blocks.daciteWall, Blocks.sandWall},
