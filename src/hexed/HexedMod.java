@@ -67,7 +67,7 @@ public class HexedMod extends Plugin{
         rules.buildSpeedMultiplier = 1f / 2f;
         rules.blockHealthMultiplier = 1.5f;
         rules.unitBuildSpeedMultiplier = 3.6f;
-        rules.polygonCoreProtection = true;
+        rules.enemyCoreBuildRadius = (Hex.diameter) * tilesize / 2f;
         rules.unitDamageMultiplier = 1.4f;
         rules.canGameOver = false;
         rules.coreCapture = true;
