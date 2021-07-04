@@ -80,6 +80,20 @@ public class HexedGenerator implements Cons<Tiles>{
                 {Blocks.stoneWall, Blocks.stoneWall, Blocks.duneWall, Blocks.duneWall, Blocks.pine, Blocks.pine},
                 {Blocks.stoneWall, Blocks.dirtWall, Blocks.duneWall, Blocks.dirtWall, Blocks.duneWall, Blocks.stoneWall},
                 {Blocks.stoneWall, Blocks.pine, Blocks.sandWall, Blocks.sandWall, Blocks.pine, Blocks.pine}
+        }),
+
+        lavaLand(new Block[][]{
+                {Blocks.sand, Blocks.shale, Blocks.sand, Blocks.shale},
+                {Blocks.darksand, Blocks.sand, Blocks.sand, Blocks.sand},
+                {Blocks.shale, Blocks.sand, Blocks.sand, Blocks.sand},
+                {Blocks.tar, Blocks.sand, Blocks.tar, Blocks.darksand},
+                {Blocks.darksand, Blocks.shale, Blocks.darksand, Blocks.shale}
+        }, new Block[][]{
+                {Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall, Blocks.sandWall},
+                {Blocks.shaleWall, Blocks.sandWall, Blocks.sandWall, Blocks.shaleWall},
+                {Blocks.sandWall, Blocks.sandWall, Blocks.sandWall, Blocks.sandWall},
+                {Blocks.sandWall, Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall},
+                {Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall, Blocks.sandWall}
         });
 
         final Block[][] floors;
