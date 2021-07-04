@@ -83,16 +83,16 @@ public class HexedGenerator implements Cons<Tiles>{
         }),
 
         lavaLand(new Block[][]{
-                {Blocks.sand, Blocks.shale, Blocks.sand, Blocks.shale},
-                {Blocks.darksand, Blocks.sand, Blocks.sand, Blocks.sand},
-                {Blocks.shale, Blocks.sand, Blocks.sand, Blocks.sand},
-                {Blocks.tar, Blocks.sand, Blocks.tar, Blocks.darksand},
-                {Blocks.darksand, Blocks.shale, Blocks.darksand, Blocks.shale}
+                {Blocks.sand, Blocks.basalt, Blocks.sand, Blocks.basalt},
+                {Blocks.darksand, Blocks.hotrock, Blocks.sand, Blocks.magmarock},
+                {Blocks.darksand, Blocks.sand, Blocks.basalt, Blocks.craters},
+                {Blocks.slag, Blocks.sand, Blocks.slag, Blocks.darksand},
+                {Blocks.darksand, Blocks.magmarock, Blocks.darksand, Blocks.hotrock}
         }, new Block[][]{
-                {Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall, Blocks.sandWall},
-                {Blocks.shaleWall, Blocks.sandWall, Blocks.sandWall, Blocks.shaleWall},
-                {Blocks.sandWall, Blocks.sandWall, Blocks.sandWall, Blocks.sandWall},
-                {Blocks.sandWall, Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall},
+                {Blocks.sandWall, Blocks.stoneWall, Blocks.sandWall, Blocks.sandWall},
+                {Blocks.duneWall, Blocks.sandWall, Blocks.sandWall, Blocks.stoneWall},
+                {Blocks.sandWall, Blocks.sandWall, Blocks.duneWall, Blocks.sandWall},
+                {Blocks.daciteWall, Blocks.sandWall, Blocks.daciteWall, Blocks.sandWall},
                 {Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall, Blocks.sandWall}
         });
 
