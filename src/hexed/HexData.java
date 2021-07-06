@@ -4,6 +4,7 @@ import arc.*;
 import arc.math.geom.*;
 import arc.struct.*;
 import arc.util.*;
+import mindustry.Vars;
 import mindustry.game.*;
 import mindustry.gen.*;
 import mindustry.content.Blocks;
@@ -136,7 +137,8 @@ public class HexData{
         public HexCaptureEvent(Player player, Hex hex){
             this.player = player;
             this.hex = hex;
-            Call.setTile(new Tile(hex.x,hex.y), Blocks.coreShard,player.team(),0);
+            Tile t = Vars.world.tile(hex.x, hex.y);
+            Call.constructFinish(t, Blocks.coreShard, player.unit(), (byte)0, player.team(), false);
         }
     }
 
