@@ -189,9 +189,8 @@ public class HexedMod extends Plugin{
                 }
                 Call.infoMessage(player.con, "Свободных хексов для спавна не найдено.\nПереключение в режим наблюдателя...");
                 return Team.derelict;
-            }else{
-                return prev.assign(player, players);
             }
+            return prev.assign(player, players);
         };
     }
 
@@ -371,9 +370,24 @@ public class HexedMod extends Plugin{
             boolean wasAdmin = p.admin;
             p.reset();
             p.admin = wasAdmin;
-            if(state.rules.pvp){
-                p.team(netServer.assignTeam(p, new Seq.SeqIterable<>(players)));
+            p.team(netServer.assignTeam(p, new Seq.SeqIterable<>(players)));
+
+            if(p.team() != Team.derelict){
+                Seq<Hex> copy = data.hexes().copy();
+                copy.shuffle();
+                Hex hex = copy.find(h -> h.controller == null && h.spawnTime.get());
+                if(hex != null){
+                    loadout(p, hex.x, hex.y);
+                    Core.app.post(() -> data.data(p).chosen = false);
+                    hex.findController();
+                }else{
+                    Call.infoMessage(p.con, "Не найдено свободных хексов для спавна.\nПереключение в режим наблюдателя...");
+                    p.unit().kill();
+                    p.team(Team.derelict);
+                }
+                data.data(p).lastMessage.reset();
             }
+
             netServer.sendWorldData(p);
         }
 
