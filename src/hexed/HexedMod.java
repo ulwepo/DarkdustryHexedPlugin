@@ -70,7 +70,10 @@ public class HexedMod extends Plugin{
         rules.enemyCoreBuildRadius = (Hex.diameter) * tilesize / 2f;
         rules.unitDamageMultiplier = 1.4f;
         rules.canGameOver = false;
-        rules.coreCapture = true;
+        //Если включить это, то после выхода игрока с
+        //сервера на его месте появится дереликтовое ядро
+        //Смотрите баг #3
+        rules.coreCapture = false;
 
         start = Schematics.readBase64("bXNjaAB4nE2SgY7CIAyGC2yDsXkXH2Tvcq+AkzMmc1tQz/j210JpXDL8hu3/lxYY4FtBs4ZbBLvG1ync4wGO87bvMU2vsCzTEtIlwvCxBW7e1r/43hKYkGY4nFN4XqbfMD+29IbhvmHOtIc1LjCmuIcrfm3X9QH2PofHIyYY5y3FaX3OS3ze4fiRwX7dLa5nDHTPddkCkT3l1DcA/OALihZNq4H6NHnV+HZCVshJXA9VYZC9kfVU+VQGKSsbjVT1lOgp1qO4rGIo9yvnquxH1ORIohap6HVIDbtpaNlDi4cWD80eFJdrNhbJc8W61Jzdqi/3wrRIRii7GYdelvWMZDQs1kNbqtYe9/KuGvDX5zD6d5SML66+5dwRqXgQee5GK3Edxw1ITfb3SJ71OomzUAdjuWsWqZyJavd8Issdb5BqVbaoGCVzJqrddaUGTWSFHPs67m6H5HlaTqbqpFc91Kfn+2eQSp9pr96/Xtx6cevZjeKKDuUOklvvXy9uPGdNZFjZi7IXZS/n8Hyf/wFbjj/q");
 
@@ -295,10 +298,12 @@ public class HexedMod extends Plugin{
                 hex.updateController();
                 StringBuilder builder = new StringBuilder();
                 builder.append("| [lightgray]Хекс #").append(hex.id).append("[]\n");
-                builder.append("| [lightgray]Владелец:[] ").append(hex.controller != null && data.getPlayer(hex.controller) != null ? data.getPlayer(hex.controller).name : "<никто>").append("\n");
+                String name = hex.controller != null && data.getPlayer(hex.controller) != null ? data.getPlayer(hex.controller).name : "<никто>";
+                builder.append("| [lightgray]Владелец:[] ").append(name).append("\n");
                 for(TeamData data : state.teams.getActive()){
                     if(hex.getProgressPercent(data.team) > 0){
-                        builder.append("|> [accent]").append(this.data.getPlayer(data.team).name).append("[lightgray]: ").append((int)hex.getProgressPercent(data.team)).append("% захвата\n");
+                        builder.append("|> [accent]").append(this.data.getPlayer(data.team).name).append("[lightgray]: ")
+                                .append((int)hex.getProgressPercent(data.team)).append("% захвата\n");
                     }
                 }
                 player.sendMessage(builder.toString());
