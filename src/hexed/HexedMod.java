@@ -26,7 +26,7 @@ import mindustry.world.blocks.storage.*;
 import static arc.util.Log.*;
 import static mindustry.Vars.*;
 
-import java.util.*;
+import java.util.HashSet;
 
 public class HexedMod extends Plugin{
     //in seconds
