@@ -26,6 +26,8 @@ import mindustry.world.blocks.storage.*;
 import static arc.util.Log.*;
 import static mindustry.Vars.*;
 
+import java.util.*;
+
 public class HexedMod extends Plugin{
     //in seconds
     public static final float spawnDelay = 60 * 4;
@@ -57,6 +59,8 @@ public class HexedMod extends Plugin{
     private Schematic start;
     private double counter = 0f;
     private int lastMin;
+
+    private final HashSet<Team> timerTeams = new HashSet<>();
 
     @Override
     public void init(){
@@ -145,8 +149,12 @@ public class HexedMod extends Plugin{
 
         Events.on(PlayerLeave.class, event -> {
             if(active() && event.player.team() != Team.derelict) {
+                timerTeams.add(event.player.team());
                 Timer.schedule(() -> {
-                    killTiles(event.player.team());
+                    if (!event.player.team().active()) {
+                        killTiles(event.player.team());
+                    }
+                    timerTeams.remove(event.player.team());
                 }, 75f);
             }
         });
@@ -184,7 +192,7 @@ public class HexedMod extends Plugin{
             if(active()){
                 //pick first inactive team
                 for(Team team : Team.all){
-                    if(team.id > 5 && !team.active() && !arr.contains(p -> p.team() == team) && !data.data(team).dying && !data.data(team).chosen){
+                    if(team.id > 5 && !team.active() && !arr.contains(p -> p.team() == team) && !data.data(team).dying && !data.data(team).chosen && !timerTeams.contains(team)) {
                         data.data(team).chosen = true;
                         return team;
                     }
