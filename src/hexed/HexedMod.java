@@ -138,12 +138,14 @@ public class HexedMod extends Plugin{
             //reset last spawn times so this hex becomes vacant for a while.
             if(event.tile.block() instanceof CoreBlock){
                 Hex hex = data.getHex(event.tile.pos());
-
+                
                 if(hex != null){
                     //update state
                     hex.spawnTime.reset();
                     hex.updateController();
                 }
+                Unit closestEnemy = Units.closestEnemy(event.tile.build.team, event.tile.worldx(), event.tile.worldy(), 10000000, u -> true);
+                // Доделать
             }
         });
 
