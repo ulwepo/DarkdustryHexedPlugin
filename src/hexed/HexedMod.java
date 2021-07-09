@@ -32,9 +32,9 @@ public class HexedMod extends Plugin{
     //in seconds
     public static final float spawnDelay = 60 * 4;
     //health requirement needed to capture a hex; no longer used
-    public static final float healthRequirement = 3500;
+    public static final float healthRequirement = 35000;
     //item requirement to captured a hex
-    public static final int itemRequirement = 210;
+    public static final int itemRequirement = 2500;
 
     public static final int messageTime = 1;
     //in ticks: 60 minutes
