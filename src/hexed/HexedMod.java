@@ -149,12 +149,12 @@ public class HexedMod extends Plugin{
 
         Events.on(PlayerLeave.class, event -> {
             if(active() && event.player.team() != Team.derelict) {
-                timerTeams.put(event.player.uuid(), event.player.team());
+                teamTimers.put(event.player.uuid(), event.player.team());
                 Timer.schedule(() -> {
                     if (!event.player.team().active()) {
                         killTiles(event.player.team());
                     }
-                    timerTeams.remove(event.player.uuid());
+                    teamTimers.remove(event.player.uuid());
                 }, 75f);
             }
         });
