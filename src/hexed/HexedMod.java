@@ -44,7 +44,7 @@ public class HexedMod extends Plugin{
 
     private final static int updateTime = 60 * 2;
 
-    private final static int winCondition = 10;
+    private final static int winCondition = 25;
 
     private final static int timerBoard = 0, timerUpdate = 1, timerWinCheck = 2;
 
@@ -412,7 +412,7 @@ public class HexedMod extends Plugin{
 
     String getLeaderboard(){
         StringBuilder builder = new StringBuilder();
-        builder.append("[accent]Leaderboard\n[scarlet]").append(lastMin).append("[lightgray] mins. remaining\n\n");
+        builder.append("[accent]Список лидеров\n[scarlet]").append(lastMin).append("[lightgray] мин. до конца раунда\n\n");
         int count = 0;
         for(Player player : data.getLeaderboard()){
             builder.append("[yellow]").append(++count).append(".[white] ")
