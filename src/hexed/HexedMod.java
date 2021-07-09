@@ -144,8 +144,6 @@ public class HexedMod extends Plugin{
                     hex.spawnTime.reset();
                     hex.updateController();
                 }
-                Unit closestEnemy = Units.closestEnemy(event.tile.build.team, event.tile.worldx(), event.tile.worldy(), 10000000, u -> true);
-                // Доделать
             }
         });
 
