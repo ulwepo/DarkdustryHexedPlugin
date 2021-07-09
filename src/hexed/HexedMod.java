@@ -154,13 +154,18 @@ public class HexedMod extends Plugin{
                     if (!event.player.team().active()) {
                         killTiles(event.player.team());
                     }
-                    timerTeams.remove(event.player.team());
+                    timerTeams.remove(event.player.uuid());
                 }, 75f);
             }
         });
 
         Events.on(PlayerJoin.class, event -> {
             if(!active() || event.player.team() == Team.derelict) return;
+            if (teamTimers.containsKey(event.player.uuid())) {
+                event.player.team(teamTimers.get(event.player.uuid()));
+                event.player.sendMessage("Твоя база сохранена! Приятной игры!");
+                return;
+            }
 
             Seq<Hex> copy = data.hexes().copy();
             copy.shuffle();
@@ -192,7 +197,7 @@ public class HexedMod extends Plugin{
             if(active()){
                 //pick first inactive team
                 for(Team team : Team.all){
-                    if(team.id > 5 && !team.active() && !arr.contains(p -> p.team() == team) && !data.data(team).dying && !data.data(team).chosen && !teams.contains(team)) {
+                    if(team.id > 5 && !team.active() && !arr.contains(p -> p.team() == team) && !data.data(team).dying && !data.data(team).chosen && !teamTimers.containsValue(team)) {
                         data.data(team).chosen = true;
                         return team;
                     }
