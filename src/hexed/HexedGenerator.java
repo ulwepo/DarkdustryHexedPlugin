@@ -57,8 +57,8 @@ public class HexedGenerator implements Cons<Tiles>{
         ice(new Block[][]{
                 {Blocks.snow, Blocks.iceSnow, Blocks.snow, Blocks.snow, Blocks.snow},
                 {Blocks.snow, Blocks.iceSnow, Blocks.snow, Blocks.snow, Blocks.snow},
-                {Blocks.iceSnow, Blocks.ice, Blocks.ice, Blocks.ice, Blocks.ice},
-                {Blocks.water, Blocks.iceSnow, Blocks.snow, Blocks.iceSnow, Blocks.snow},
+                {Blocks.iceSnow, Blocks.ice, Blocks.ice, Blocks.ice, Blocks.sand},
+                {Blocks.water, Blocks.sand, Blocks.snow, Blocks.iceSnow, Blocks.snow},
                 {Blocks.snow, Blocks.iceSnow, Blocks.ice, Blocks.snow, Blocks.water}
         }, new Block[][]{
                 {Blocks.iceWall, Blocks.snowWall, Blocks.snowPine, Blocks.iceWall, Blocks.snowWall},
