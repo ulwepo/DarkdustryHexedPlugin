@@ -129,6 +129,7 @@ public class HexedGenerator implements Cons<Tiles>{
                 Block wall = mode.blocks[temp][elev];
                 Block ore = Blocks.air;
 
+                if(floor.asFloor().isLiquid) continue;
                 for(GenerateFilter f : ores){
                     in.floor = Blocks.stone;
                     in.block = wall;
