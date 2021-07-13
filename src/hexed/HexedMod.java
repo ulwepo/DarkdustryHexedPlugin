@@ -151,6 +151,8 @@ public class HexedMod extends Plugin{
             if(active() && event.player.team() != Team.derelict) {
                 teamTimers.put(event.player.uuid(), event.player.team());
                 Timer.schedule(() -> {
+                    int count = Groups.player.count(p -> p.team() == event.player.team());
+                    if (count > 0) return;
                     killTiles(event.player.team());
                     teamTimers.remove(event.player.uuid());
                 }, 15f);
