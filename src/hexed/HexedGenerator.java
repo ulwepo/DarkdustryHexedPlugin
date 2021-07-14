@@ -141,7 +141,7 @@ public class HexedGenerator implements Cons<Tiles>{
                         ore = in.overlay;
                     }
                 }
-
+                if (floor == Blocks.tar || floor == Blocks.slag) ore = Blocks.air;
                 tiles.set(x, y, new Tile(x, y, floor.id, ore.id, wall.id));
             }
         }
