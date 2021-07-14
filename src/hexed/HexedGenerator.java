@@ -212,6 +212,7 @@ public class HexedGenerator implements Cons<Tiles>{
         }
 
         state.map = new Map(StringMap.of("name", "Hexed arena"));
+        state.map.tags.put("author", "[gray]Skat");
     }
 
     public IntSeq getHex(){
