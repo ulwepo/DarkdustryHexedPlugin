@@ -43,7 +43,7 @@ public class HexedGenerator implements Cons<Tiles>{
         oilFlats(new Block[][]{
                 {Blocks.sand, Blocks.shale, Blocks.sand, Blocks.shale},
                 {Blocks.darksand, Blocks.sand, Blocks.sand, Blocks.sand},
-                {Blocks.shale, Blocks.sand, Blocks.sand, Blocks.sand},
+                {Blocks.darksand, Blocks.sand, Blocks.sand, Blocks.sand},
                 {Blocks.tar, Blocks.sand, Blocks.tar, Blocks.darksand},
                 {Blocks.darksand, Blocks.shale, Blocks.darksand, Blocks.shale}
         }, new Block[][]{
