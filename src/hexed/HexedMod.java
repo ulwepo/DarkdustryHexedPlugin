@@ -34,7 +34,7 @@ public class HexedMod extends Plugin{
     //health requirement needed to capture a hex; no longer used
     public static final float healthRequirement = 35000;
     //item requirement to captured a hex
-    public static final int itemRequirement = 2500;
+    public static final int itemRequirement = 4000;
 
     public static final int messageTime = 1;
     //in ticks: 60 minutes
@@ -66,7 +66,7 @@ public class HexedMod extends Plugin{
     public void init(){
         rules.pvp = true;
         rules.tags.put("hexed", "true");
-        rules.loadout = ItemStack.list(Items.copper, 500, Items.lead, 500, Items.graphite, 250, Items.metaglass, 200, Items.silicon, 250, Items.titanium, 100);
+        rules.loadout = ItemStack.list(Items.copper, 300, Items.lead, 300, Items.graphite, 150, Items.metaglass, 100, Items.silicon, 200, Items.titanium, 25);
         rules.buildCostMultiplier = 1f;
         rules.buildSpeedMultiplier = 1f / 2f;
         rules.blockHealthMultiplier = 1.5f;
@@ -109,7 +109,7 @@ public class HexedMod extends Plugin{
 
                 if(interval.get(timerBoard, leaderboardTime)){
                     Call.infoToast(getLeaderboard(), 15f);
-                    rules.loadout.each(e -> e.amount *= 1.033);
+                    rules.loadout.each(e -> e.amount *= 1.025);
                 }
 
                 if(interval.get(timerUpdate, updateTime)){
