@@ -277,6 +277,10 @@ public class HexedMod extends Plugin{
             info("Время до конца раунда: &lc@ минут", (int)(roundTime - counter) / 60 / 60);
         });
 
+        handler.register("hub-config", "<ip:port>", "Configure hub ip", args -> {
+            Core.settings.put("hub-ip", args[0]);
+        });
+
         handler.register("end", "End the game.", args -> endGame());
     }
 
@@ -325,6 +329,28 @@ public class HexedMod extends Plugin{
             }else{
                 player.sendMessage("[scarlet]Хекс не найден.");
             }
+        });
+
+        handler.<Player>register("hub", "Попасть в Хаб", (args, player) -> {
+            String[] ip = new String[]{Core.settings.getString("hub-ip")};
+            if(ip[0] == null){
+                Log.err("HUB not defined");
+                Call.infoMessage(player.con(), "Хаб не задан, попробуй позже");
+                return;
+
+            }
+
+            int[] port = new int[]{6567};
+            String[] parts = ip[0].split(":");
+            if(ip[0].contains(":") && Strings.canParsePositiveInt(parts[1])){
+                ip[0] = parts[0];
+                port[0] = Strings.parseInt(parts[1]);
+            }else{
+                Log.err("Parsing error! ip: @", ip[0]);
+            }
+
+            Vars.net.pingHost(ip[0], port[0], (ignored) -> Call.connect(player.con(), ip[0], port[0]),
+                    e -> Call.infoMessage(player.con(), "Хаб оффлайн, попробуй позже"));
         });
     }
 
