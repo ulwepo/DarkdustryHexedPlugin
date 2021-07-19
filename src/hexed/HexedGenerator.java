@@ -193,7 +193,7 @@ public class HexedGenerator implements Cons<Tiles>{
             Reflect.set(rivernoise, "floor2", Blocks.water);
 
             rivernoise.randomize();
-            in.begin(rivernoise, width, height, tiles::getn);
+            in.begin(width, height, tiles::getn);
             rivernoise.apply(tiles, in);
         }
 
