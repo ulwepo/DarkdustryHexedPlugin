@@ -99,15 +99,15 @@ public class HexedGenerator implements Cons<Tiles>{
         spores(new Block[][]{
                 {Blocks.moss, Blocks.sporeMoss, Blocks.sand, Blocks.moss},
                 {Blocks.moss, Blocks.dacite, Blocks.darksand, Blocks.sporeMoss},
-                {Blocks.darksandTainedwater, Blocks.darksand, Blocks.moss, Blocks.hotrock},
-                {Blocks.water, Blocks.sand, Blocks.water, Blocks.darksand},
+                {Blocks.darksandTaintedWater, Blocks.darksand, Blocks.moss, Blocks.hotrock},
+                {Blocks.water, Blocks.sand, Blocks.darksandWater, Blocks.darksand},
                 {Blocks.darksand, Blocks.moss, Blocks.sporeMoss, Blocks.water}
         }, new Block[][]{
                 {Blocks.sporeWall, Blocks.duneWall, Blocks.sandWall, Blocks.sporeWall},
                 {Blocks.duneWall, Blocks.sandWall, Blocks.sporeWall, Blocks.sporeWall},
                 {Blocks.duneWall, Blocks.sporeWall, Blocks.duneWall, Blocks.sporeWall},
                 {Blocks.daciteWall, Blocks.sandWall, Blocks.sporeWall, Blocks.sandWall},
-                {Blocks.sporeWallWall, Blocks.shaleWall, Blocks.sandWall, Blocks.sporeWall}
+                {Blocks.sporeWall, Blocks.shaleWall, Blocks.sandWall, Blocks.sporeWall}
         });
 
         final Block[][] floors;
