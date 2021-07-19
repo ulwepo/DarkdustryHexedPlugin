@@ -41,7 +41,7 @@ public class HexedGenerator implements Cons<Tiles>{
         }),
 
         oilFlats(new Block[][]{
-                {Blocks.sand, Blocks.shale, Blocks.sand, Blocks.shale},
+                {Blocks.sand, Blocks.darksand, Blocks.sand, Blocks.shale},
                 {Blocks.darksand, Blocks.sand, Blocks.sand, Blocks.sand},
                 {Blocks.darksand, Blocks.sand, Blocks.sand, Blocks.sand},
                 {Blocks.tar, Blocks.sand, Blocks.tar, Blocks.darksand},
@@ -58,7 +58,7 @@ public class HexedGenerator implements Cons<Tiles>{
                 {Blocks.snow, Blocks.iceSnow, Blocks.snow, Blocks.snow, Blocks.snow},
                 {Blocks.snow, Blocks.iceSnow, Blocks.snow, Blocks.snow, Blocks.snow},
                 {Blocks.iceSnow, Blocks.ice, Blocks.ice, Blocks.ice, Blocks.sand},
-                {Blocks.water, Blocks.sand, Blocks.snow, Blocks.iceSnow, Blocks.snow},
+                {Blocks.sand, Blocks.sand, Blocks.snow, Blocks.iceSnow, Blocks.snow},
                 {Blocks.snow, Blocks.iceSnow, Blocks.ice, Blocks.snow, Blocks.water}
         }, new Block[][]{
                 {Blocks.iceWall, Blocks.snowWall, Blocks.snowPine, Blocks.iceWall, Blocks.snowWall},
@@ -85,7 +85,7 @@ public class HexedGenerator implements Cons<Tiles>{
         lavaLand(new Block[][]{
                 {Blocks.sand, Blocks.basalt, Blocks.sand, Blocks.basalt},
                 {Blocks.darksand, Blocks.darksand, Blocks.sand, Blocks.darksand},
-                {Blocks.craters, Blocks.magmarock, Blocks.basalt, Blocks.hotrock},
+                {Blocks.craters, Blocks.darksand, Blocks.basalt, Blocks.hotrock},
                 {Blocks.slag, Blocks.sand, Blocks.slag, Blocks.darksand},
                 {Blocks.darksand, Blocks.magmarock, Blocks.darksand, Blocks.hotrock}
         }, new Block[][]{
