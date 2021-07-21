@@ -155,7 +155,7 @@ public class HexedMod extends Plugin{
                     if (count > 0) return;
                     killTiles(event.player.team());
                     teamTimers.remove(event.player.uuid());
-                }, 15f);
+                }, 75f);
             }
         });
 
