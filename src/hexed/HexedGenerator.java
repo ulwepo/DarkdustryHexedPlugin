@@ -86,8 +86,8 @@ public class HexedGenerator implements Cons<Tiles>{
                 {Blocks.sand, Blocks.basalt, Blocks.sand, Blocks.basalt},
                 {Blocks.sand, Blocks.darksand, Blocks.sand, Blocks.darksand},
                 {Blocks.craters, Blocks.darksand, Blocks.basalt, Blocks.darksand},
-                {Blocks.slag, Blocks.hotrock, Blocks.slag, Blocks.darksand},
-                {Blocks.darksand, Blocks.darksand, Blocks.magmarock, Blocks.sand}
+                {Blocks.slag, Blocks.magmarock, Blocks.slag, Blocks.darksand},
+                {Blocks.darksand, Blocks.darksand, Blocks.hotrock, Blocks.sand}
         }, new Block[][]{
                 {Blocks.duneWall, Blocks.stoneWall, Blocks.sandWall, Blocks.sandWall},
                 {Blocks.duneWall, Blocks.sandWall, Blocks.sandWall, Blocks.stoneWall},
