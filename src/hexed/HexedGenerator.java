@@ -58,8 +58,8 @@ public class HexedGenerator implements Cons<Tiles>{
                 {Blocks.snow, Blocks.iceSnow, Blocks.snow, Blocks.snow, Blocks.snow},
                 {Blocks.snow, Blocks.iceSnow, Blocks.snow, Blocks.snow, Blocks.snow},
                 {Blocks.iceSnow, Blocks.ice, Blocks.ice, Blocks.ice, Blocks.sand},
-                {Blocks.sand, Blocks.sand, Blocks.snow, Blocks.iceSnow, Blocks.snow},
-                {Blocks.snow, Blocks.iceSnow, Blocks.ice, Blocks.snow, Blocks.water}
+                {Blocks.sand, Blocks.water, Blocks.snow, Blocks.water, Blocks.snow},
+                {Blocks.snow, Blocks.iceSnow, Blocks.ice, Blocks.snow, Blocks.snow}
         }, new Block[][]{
                 {Blocks.iceWall, Blocks.snowWall, Blocks.snowPine, Blocks.iceWall, Blocks.snowWall},
                 {Blocks.iceWall, Blocks.snowWall, Blocks.snowWall, Blocks.iceWall, Blocks.snowWall},
@@ -86,8 +86,8 @@ public class HexedGenerator implements Cons<Tiles>{
                 {Blocks.sand, Blocks.basalt, Blocks.sand, Blocks.basalt},
                 {Blocks.sand, Blocks.darksand, Blocks.sand, Blocks.darksand},
                 {Blocks.craters, Blocks.darksand, Blocks.basalt, Blocks.darksand},
-                {Blocks.slag, Blocks.sand, Blocks.slag, Blocks.darksand},
-                {Blocks.darksand, Blocks.magmarock, Blocks.darksand, Blocks.hotrock}
+                {Blocks.slag, Blocks.hotrock, Blocks.slag, Blocks.darksand},
+                {Blocks.darksand, Blocks.darksand, Blocks.magmarock, Blocks.sand}
         }, new Block[][]{
                 {Blocks.duneWall, Blocks.stoneWall, Blocks.sandWall, Blocks.sandWall},
                 {Blocks.duneWall, Blocks.sandWall, Blocks.sandWall, Blocks.stoneWall},
@@ -226,7 +226,7 @@ public class HexedGenerator implements Cons<Tiles>{
             }
         }
 
-        state.map = new Map(StringMap.of("name", "[cyan]Hexed arena"));
+        state.map = new Map(StringMap.of("name", "[gold]Hexed arena"));
         state.map.tags.put("author", "[gray]Skat");
     }
 
