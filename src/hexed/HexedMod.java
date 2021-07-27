@@ -34,7 +34,7 @@ public class HexedMod extends Plugin{
     //health requirement needed to capture a hex; no longer used
     public static final float healthRequirement = 35000;
     //item requirement to captured a hex
-    public static final int itemRequirement = 4000;
+    public static final int itemRequirement = 1500;
 
     public static final int messageTime = 1;
     //in ticks: 60 minutes
@@ -240,7 +240,7 @@ public class HexedMod extends Plugin{
             if(args.length > 0 && args[0].equalsIgnoreCase("list")){
                 Log.info("Доступные режимы:");
                 for(HexedGenerator.Mode value : HexedGenerator.Mode.values()){
-                    Log.info("- @", value);
+                    info("- @", value);
                 }
                 return;
             }
@@ -289,7 +289,7 @@ public class HexedMod extends Plugin{
         if(registered) return;
         registered = true;
 
-        handler.<Player>register("spectate", "Режим наблюдателя. При использовании уничтожает твою базу.", (args, player) -> {
+        handler.<Player>register("spectate", "Режим наблюдателя. Уничтожает твою базу", (args, player) -> {
             if(player.team() == Team.derelict){
                 player.sendMessage("[scarlet]Ты уже наблюдатель.");
             }else{
@@ -371,7 +371,7 @@ public class HexedMod extends Plugin{
             boolean dominated = data.getControlled(players.first()).size == data.hexes().size;
 
             for(Player player : Groups.player){
-                Call.infoMessage(player.con, "[accent]--ROUND OVER--\n\n[lightgray]"
+                Call.infoMessage(player.con, "[accent]--РАУНД ОКОНЧЕН--\n\n[lightgray]"
                         + (player == players.first() ? "[accent]Ты[] оказался" : "[yellow]" + players.first().name + "[lightgray] оказался") +
                         " победителем, захватив [accent]" + data.getControlled(players.first()).size + "[lightgray] хексов."
                         + (dominated ? "" : "\n\nФинальные очки:\n" + builder));
