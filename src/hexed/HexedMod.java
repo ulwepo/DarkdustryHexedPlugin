@@ -87,7 +87,6 @@ public class HexedMod extends Plugin{
                 data.updateStats();
 
                 for(Player player : Groups.player){
-                    if(player.team() == null || player == null) return;
                     if(player.team() != Team.derelict && player.team().cores().isEmpty()){
                         player.clearUnit();
                         killTiles(player.team());
