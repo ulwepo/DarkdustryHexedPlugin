@@ -331,7 +331,7 @@ public class HexedMod extends Plugin{
             }
 
             Vars.net.pingHost(ip[0], port[0], (ignored) -> Call.connect(player.con(), ip[0], port[0]),
-                    e -> sendMessage(player, "commands.hub-online"));
+                    e -> sendMessage(player, "commands.hub-offline"));
         });
     }
 
@@ -425,7 +425,7 @@ public class HexedMod extends Plugin{
 
     String getLeaderboard(){
         StringBuilder builder = new StringBuilder();
-        builder.append("[accent]Список лидеров\n[scarlet]").append(lastMin).append("[lightgray] min. until round ends\n\n");
+        builder.append("[accent]Leaderboard\n[scarlet]").append(lastMin).append("[lightgray] min. remaining\n\n");
         int count = 0;
         for(Player player : data.getLeaderboard()){
             builder.append("[yellow]").append(++count).append(".[white] ")
