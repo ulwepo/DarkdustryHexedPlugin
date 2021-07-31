@@ -91,8 +91,8 @@ public class HexedMod extends Plugin{
                     if(player.team() != Team.derelict && player.team().cores().isEmpty()){
                         player.clearUnit();
                         killTiles(player.team());
-                        Call.sendMessage("[yellow](!)[] [accent]" + player.name + "[lightgray] был уничтожен![yellow] (!)");
-                        Call.infoMessage(player.con, "Твои ядра уничтожены. Ты проиграл.");
+                        sendToChat("server.player-lost", player.name());
+                        Call.infoMessage(player.con, L10NBundle.format("server.you-lost", findLocale(player.locale)));
                         player.team(Team.derelict);
                     }
 
@@ -111,7 +111,6 @@ public class HexedMod extends Plugin{
 
                 if(interval.get(timerBoard, leaderboardTime)){
                     Call.infoToast(getLeaderboard(), 15f);
-                    rules.loadout.each(e -> e.amount *= 1.025);
                 }
 
                 if(interval.get(timerUpdate, updateTime)){
@@ -166,7 +165,7 @@ public class HexedMod extends Plugin{
             if (teamTimers.containsKey(event.player.uuid())) {
                 teamTimers.remove(event.player.uuid());
                 event.player.team(teamTimers.get(event.player.uuid()));
-                event.player.sendMessage("Твоя база сохранена! Приятной игры!");
+                sendMessage(event.player, "server.base-saved");
                 return;
             }
 
@@ -179,7 +178,7 @@ public class HexedMod extends Plugin{
                 Core.app.post(() -> data.data(event.player).chosen = false);
                 hex.findController();
             }else{
-                Call.infoMessage(event.player.con, "Не найдено свободных хексов для спавна.\nПереключение в режим наблюдателя...");
+                Call.infoMessage(event.player.con, L10NBundle.format("server.no-empty-hex", findLocale(event.player.locale)));
                 event.player.unit().kill();
                 event.player.team(Team.derelict);
             }
@@ -205,7 +204,7 @@ public class HexedMod extends Plugin{
                         return team;
                     }
                 }
-                Call.infoMessage(player.con, "Свободных хексов для спавна не найдено.\nПереключение в режим наблюдателя...");
+                Call.infoMessage(player.con, L10NBundle.format("server.no-empty-hex", findLocale(player.locale)));
                 return Team.derelict;
             }
             return prev.assign(player, players);
@@ -215,22 +214,22 @@ public class HexedMod extends Plugin{
     void updateText(Player player){
         HexTeam team = data.data(player);
 
-        StringBuilder message = new StringBuilder("[white]Хекс #" + team.location.id + "\n");
+        StringBuilder message = new StringBuilder(L10NBundle.format("hex", findLocale(player.locale)) + team.location.id + "\n");
 
         if(!team.lastMessage.get()) return;
 
         if(team.location.controller == null){
             if(team.progressPercent > 0){
-                message.append("[lightgray]Прогресс захвата: [accent]").append((int)(team.progressPercent)).append("%");
+                message.append(L10NBundle.format("capture-progress", findLocale(player.locale))).append((int)(team.progressPercent)).append("%");
             }else{
-                message.append("[lightgray][[Пусто]");
+                message.append(L10NBundle.format("hex-empty", findLocale(player.locale)));
             }
         }else if(team.location.controller == player.team()){
-            message.append("[yellow][[Захвачен]");
+            message.append(L10NBundle.format("hex-captured", findLocale(player.locale)));
         }else if(team.location != null && team.location.controller != null && data.getPlayer(team.location.controller) != null){
-            message.append("[#").append(team.location.controller.color).append("]Захвачен игроком ").append(data.getPlayer(team.location.controller).name);
+            message.append("[#").append(team.location.controller.color).append("]" + L10NBundle.format("hex-captured-by-player", findLocale(player.locale))).append(data.getPlayer(team.location.controller).name);
         }else{
-            message.append("<Неизвестно>");
+            message.append(L10NBundle.format("hex-unknown", findLocale(player.locale)));
         }
 
         Call.setHudText(player.con, message.toString());
@@ -293,7 +292,7 @@ public class HexedMod extends Plugin{
 
         handler.<Player>register("spectate", "Режим наблюдателя. Уничтожает твою базу", (args, player) -> {
             if(player.team() == Team.derelict){
-                player.sendMessage("[scarlet]Ты уже наблюдатель.");
+                sendMessage(player, "commands.already-spectator");
             }else{
                 killTiles(player.team());
                 player.unit().kill();
@@ -303,9 +302,9 @@ public class HexedMod extends Plugin{
 
         handler.<Player>register("captured", "Узнать количество захваченных хексов.", (args, player) -> {
             if(player.team() == Team.derelict){
-                player.sendMessage("[scarlet]Ты наблюдатель. Откуда у тебя могу быть хексы, клоун?");
+                sendMessage(player, "commands.no-hexes-spectator");
             }else{
-                player.sendMessage("[lightgray]Ты захватил[accent] " + data.getControlled(player).size + "[] хексов.");
+                sendMessage(player, "commands.hex-amount", data.getControlled(player).size);
             }
         });
 
@@ -313,31 +312,11 @@ public class HexedMod extends Plugin{
             player.sendMessage(getLeaderboard());
         });
 
-        handler.<Player>register("hexstatus", "Узнать статус хекса.", (args, player) -> {
-            Hex hex = data.data(player).location;
-            if(hex != null){
-                hex.updateController();
-                StringBuilder builder = new StringBuilder();
-                builder.append("| [lightgray]Хекс #").append(hex.id).append("[]\n");
-                String name = hex.controller != null && data.getPlayer(hex.controller) != null ? data.getPlayer(hex.controller).name : "<никто>";
-                builder.append("| [lightgray]Владелец:[] ").append(name).append("\n");
-                for(TeamData data : state.teams.getActive()){
-                    if(hex.getProgressPercent(data.team) > 0){
-                        builder.append("|> [accent]").append(this.data.getPlayer(data.team).name).append("[lightgray]: ")
-                                .append((int)hex.getProgressPercent(data.team)).append("% захвата\n");
-                    }
-                }
-                player.sendMessage(builder.toString());
-            }else{
-                player.sendMessage("[scarlet]Хекс не найден.");
-            }
-        });
-
         handler.<Player>register("hub", "Попасть в Хаб", (args, player) -> {
             String[] ip = new String[]{Core.settings.getString("hub-ip")};
             if(ip[0] == null){
                 Log.err("HUB not defined");
-                Call.infoMessage(player.con(), "Хаб не задан, попробуй позже");
+                sendMessage(player, "commands.hub-not-defined");
                 return;
 
             }
@@ -352,7 +331,7 @@ public class HexedMod extends Plugin{
             }
 
             Vars.net.pingHost(ip[0], port[0], (ignored) -> Call.connect(player.con(), ip[0], port[0]),
-                    e -> Call.infoMessage(player.con(), "Хаб оффлайн, попробуй позже"));
+                    e -> sendMessage(player, "commands.hub-online"));
         });
     }
 
@@ -373,10 +352,10 @@ public class HexedMod extends Plugin{
             boolean dominated = data.getControlled(players.first()).size == data.hexes().size;
 
             for(Player player : Groups.player){
-                Call.infoMessage(player.con, "[accent]--РАУНД ОКОНЧЕН--\n\n[lightgray]"
-                        + (player == players.first() ? "[accent]Ты[] оказался" : "[yellow]" + players.first().name + "[lightgray] оказался") +
-                        " победителем, захватив [accent]" + data.getControlled(players.first()).size + "[lightgray] хексов."
-                        + (dominated ? "" : "\n\nФинальные очки:\n" + builder));
+                Call.infoMessage(player.con, L10NBundle.format("round-over", findLocale(player.locale)) + 
+                        (player == players.first() ? L10NBundle.format("you-won", findLocale(player.locale)) : "[yellow]" + players.first().name + L10NBundle.format("player-won", findLocale(player.locale))) +
+                        L10NBundle.format("winner", findLocale(player.locale)) + data.getControlled(players.first()).size + L10NBundle.format("hexes", findLocale(player.locale))
+                        + (dominated ? "" : L10NBundle.format("final-score", findLocale(player.locale)) + builder));
             }
         }
 
@@ -425,7 +404,7 @@ public class HexedMod extends Plugin{
                     Core.app.post(() -> data.data(p).chosen = false);
                     hex.findController();
                 }else{
-                    Call.infoMessage(p.con, "Не найдено свободных хексов для спавна.\nПереключение в режим наблюдателя...");
+                    Call.infoMessage(p.con, L10NBundle.format("server.no-empty-hex", findLocale(p.locale)));
                     p.unit().kill();
                     p.team(Team.derelict);
                 }
@@ -446,7 +425,7 @@ public class HexedMod extends Plugin{
 
     String getLeaderboard(){
         StringBuilder builder = new StringBuilder();
-        builder.append("[accent]Список лидеров\n[scarlet]").append(lastMin).append("[lightgray] мин. до конца раунда\n\n");
+        builder.append(L10NBundle.format("leaderboard")).append(lastMin).append("[lightgray] мин. до конца раунда\n\n");
         int count = 0;
         for(Player player : data.getLeaderboard()){
             builder.append("[yellow]").append(++count).append(".[white] ")
