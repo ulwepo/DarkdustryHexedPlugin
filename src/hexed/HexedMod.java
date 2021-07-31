@@ -425,11 +425,11 @@ public class HexedMod extends Plugin{
 
     String getLeaderboard(){
         StringBuilder builder = new StringBuilder();
-        builder.append(L10NBundle.format("leaderboard")).append(lastMin).append("[lightgray] мин. до конца раунда\n\n");
+        builder.append("[accent]Список лидеров\n[scarlet]").append(lastMin).append("[lightgray] min. until round ends\n\n");
         int count = 0;
         for(Player player : data.getLeaderboard()){
             builder.append("[yellow]").append(++count).append(".[white] ")
-                    .append(player.name).append("[orange] (").append(data.getControlled(player).size).append(" хексов)\n[white]");
+                    .append(player.name).append("[orange] (").append(data.getControlled(player).size).append(" hexes)\n[white]");
 
             if(count > 4) break;
         }
