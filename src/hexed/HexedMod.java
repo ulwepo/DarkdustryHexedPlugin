@@ -27,6 +27,7 @@ import static arc.util.Log.*;
 import static mindustry.Vars.*;
 
 import java.util.HashMap;
+import java.util.Locale;
 
 public class HexedMod extends Plugin{
     //in seconds
@@ -499,5 +500,19 @@ public class HexedMod extends Plugin{
 
     public boolean active(){
         return state.rules.tags.getBool("hexed") && !state.is(State.menu);
+    }
+
+    public static void sendMessage(Player player, String key, Object... values) {
+        player.sendMessage(L10NBundle.format(key, findLocale(player.locale), values));
+    }
+
+    public static void sendToChat(String key, Object... values) {
+        Groups.player.each(player -> player.sendMessage(L10NBundle.format(key, findLocale(player.locale), values)));
+    }
+
+    private static Locale findLocale(String code) {
+        Locale locale = Structs.find(L10NBundle.supportedLocales, l -> l.toString().equals(code) ||
+                code.startsWith(l.toString()));
+        return locale != null ? locale : L10NBundle.defaultLocale();
     }
 }
