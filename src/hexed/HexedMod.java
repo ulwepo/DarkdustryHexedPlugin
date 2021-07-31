@@ -165,7 +165,6 @@ public class HexedMod extends Plugin{
             if (teamTimers.containsKey(event.player.uuid())) {
                 teamTimers.remove(event.player.uuid());
                 event.player.team(teamTimers.get(event.player.uuid()));
-                sendMessage(event.player, "server.base-saved");
                 return;
             }
 
