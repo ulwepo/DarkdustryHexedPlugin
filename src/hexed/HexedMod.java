@@ -163,7 +163,6 @@ public class HexedMod extends Plugin{
             if(!active() || event.player.team() == Team.derelict) return;
             if (teamTimers.containsKey(event.player.uuid())) {
                 teamTimers.remove(event.player.uuid());
-                event.player.team(teamTimers.get(event.player.uuid()));
                 return;
             }
 
@@ -195,7 +194,7 @@ public class HexedMod extends Plugin{
             Seq<Player> arr = Seq.with(players);
 
             if(active()){
-                //pick first inactive team
+                if (teamTimers.containsKey(player.uuid())) return teamTimers.get(player.uuid());
                 for(Team team : Team.all){
                     if(team.id > 5 && !team.active() && !arr.contains(p -> p.team() == team) && !data.data(team).dying && !data.data(team).chosen && !teamTimers.containsValue(team)) {
                         data.data(team).chosen = true;
