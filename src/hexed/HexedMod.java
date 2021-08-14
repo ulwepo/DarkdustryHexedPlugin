@@ -331,6 +331,7 @@ public class HexedMod extends Plugin{
         restarting = true;
         Seq<Player> players = data.getLeaderboard();
         StringBuilder builder = new StringBuilder();
+        builder.append("\n");
         for(int i = 0; i < players.size && i < 4; i++){
             if(data.getControlled(players.get(i)).size > 1){
                 builder.append("[yellow]").append(i + 1).append(".[accent] ").append(players.get(i).name)
