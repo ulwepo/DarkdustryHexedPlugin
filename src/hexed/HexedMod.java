@@ -348,7 +348,12 @@ public class HexedMod extends Plugin{
                         + (dominated ? "" : L10NBundle.format("final-score", findLocale(player.locale), builder.toString())));
             }
         }
-
+        if (Groups.player.size() > 1) {
+            int score = jsonData.getJSONObject(players.get(0).uuid()).getInt("rating");
+            score++;
+            config.setJsonValue(jsonData.getJSONObject(players.get(0).uuid()), "rating", score);
+            config.saveJsonData(jsonData);
+        }
         Time.runTask(60f * 10f, this::reload);
     }
 
