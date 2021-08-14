@@ -63,6 +63,10 @@ public class HexedMod extends Plugin{
 
     HashMap<String, Team> teamTimers = new HashMap<>();
 
+    //По сути база данных для рейтингов
+    private final JSONObject jsonData;
+    private final ConfigurationManager config;
+
     @Override
     public void init(){
         rules.pvp = true;
@@ -450,6 +454,14 @@ public class HexedMod extends Plugin{
 
     public boolean active(){
         return state.rules.tags.getBool("hexed") && !state.is(State.menu);
+    }
+
+    private void createUserConfig(String uuid) {
+        if (!jsonData.has(uuid)) {
+            Map<String, int> userConfigurations = new HashMap<>();
+            userConfigurations.put("rating", 0);
+            jsonData.put(uuid, userConfigurations);
+        }
     }
 
     public static void sendMessage(Player player, String key, Object... values) {
