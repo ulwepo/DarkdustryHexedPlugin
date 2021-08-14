@@ -253,7 +253,7 @@ public class HexedMod extends Plugin{
 
     @Override
     public void registerServerCommands(CommandHandler handler){
-        handler.register("hexed", "[mode/list]", "Начать хостить в режиме Хексов.", args -> {
+        handler.register("hexed", "<mode/list>", "Начать хостить в режиме Хексов.", args -> {
             if(args.length > 0 && args[0].equalsIgnoreCase("list")){
                 Log.info("Доступные режимы:");
                 for(HexedGenerator.Mode value : HexedGenerator.Mode.values()){
