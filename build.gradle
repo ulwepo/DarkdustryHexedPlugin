@@ -14,6 +14,8 @@ dependencies{
     def version = "v128.1"
     compileOnly "com.github.Anuken.Arc:arc-core:$version"
     compileOnly "com.github.Anuken.Mindustry:core:$version"
+
+    implementation 'org.json:json:20180130'
 }
 
 allprojects{
