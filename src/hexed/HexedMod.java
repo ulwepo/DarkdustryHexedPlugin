@@ -29,6 +29,7 @@ import static mindustry.Vars.*;
 
 import java.util.HashMap;
 import java.util.Locale;
+import java.io.IOException;
 import org.json.JSONObject;
 
 
