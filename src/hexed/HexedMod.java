@@ -312,7 +312,7 @@ public class HexedMod extends Plugin{
         restarting = true;
         Seq<Player> players = data.getLeaderboard();
         StringBuilder builder = new StringBuilder();
-        for(int i = 0; i < players.size && i < 3; i++){
+        for(int i = 0; i < players.size && i < 4; i++){
             if(data.getControlled(players.get(i)).size > 1){
                 builder.append("[yellow]").append(i + 1).append(".[accent] ").append(players.get(i).name)
                         .append("[lightgray] (x").append(data.getControlled(players.get(i)).size).append(")[]\n");
@@ -326,7 +326,7 @@ public class HexedMod extends Plugin{
                 Call.infoMessage(player.con, L10NBundle.format("round-over", findLocale(player.locale)) + 
                         (player == players.first() ? L10NBundle.format("you-won", findLocale(player.locale)) : "[yellow]" + players.first().name + L10NBundle.format("player-won", findLocale(player.locale))) +
                         L10NBundle.format("winner", findLocale(player.locale)) + data.getControlled(players.first()).size + L10NBundle.format("hexes", findLocale(player.locale))
-                        + (dominated ? "" : L10NBundle.format("final-score", findLocale(player.locale)) + builder));
+                        + (dominated ? "" : L10NBundle.format("final-score", findLocale(player.locale), builder.toString()));
             }
         }
 
