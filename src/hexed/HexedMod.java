@@ -28,6 +28,8 @@ import static mindustry.Vars.*;
 
 import java.util.HashMap;
 import java.util.Locale;
+import org.json.JSONObject;
+
 
 public class HexedMod extends Plugin{
     //in seconds
@@ -458,7 +460,7 @@ public class HexedMod extends Plugin{
 
     private void createUserConfig(String uuid) {
         if (!jsonData.has(uuid)) {
-            Map<String, int> userConfigurations = new HashMap<>();
+            HashMap<String, int> userConfigurations = new HashMap<>();
             userConfigurations.put("rating", 0);
             jsonData.put(uuid, userConfigurations);
         }
