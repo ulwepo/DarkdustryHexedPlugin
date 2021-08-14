@@ -67,9 +67,13 @@ public class HexedMod extends Plugin{
     HashMap<String, Team> teamTimers = new HashMap<>();
 
     //По сути база данных для рейтингов
-    private final ConfigurationManager config  = new ConfigurationManager();
-    private final JSONObject jsonData = config.getJsonData();
+    private final ConfigurationManager config;
+    private final JSONObject jsonData;
     
+    public HexedMod() throws IOException {
+        this.config  = new ConfigurationManager();
+        this.jsonData = config.getJsonData();
+    }
     @Override
     public void init(){
         rules.pvp = true;
