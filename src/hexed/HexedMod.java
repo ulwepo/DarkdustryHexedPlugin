@@ -326,7 +326,7 @@ public class HexedMod extends Plugin{
                 Call.infoMessage(player.con, L10NBundle.format("round-over", findLocale(player.locale)) + 
                         (player == players.first() ? L10NBundle.format("you-won", findLocale(player.locale)) : "[yellow]" + players.first().name + L10NBundle.format("player-won", findLocale(player.locale))) +
                         L10NBundle.format("winner", findLocale(player.locale)) + data.getControlled(players.first()).size + L10NBundle.format("hexes", findLocale(player.locale))
-                        + (dominated ? "" : L10NBundle.format("final-score", findLocale(player.locale), builder.toString()));
+                        + (dominated ? "" : L10NBundle.format("final-score", findLocale(player.locale), builder.toString())));
             }
         }
 
