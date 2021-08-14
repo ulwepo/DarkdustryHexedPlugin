@@ -2,8 +2,8 @@ apply plugin: "java"
 
 sourceCompatibility = 1.8
 
-sourceSets.main.java.srcDirs = ["src"]
-sourceSets.main.resources.srcDirs = ["assets"]
+sourceSets.main.java.srcDirs = ["src/hexed"]
+sourceSets.main.resources.srcDirs = ["src/resources"]
 
 repositories{
     mavenCentral()
@@ -31,9 +31,5 @@ jar{
 
     from{
         configurations.runtimeClasspath.collect{it.isDirectory() ? it : zipTree(it)}
-    }
-
-    from(rootDir){
-        include "plugin.hjson"
     }
 }
