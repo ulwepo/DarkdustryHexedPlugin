@@ -19,6 +19,7 @@ import mindustry.maps.Map;
 import mindustry.mod.*;
 import mindustry.net.Packets.*;
 import mindustry.net.WorldReloader;
+import mindustry.net.Administration;
 import mindustry.type.*;
 import mindustry.world.*;
 import mindustry.world.blocks.storage.*;
@@ -66,9 +67,9 @@ public class HexedMod extends Plugin{
     HashMap<String, Team> teamTimers = new HashMap<>();
 
     //По сути база данных для рейтингов
-    private final JSONObject jsonData;
-    private final ConfigurationManager config;
-
+    private final ConfigurationManager config  = new ConfigurationManager();
+    private final JSONObject jsonData = config.getJsonData();
+    
     @Override
     public void init(){
         rules.pvp = true;
@@ -107,6 +108,9 @@ public class HexedMod extends Plugin{
                         endGame();
                         break;
                     }
+                    createUserConfig(event.player.uuid());
+                    int score = jsonData.getJSONObject(player.uuid()).getBoolean("rating");
+                    player.name = Strings.format("[sky]@[lime]#[][] @", score, player.getInfo().lastName);
                 }
 
                 int minsToGo = (int)(roundTime - counter) / 60 / 60;
@@ -171,6 +175,10 @@ public class HexedMod extends Plugin{
                 teamTimers.remove(event.player.uuid());
                 return;
             }
+
+            createUserConfig(event.player.uuid());
+            int score = jsonData.getJSONObject(player.uuid()).getBoolean("rating");
+            player.name = Strings.format("[sky]@[lime]#[][] @", score, player.getInfo().lastName);
 
             Seq<Hex> copy = data.hexes().copy();
             copy.shuffle();
