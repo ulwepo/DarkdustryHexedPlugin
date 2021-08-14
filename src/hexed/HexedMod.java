@@ -108,8 +108,8 @@ public class HexedMod extends Plugin{
                         endGame();
                         break;
                     }
-                    createUserConfig(event.player.uuid());
-                    int score = jsonData.getJSONObject(player.uuid()).getBoolean("rating");
+                    createUserConfig(player.uuid());
+                    int score = jsonData.getJSONObject(player.uuid()).getInt("rating");
                     player.name = Strings.format("[sky]@[lime]#[][] @", score, player.getInfo().lastName);
                 }
 
@@ -177,8 +177,8 @@ public class HexedMod extends Plugin{
             }
 
             createUserConfig(event.player.uuid());
-            int score = jsonData.getJSONObject(player.uuid()).getBoolean("rating");
-            player.name = Strings.format("[sky]@[lime]#[][] @", score, player.getInfo().lastName);
+            int score = jsonData.getJSONObject(event.player.uuid()).getInt("rating");
+            player.name = Strings.format("[sky]@[lime]#[][] @", score, event.player.getInfo().lastName);
 
             Seq<Hex> copy = data.hexes().copy();
             copy.shuffle();
