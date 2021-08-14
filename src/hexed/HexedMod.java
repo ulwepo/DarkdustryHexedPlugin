@@ -183,7 +183,7 @@ public class HexedMod extends Plugin{
 
             createUserConfig(event.player.uuid());
             int score = jsonData.getJSONObject(event.player.uuid()).getInt("rating");
-            player.name = Strings.format("[sky]@[lime]#[][] @", score, event.player.getInfo().lastName);
+            event.player.name = Strings.format("[sky]@[lime]#[][] @", score, event.player.getInfo().lastName);
 
             Seq<Hex> copy = data.hexes().copy();
             copy.shuffle();
