@@ -460,7 +460,7 @@ public class HexedMod extends Plugin{
 
     private void createUserConfig(String uuid) {
         if (!jsonData.has(uuid)) {
-            HashMap<String, int> userConfigurations = new HashMap<>();
+            HashMap<String, Integer> userConfigurations = new HashMap<>();
             userConfigurations.put("rating", 0);
             jsonData.put(uuid, userConfigurations);
         }
