@@ -440,7 +440,7 @@ public class HexedMod extends Plugin{
                 Tile tile = world.tile(x, y);
                 if(tile.build != null && tile.team() == team){
                     Time.run(Mathf.random(60f * 6), () -> {
-                        if(tile.block != Blocks.air) tile.removeNet();
+                        if(tile.block() != Blocks.air) tile.removeNet();
                     });
                 }
             }
