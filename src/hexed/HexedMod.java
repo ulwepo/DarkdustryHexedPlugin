@@ -439,7 +439,9 @@ public class HexedMod extends Plugin{
             for(int y = 0; y < world.height(); y++){
                 Tile tile = world.tile(x, y);
                 if(tile.build != null && tile.team() == team){
-                    Time.run(Mathf.random(60f * 6), tile.build::kill);
+                    Time.run(Mathf.random(60f * 6), () -> {
+                        if(tile.block != Blocks.air) tile.removeNet();
+                    });
                 }
             }
         }
