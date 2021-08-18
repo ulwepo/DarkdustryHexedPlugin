@@ -1,7 +1,9 @@
 # HexedPlugin 
 
-## Никакой сервер не имеет права использовать данный плагин без разрешения владельца 
-Плагин является модификацией Anuken/HexedPlugin
+## TODO:
+- [ ] Локализовать лидерборд
+- [ ] Сделать команду /lb (топ-10 игроков сервера)
+- [ ] Сохранение никнеймов игроков в джсон вместе с рейтингом (для сайта)
 
 ## Building
 First, make sure you have JDK 14 installed. Then, setup [plugin.json](src/main/resources/plugin.json) and run the following commands:
