@@ -69,12 +69,12 @@ public class HexedMod extends Plugin{
 
     //По сути база данных для рейтингов
     private final ConfigurationManager config;
-    private final JSONObject jsonData;
-    
+    private final JSONObject jsonData;  
     public HexedMod() throws IOException {
         this.config  = new ConfigurationManager();
         this.jsonData = config.getJsonData();
     }
+
     @Override
     public void init(){
         rules.pvp = true;
@@ -124,7 +124,7 @@ public class HexedMod extends Plugin{
                 }
 
                 if(interval.get(timerBoard, leaderboardTime)){
-                    Call.infoToast(getLeaderboard(), 15f);
+                    Groups.player.each(player -> Call.infoToast(player.con, getLeaderboard(player), 15f));
                 }
 
                 if(interval.get(timerUpdate, updateTime)){
@@ -263,7 +263,7 @@ public class HexedMod extends Plugin{
             }
 
             if(!state.is(State.menu)){
-                Log.err("Сначала выключи сервер, клоун.");
+                Log.err("Сначала останови сервер!");
                 return;
             }
 
@@ -321,7 +321,7 @@ public class HexedMod extends Plugin{
         });
 
         handler.<Player>register("leaderboard", "Показать таблицу лидеров.", (args, player) -> {
-            player.sendMessage(getLeaderboard());
+            player.sendMessage(getLeaderboard(player));
         });
     }
 
@@ -419,7 +419,7 @@ public class HexedMod extends Plugin{
         restarting = false;
     }
 
-    String getLeaderboard(){
+    String getLeaderboard(Player player){
         StringBuilder builder = new StringBuilder();
         builder.append("[accent]Leaderboard\n[scarlet]").append(lastMin).append("[lightgray] min. remaining\n\n");
         int count = 0;
