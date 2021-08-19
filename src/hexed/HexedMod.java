@@ -419,13 +419,13 @@ public class HexedMod extends Plugin{
         restarting = false;
     }
 
-    String getLeaderboard(Player player){
+    String getLeaderboard(Player pl){
         StringBuilder builder = new StringBuilder();
-        builder.append("[accent]Leaderboard\n[scarlet]").append(lastMin).append("[lightgray] min. remaining\n\n");
+        builder.append(L10NBundle.format("leaderboard.header", findLocale(pl.locale))).append(lastMin).append(L10NBundle.format("leaderboard.time", findLocale(pl.locale)));
         int count = 0;
         for(Player player : data.getLeaderboard()){
             builder.append("[yellow]").append(++count).append(".[white] ")
-                    .append(player.name).append("[orange] (").append(data.getControlled(player).size).append(" hexes)\n[white]");
+                    .append(player.name).append("[orange] (").append(data.getControlled(player).size).append(L10NBundle.format("leaderboard.hexes", findLocale(pl.locale)));
 
             if(count > 4) break;
         }
