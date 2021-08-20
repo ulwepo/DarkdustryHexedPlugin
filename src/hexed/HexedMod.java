@@ -302,7 +302,7 @@ public class HexedMod extends Plugin{
         if(registered) return;
         registered = true;
 
-        handler.<Player>register("spectate", "Режим наблюдателя. Уничтожает твою базу", (args, player) -> {
+        handler.<Player>register("spectator", "Режим наблюдателя. Уничтожает твою базу", (args, player) -> {
             if(player.team() == Team.derelict){
                 sendMessage(player, "commands.already-spectator");
             }else{
