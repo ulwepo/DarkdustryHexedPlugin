@@ -2,14 +2,12 @@ import groovy.json.*
 
 apply plugin: 'java'
 
-sourceCompatibility = 14
-targetCompatibility = 1.8
-
 compileJava.options.encoding = "UTF-8"
 compileTestJava.options.encoding = "UTF-8"
 
+
 sourceSets.main {
-    java.srcDirs = ['src/hexed']
+    java.srcDirs = ['src/java']
     resources.srcDirs = ['src/resources']
 }
 
@@ -27,24 +25,17 @@ ext {
 
     versions = [:]
     versions.mindustry = 'v' + plugin.minGameVersion
-    versions.jabel = '0.3.1'
 }
 
 dependencies {
     implementation 'org.json:json:20180130'
+    implementation 'org.mongodb:mongodb-driver-reactivestreams:4.2.3'
+    implementation 'org.slf4j:slf4j-log4j12:2.0.0-alpha4'
     compileOnly "com.github.Anuken.Arc:arc-core:$versions.mindustry"
     compileOnly "com.github.Anuken.Mindustry:core:$versions.mindustry"
-
-    annotationProcessor "com.github.MindustryInside:jabel:$versions.jabel"
 }
 
 tasks.withType(JavaCompile) {
-    if (JavaVersion.current() != JavaVersion.VERSION_1_8) {
-        options.compilerArgs = ['--release', '8', '--enable-preview']
-    }
-
-    options.compilerArgs << '-Xplugin:jabel'
-
     doFirst {
         options.compilerArgs = options.compilerArgs.findAll{ it != '--enable-preview' }
     }

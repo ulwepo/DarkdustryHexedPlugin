@@ -1,36 +1,59 @@
 package hexed;
 
-import arc.*;
-import arc.math.*;
-import arc.struct.*;
-import arc.util.*;
-import hexed.HexData.*;
-import mindustry.Vars;
-import mindustry.content.*;
-import mindustry.core.GameState.*;
-import mindustry.core.NetServer.*;
-import mindustry.game.EventType.*;
-import mindustry.game.*;
-import mindustry.game.Schematic.*;
-import mindustry.game.Teams.*;
-import mindustry.gen.*;
-import mindustry.io.TypeIO;
-import mindustry.maps.Map;
-import mindustry.mod.*;
-import mindustry.net.Packets.*;
-import mindustry.net.WorldReloader;
-import mindustry.net.Administration;
-import mindustry.type.*;
-import mindustry.world.*;
-import mindustry.world.blocks.storage.*;
+import static arc.util.Log.info;
+import static mindustry.Vars.logic;
+import static mindustry.Vars.netServer;
+import static mindustry.Vars.state;
+import static mindustry.Vars.tilesize;
+import static mindustry.Vars.world;
 
-import static arc.util.Log.*;
-import static mindustry.Vars.*;
-
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Locale;
-import java.io.IOException;
+
+import com.mongodb.reactivestreams.client.MongoClient;
+import com.mongodb.reactivestreams.client.MongoCollection;
+
+import org.bson.Document;
+import org.json.JSONException;
 import org.json.JSONObject;
+
+import arc.Core;
+import arc.Events;
+import arc.math.Mathf;
+import arc.struct.Seq;
+import arc.util.CommandHandler;
+import arc.util.Interval;
+import arc.util.Log;
+import arc.util.Strings;
+import arc.util.Structs;
+import arc.util.Time;
+import arc.util.Timer;
+import hexed.HexData.HexCaptureEvent;
+import hexed.HexData.HexMoveEvent;
+import hexed.HexData.HexTeam;
+import hexed.HexData.ProgressIncreaseEvent;
+import mindustry.content.Blocks;
+import mindustry.content.Items;
+import mindustry.core.GameState.State;
+import mindustry.core.NetServer.TeamAssigner;
+import mindustry.game.EventType.BlockDestroyEvent;
+import mindustry.game.EventType.PlayerJoin;
+import mindustry.game.EventType.PlayerLeave;
+import mindustry.game.EventType.Trigger;
+import mindustry.game.Rules;
+import mindustry.game.Schematic;
+import mindustry.game.Schematic.Stile;
+import mindustry.game.Schematics;
+import mindustry.game.Team;
+import mindustry.gen.Call;
+import mindustry.gen.Groups;
+import mindustry.gen.Player;
+import mindustry.gen.Unit;
+import mindustry.mod.Plugin;
+import mindustry.type.ItemStack;
+import mindustry.world.Tile;
+import mindustry.world.blocks.storage.CoreBlock;
 
 
 public class HexedMod extends Plugin{
@@ -40,17 +63,13 @@ public class HexedMod extends Plugin{
     public static final float healthRequirement = 35000;
     //item requirement to captured a hex
     public static final int itemRequirement = 1500;
-
     public static final int messageTime = 1;
     //in ticks: 60 minutes
     private final static int roundTime = 60 * 60 * 90;
     //in ticks: 3 minutes
     private final static int leaderboardTime = 60 * 60 * 2;
-
     private final static int updateTime = 60 * 2;
-
     private final static int winCondition = 25;
-
     private final static int timerBoard = 0, timerUpdate = 1, timerWinCheck = 2;
 
     protected static HexedGenerator.Mode mode;
@@ -65,14 +84,26 @@ public class HexedMod extends Plugin{
     private double counter = 0f;
     private int lastMin;
 
-    HashMap<String, Team> teamTimers = new HashMap<>();
+    private HashMap<String, Team> teamTimers = new HashMap<>();
 
     //По сути база данных для рейтингов
     private final ConfigurationManager config;
-    private final JSONObject jsonData;  
+    private JSONObject jsonData;
+    // Начинания mongodb
+    private MongoClient dataBase;
+    private MongoCollection<Document> reitings;
+
+
     public HexedMod() throws IOException {
+        // TODO: подключить базу данных mongodb
         this.config  = new ConfigurationManager();
         this.jsonData = config.getJsonData();
+        try {
+            // this.dataBase = MongoClients.create(this.jsonData.getString("mongoURI"));
+            // this.reitings = this.dataBase.getDatabase("test").getCollection("test");
+        } catch (JSONException error) {
+            Log.err(error);
+        }
     }
 
     @Override

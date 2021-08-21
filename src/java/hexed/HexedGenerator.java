@@ -1,22 +1,32 @@
 package hexed;
 
+import static hexed.HexedMod.mode;
+import static mindustry.Vars.maps;
+import static mindustry.Vars.state;
+
 import arc.func.Cons;
-import arc.math.*;
-import arc.math.geom.*;
-import arc.struct.*;
-import arc.util.*;
+import arc.math.Angles;
+import arc.math.Mathf;
+import arc.math.geom.Bresenham2;
+import arc.math.geom.Geometry;
+import arc.math.geom.Intersector;
+import arc.math.geom.Point2;
+import arc.struct.IntSeq;
+import arc.struct.Seq;
+import arc.struct.StringMap;
+import arc.util.Reflect;
+import arc.util.Structs;
+import arc.util.Tmp;
 import arc.util.noise.Simplex;
-import mindustry.Vars;
 import mindustry.content.Blocks;
 import mindustry.maps.Map;
-import mindustry.maps.filters.*;
+import mindustry.maps.filters.GenerateFilter;
 import mindustry.maps.filters.GenerateFilter.GenerateInput;
-import mindustry.world.*;
-
-import java.sql.Ref;
-
-import static hexed.HexedMod.mode;
-import static mindustry.Vars.*;
+import mindustry.maps.filters.OreFilter;
+import mindustry.maps.filters.RiverNoiseFilter;
+import mindustry.world.Block;
+import mindustry.world.Tile;
+import mindustry.world.Tiles;
 
 public class HexedGenerator implements Cons<Tiles>{
     public int width = Hex.size, height = Hex.size;
