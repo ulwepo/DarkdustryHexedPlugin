@@ -16,6 +16,7 @@ public class MongoEvents {
     }
 
     public void fireEvent(Class<?> event, Object... callParams) throws IOException {
+        if (!listeners.containsKey(event)) return;
         listeners.get(event).forEach((listener) -> {
             try {
                 listener.call(event.getDeclaredConstructors()[0].newInstance(callParams));
