@@ -11,7 +11,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Locale;
 
+import com.mongodb.ConnectionString;
+import com.mongodb.MongoClientSettings;
 import com.mongodb.reactivestreams.client.MongoClient;
+import com.mongodb.reactivestreams.client.MongoClients;
 import com.mongodb.reactivestreams.client.MongoCollection;
 
 import org.bson.Document;
@@ -33,6 +36,9 @@ import hexed.HexData.HexCaptureEvent;
 import hexed.HexData.HexMoveEvent;
 import hexed.HexData.HexTeam;
 import hexed.HexData.ProgressIncreaseEvent;
+import hexed.database.ArrowSubscriber;
+import hexed.models.ServerStatistics;
+import mindustry.Vars;
 import mindustry.content.Blocks;
 import mindustry.content.Items;
 import mindustry.core.GameState.State;
@@ -51,6 +57,7 @@ import mindustry.gen.Groups;
 import mindustry.gen.Player;
 import mindustry.gen.Unit;
 import mindustry.mod.Plugin;
+import mindustry.net.Administration.Config;
 import mindustry.type.ItemStack;
 import mindustry.world.Tile;
 import mindustry.world.blocks.storage.CoreBlock;
@@ -89,19 +96,58 @@ public class HexedMod extends Plugin{
     //По сути база данных для рейтингов
     private final ConfigurationManager config;
     private JSONObject jsonData;
-    // Начинания mongodb
-    private MongoClient dataBase;
-    private MongoCollection<Document> reitings;
+    private MongoCollection<Document> reitingsCollection;
+    private ServerStatistics statistics;
+    private JSONObject reitingsDatabase;
 
 
     public HexedMod() throws IOException {
-        // TODO: подключить базу данных mongodb
         this.config  = new ConfigurationManager();
         this.jsonData = config.getJsonData();
+
         try {
-            // this.dataBase = MongoClients.create(this.jsonData.getString("mongoURI"));
-            // this.reitings = this.dataBase.getDatabase("test").getCollection("test");
-        } catch (JSONException error) {
+            ConnectionString connString = new ConnectionString(this.jsonData.getString("mongoURI"));
+        
+            MongoClientSettings settings = MongoClientSettings.builder()
+                .applyConnectionString(connString)
+                .retryWrites(true)
+                .build();
+            MongoClient mongodb = MongoClients.create(settings);
+            reitingsCollection = mongodb
+                .getDatabase(jsonData.getString("dbName"))
+                .getCollection(jsonData.getString("dbCollection"));
+            statistics = new ServerStatistics(reitingsCollection);
+
+            reitingsCollection.find(new Document("port", Vars.port)).subscribe(new ArrowSubscriber<>(
+                subscribe -> subscribe.request(1),
+                next -> {
+                    if (next == null) {
+                        statistics.create(Config.port.num(), "I DONT KNOOOOWWWW", "{}");
+                        reitingsDatabase = new JSONObject("{}");
+                        return;
+                    }
+
+                    Document statisticsDocument = statistics.tryApplySchema(next);
+
+                    if (statisticsDocument == null) {
+                        reitingsCollection
+                            .findOneAndDelete(new Document("_id", next.getObjectId("_id")))
+                            .subscribe(new ArrowSubscriber<Document>());
+                        statistics.create(Config.port.num(), "I DONT KNOOOOWWWW", "{}");
+                        reitingsDatabase = new JSONObject("{}");
+                        return;
+                    }
+
+                    reitingsDatabase = new JSONObject(next.getString("serverSharedData"));
+                },
+                null,
+                null
+            ));
+
+            while (reitingsDatabase == null) {
+                Thread.sleep(500);
+            }
+        } catch (JSONException | InterruptedException error) {
             Log.err(error);
         }
     }
@@ -118,9 +164,6 @@ public class HexedMod extends Plugin{
         rules.enemyCoreBuildRadius = (Hex.diameter) * tilesize / 2f;
         rules.unitDamageMultiplier = 1.4f;
         rules.canGameOver = false;
-        //Если включить это, то после выхода игрока с
-        //сервера на его месте появится дереликтовое ядро
-        //Смотрите баг #3
         rules.coreCapture = false;
 
         start = Schematics.readBase64("bXNjaAF4nE2SS5LTMBCGW7JsPZxkJgfxPdizpFhoHEGlymO5ZIdhdlyFK1DFPcJ9gNCtP1WMlejXo/tTd0vU07EhM8fnROFd+ppO77dYNupPaR3LednOeSaibopPaVrp8OH6/frz17frD+k/7qkf87KkMrzEaaLjm8kwxfI5kRvz/CW95kJ2HeO2pUL9mnlvWOKcJmpiGck+1Z1X6p7TfGITd5mnHGW0G3NJw3wZp3RZ6fjG9X5AWPILHznnU6I+nsvwKY5bZhZR4j+p+iPNjT8DaSEdaVFLdeognuoXID1kB8oeswcxVBgrGTTcGSxWpgJTganAVMI0LD1kh8U77JG0+h8cNwYxt4ZemRpMDaYGU4OpwdTCtCx7UA4C1nKCZRQ7NSRNO+7alr21ZzsnyRpx7Xi9+hhUp6ZkWVophKGDU7e/hDrWsI2E3SHiAAeZVUYLkw5l6qRMvWTimtsfotvvGr3E0lHfUq2Hpb26l9TCSZJhE1tNfF1nqsSsJSlJRBsWA6n36lAv8ariIB57tV4O93q/ao9HIgZM8YB5wDxgHjAPmAfMA+ZRfI8L9ZK9yANMHkUCXktARQPQAegAdAA6AB3w/gLiDEAHvL+AE4Kc8A/s5VeN");
@@ -145,7 +188,7 @@ public class HexedMod extends Plugin{
                         break;
                     }
                     createUserConfig(player.uuid());
-                    int score = jsonData.getJSONObject(player.uuid()).getInt("rating");
+                    int score = reitingsDatabase.getJSONObject(player.uuid()).getInt("rating");
                     player.name = Strings.format("[sky]@[lime]#[][] @", score, player.getInfo().lastName);
                 }
 
@@ -171,7 +214,6 @@ public class HexedMod extends Plugin{
 
                 counter += Time.delta;
 
-                //kick everyone and restart the script
                 if(counter > roundTime){
                     endGame();
                 }
@@ -181,7 +223,6 @@ public class HexedMod extends Plugin{
         });
 
         Events.on(BlockDestroyEvent.class, event -> {
-            //reset last spawn times so this hex becomes vacant for a while.
             if(event.tile.block() instanceof CoreBlock){
                 Hex hex = data.getHex(event.tile.pos());
 
@@ -213,7 +254,7 @@ public class HexedMod extends Plugin{
             }
 
             createUserConfig(event.player.uuid());
-            int score = jsonData.getJSONObject(event.player.uuid()).getInt("rating");
+            int score = reitingsDatabase.getJSONObject(event.player.uuid()).getInt("rating");
             event.player.name = Strings.format("[sky]@[lime]#[][] @", score, event.player.getInfo().lastName);
 
             Seq<Hex> copy = data.hexes().copy();
@@ -381,10 +422,10 @@ public class HexedMod extends Plugin{
             }
         }
         if (Groups.player.size() > 1) {
-            int score = jsonData.getJSONObject(players.get(0).uuid()).getInt("rating");
+            int score = reitingsDatabase.getJSONObject(players.get(0).uuid()).getInt("rating");
             score++;
-            config.setJsonValue(jsonData.getJSONObject(players.get(0).uuid()), "rating", score);
-            config.saveJsonData(jsonData);
+            config.setJsonValue(reitingsDatabase.getJSONObject(players.get(0).uuid()), "rating", score);
+            saveToDatabase();
         }
         Time.runTask(60f * 10f, this::reload);
     }
@@ -511,10 +552,10 @@ public class HexedMod extends Plugin{
     }
 
     private void createUserConfig(String uuid) {
-        if (!jsonData.has(uuid)) {
+        if (!reitingsDatabase.has(uuid)) {
             HashMap<String, Integer> userConfigurations = new HashMap<>();
             userConfigurations.put("rating", 0);
-            jsonData.put(uuid, userConfigurations);
+            reitingsDatabase.put(uuid, userConfigurations);
         }
     }
 
@@ -530,5 +571,29 @@ public class HexedMod extends Plugin{
         Locale locale = Structs.find(L10NBundle.supportedLocales, l -> l.toString().equals(code) ||
                 code.startsWith(l.toString()));
         return locale != null ? locale : L10NBundle.defaultLocale();
+    }
+
+    private void saveToDatabase() {
+        reitingsCollection.find(new Document("port", Vars.port)).subscribe(new ArrowSubscriber<>(
+            subscribe -> subscribe.request(1),
+            next -> {
+                if (next == null) {
+                    next = statistics.create(Config.port.num(), "I DONT KNOOOOWWWW", "{}");
+                }
+
+                Document statisticsDocument = statistics.tryApplySchema(next);
+
+                if (statisticsDocument == null) {
+                    reitingsCollection
+                        .findOneAndDelete(new Document("_id", next.getObjectId("_id")))
+                        .subscribe(new ArrowSubscriber<Document>());
+                    next = statistics.create(Config.port.num(), "I DONT KNOOOOWWWW", "{}");
+                }
+
+                next.replace("serverSharedData", reitingsDatabase.toString());
+            },
+            null,
+            null
+        ));
     }
 }

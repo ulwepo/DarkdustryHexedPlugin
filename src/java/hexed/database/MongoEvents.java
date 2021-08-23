@@ -1,26 +1,25 @@
 package hexed.database;
 
-import java.lang.reflect.InvocationTargetException;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
 @SuppressWarnings("unchecked")
 public class MongoEvents {
-    public Map<Class<?>, HashSet<MongoListener<Object>>> listeners = new HashMap<>();
+    public Map<Class<?>, HashSet<Callback<Object>>> listeners = new HashMap<>();
 
-    public <T extends Object> void addListener(Class<?> event, MongoListener<T> listener) {
+    public <T extends Object> void addListener(Class<?> event, Callback<T> listener) {
         if (listeners.get(event) == null)
-            listeners.put(event, new HashSet<MongoListener<Object>>());
-        listeners.get(event).add((MongoListener<Object>) listener);
+            listeners.put(event, new HashSet<Callback<Object>>());
+        listeners.get(event).add((Callback<Object>) listener);
     }
 
-    public void fireEvent(Class<?> event, Object... callParams) {
+    public void fireEvent(Class<?> event, Object... callParams) throws IOException {
         listeners.get(event).forEach((listener) -> {
             try {
                 listener.call(event.getDeclaredConstructors()[0].newInstance(callParams));
-            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-                    | InvocationTargetException | SecurityException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         });

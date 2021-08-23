@@ -9,6 +9,7 @@ import com.mongodb.reactivestreams.client.MongoDatabase;
 
 import org.bson.Document;
 
+import hexed.database.ArrowSubscriber;
 import hexed.models.ServerStatistics;
 
 public class Main {
@@ -25,6 +26,13 @@ public class Main {
 
         ServerStatistics statistics = new ServerStatistics(collection);
 
-        statistics.create(3000, "ТД", "bruh");
+        collection.find(new Document("__v", 1000)).subscribe(new ArrowSubscriber<Document>(
+                subscribe -> subscribe.request(1),
+                next -> {
+                    System.out.println(statistics.canApplySchema(next));
+                    System.out.println(statistics.tryApplySchema(next));
+                }, null, null
+            )
+        );
     }
 }

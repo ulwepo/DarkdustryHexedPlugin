@@ -1,3 +1,5 @@
 {
-    "mongoURI": ""
+    "mongoURI": "mongodb://127.0.0.1",
+    "dbName": "darkdustry",
+    "dbCollection": "statistics"
 }

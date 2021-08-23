@@ -10,8 +10,6 @@ import com.mongodb.reactivestreams.client.MongoCollection;
 
 import org.bson.Document;
 import org.bson.types.ObjectId;
-import org.reactivestreams.Subscriber;
-import org.reactivestreams.Subscription;
 
 import hexed.database.events.OnComplete;
 import hexed.database.events.OnError;
@@ -70,28 +68,54 @@ public class MongoSchema<R, N> extends MongoEvents {
         Document insertDocument = new Document(insertMap);
         MongoSchema<R, N> self = this;
         
-        this.collection.insertOne(insertDocument).subscribe(new Subscriber<InsertOneResult>() {
-            @Override
-            public void onNext(InsertOneResult t) {
-                self.fireEvent(OnNext.class, t);
-            }
-
-            @Override
-            public void onSubscribe(Subscription s) {
-                self.fireEvent(OnSubscribe.class, s);
-            }
-
-            @Override
-            public void onComplete() {
-                self.fireEvent(OnComplete.class);
-            }
-
-            @Override
-            public void onError(Throwable t) {
-                self.fireEvent(OnError.class, t);
-            }
-        });
+        this.collection.insertOne(insertDocument).subscribe(new ArrowSubscriber<InsertOneResult>(
+            subscribe -> self.fireEvent(OnSubscribe.class, subscribe),
+            next -> self.fireEvent(OnNext.class, next),
+            complete -> self.fireEvent(OnComplete.class, complete),
+            error -> self.fireEvent(OnError.class, error)
+        ));
 
         return insertDocument;
+    }
+
+    public Document applySchema(Document document) throws IllegalArgumentException {
+        Document newDocument = new Document()
+            .append("_id", document.get("_id"))
+            .append("__v", document.get("__v"));
+        this.schema.forEach((accessor) -> {
+            String accessorKey = accessor.getKey();
+            Object documentData = document.get(accessorKey);
+            
+            if (accessor.isValidData(documentData == null ? null : documentData.getClass())) {
+                newDocument.append(accessorKey, documentData);
+                return;
+            }
+
+            if (accessor instanceof NonRequired<?> nonrequired) {
+                if (nonrequired.hasDefault()) newDocument.append(accessorKey, nonrequired.getDefaultValue());
+                return;
+            }
+
+            throw new IllegalArgumentException("Невозможно пропарсить ключ \"" + accessorKey + "\", который является обязательным\n" + document.toJson());
+        });
+
+        return newDocument;
+    }
+
+    public boolean canApplySchema(Document document) {
+        try {
+            this.applySchema(document);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public Document tryApplySchema(Document document) {
+        try {
+            return this.applySchema(document);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

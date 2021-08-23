@@ -19,9 +19,8 @@ public class ServerStatistics extends MongoSchema<String, Object> {
         );
     }
 
-    public void create(Integer port, String name, String serverSharedData) {
-        this.create(Map.of(
-            
+    public Document create(Integer port, String name, String serverSharedData) {
+        return this.create(Map.of(
             "port", port,
             "name", name,
             "serverSharedData", serverSharedData
