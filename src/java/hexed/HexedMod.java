@@ -377,7 +377,7 @@ public class HexedMod extends Plugin{
 
             for(Player player : Groups.player){
                 Call.infoMessage(player.con, Bundle.format("round-over", findLocale(player.locale)) + 
-                        (player == players.first() ? L10NBundle.format("you-won", findLocale(player.locale)) : "[yellow]" + players.first().name + Bundle.format("player-won", findLocale(player.locale))) +
+                        (player == players.first() ? Bundle.format("you-won", findLocale(player.locale)) : "[yellow]" + players.first().name + Bundle.format("player-won", findLocale(player.locale))) +
                         Bundle.format("winner", findLocale(player.locale)) + data.getControlled(players.first()).size + Bundle.format("hexes", findLocale(player.locale))
                         + (dominated ? "" : Bundle.format("final-score", findLocale(player.locale), builder.toString())));
             }
@@ -457,7 +457,7 @@ public class HexedMod extends Plugin{
                     Core.app.post(() -> data.data(p).chosen = false);
                     hex.findController();
                 }else{
-                    Call.infoMessage(p.con, L10NBundle.format("server.no-empty-hex", findLocale(p.locale)));
+                    Call.infoMessage(p.con, Bundle.format("server.no-empty-hex", findLocale(p.locale)));
                     p.unit().kill();
                     p.team(Team.derelict);
                 }
@@ -549,9 +549,9 @@ public class HexedMod extends Plugin{
     }
 
     private static Locale findLocale(String code) {
-        Locale locale = Structs.find(L10NBundle.supportedLocales, l -> l.toString().equals(code) ||
+        Locale locale = Structs.find(Bundle.supportedLocales, l -> l.toString().equals(code) ||
                 code.startsWith(l.toString()));
-        return locale != null ? locale : L10NBundle.defaultLocale();
+        return locale != null ? locale : Bundle.defaultLocale();
     }
 
     private void saveToDatabase() {
