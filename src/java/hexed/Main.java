@@ -26,13 +26,29 @@ public class Main {
 
         ServerStatistics statistics = new ServerStatistics(collection);
 
-        collection.find(new Document("__v", 1000)).subscribe(new ArrowSubscriber<Document>(
-                subscribe -> subscribe.request(1),
-                next -> {
-                    System.out.println(statistics.canApplySchema(next));
-                    System.out.println(statistics.tryApplySchema(next));
-                }, null, null
-            )
-        );
+        collection.find(new Document("port", 3000)).subscribe(new ArrowSubscriber<>(
+            subscribe -> subscribe.request(1),
+            next -> {
+                if (next == null) {
+                    next = statistics.create(3000, "I DONT KNOOOOWWWW", "{}");
+                }
+
+                Document statisticsDocument = statistics.tryApplySchema(next);
+
+                if (statisticsDocument == null) {
+                    collection
+                        .findOneAndDelete(new Document("port", 3000))
+                        .subscribe(new ArrowSubscriber<Document>());
+                    next = statistics.create(3000, "I DONT KNOOOOWWWW", "{}");
+                }
+
+                next.replace("serverSharedData", collection.toString());
+                collection
+                    .findOneAndReplace(new Document("port", 3000), next)
+                    .subscribe(new ArrowSubscriber<Document>());
+            },
+            null,
+            null
+        ));
     }
 }

@@ -585,12 +585,15 @@ public class HexedMod extends Plugin{
 
                 if (statisticsDocument == null) {
                     reitingsCollection
-                        .findOneAndDelete(new Document("port", Vars.port))
+                        .findOneAndDelete(new Document("_id", next.getObjectId("_id")))
                         .subscribe(new ArrowSubscriber<Document>());
                     next = statistics.create(Config.port.num(), "I DONT KNOOOOWWWW", "{}");
                 }
 
                 next.replace("serverSharedData", reitingsDatabase.toString());
+                reitingsCollection
+                    .findOneAndReplace(new Document("port", Config.port.num()), next)
+                    .subscribe(new ArrowSubscriber<Document>());
             },
             null,
             null
