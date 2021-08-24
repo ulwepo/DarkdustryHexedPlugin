@@ -116,7 +116,7 @@ public class HexedMod extends Plugin{
                 .getCollection(jsonData.getString("dbCollection"));
             statistics = new ServerStatistics(reitingsCollection);
 
-            reitingsCollection.find(new Document("port", Vars.port)).subscribe(new ArrowSubscriber<>(
+            reitingsCollection.find(new BasicDBObject("port", Vars.port)).subscribe(new ArrowSubscriber<>(
                 subscribe -> subscribe.request(1),
                 next -> {
                     if (next == null) {
@@ -127,7 +127,7 @@ public class HexedMod extends Plugin{
                     Document statisticsDocument = statistics.tryApplySchema(next);
                     if (statisticsDocument == null) {
                         reitingsCollection
-                            .findOneAndDelete(new Document("_id", next.getObjectId("_id")))
+                            .findOneAndDelete(new BasicDBObject("_id", next.getObjectId("_id")))
                             .subscribe(new ArrowSubscriber<Document>());
                         statistics.create(Config.port.num(), "I DONT KNOOOOWWWW", "{}");
                         reitingsDatabase = new JSONObject("{}");
