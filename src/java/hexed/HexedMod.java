@@ -476,7 +476,7 @@ public class HexedMod extends Plugin{
 
     String getLeaderboard(Player pl){
         StringBuilder builder = new StringBuilder();
-        builder.append(Bundle.format("leaderboard.header", findLocale(pl.locale), lastMin))
+        builder.append(Bundle.format("leaderboard.header", findLocale(pl.locale), lastMin));
         int count = 0;
         for(Player player : data.getLeaderboard()){
             builder.append("[yellow]").append(++count).append(".[white] ")
