@@ -13,7 +13,7 @@ public class ArrowSubscriber<T> implements Subscriber<T> {
     private boolean isReturnedValue = false;
 
     public ArrowSubscriber() {
-        this(null, null, null, null);
+        this(subscribe -> subscribe.request(1), null, null, null);
     }
     
     public ArrowSubscriber(

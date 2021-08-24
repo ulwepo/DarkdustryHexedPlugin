@@ -585,7 +585,7 @@ public class HexedMod extends Plugin{
 
                 if (statisticsDocument == null) {
                     reitingsCollection
-                        .findOneAndDelete(new Document("_id", next.getObjectId("_id")))
+                        .findOneAndDelete(new Document("port", Vars.port))
                         .subscribe(new ArrowSubscriber<Document>());
                     next = statistics.create(Config.port.num(), "I DONT KNOOOOWWWW", "{}");
                 }
