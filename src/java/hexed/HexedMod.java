@@ -1,6 +1,7 @@
 package hexed;
 
 import static arc.util.Log.info;
+import static arc.util.Log.err;
 import static mindustry.Vars.logic;
 import static mindustry.Vars.netServer;
 import static mindustry.Vars.state;
@@ -142,7 +143,7 @@ public class HexedMod extends Plugin{
                 Thread.sleep(500);
             }
         } catch (JSONException | InterruptedException error) {
-            Log.err(error);
+            err(error);
         }
     }
 
@@ -479,7 +480,7 @@ public class HexedMod extends Plugin{
         int count = 0;
         for(Player player : data.getLeaderboard()){
             builder.append("[yellow]").append(++count).append(".[white] ")
-                    .append(player.name).append("[orange] (").append(data.getControlled(player).size).append(Bundle.format("leaderboard.hexes", findLocale(pl.locale)));
+                    .append(player.name).append(Bundle.format("leaderboard.hexes", findLocale(pl.locale), data.getControlled(player).size));
 
             if(count > 4) break;
         }
