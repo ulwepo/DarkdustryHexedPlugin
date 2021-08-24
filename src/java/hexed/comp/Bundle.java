@@ -8,6 +8,8 @@ import mindustry.Vars;
 import java.text.MessageFormat;
 import java.util.*;
 
+import hexed.HexedMod;
+
 public class Bundle{
 
     private static final ObjectMap<Locale, StringMap> bundles = new ObjectMap<>();
