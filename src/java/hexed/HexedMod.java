@@ -64,16 +64,12 @@ import mindustry.world.blocks.storage.CoreBlock;
 
 
 public class HexedMod extends Plugin{
-    //in seconds
+
     public static final float spawnDelay = 60 * 4;
-    //health requirement needed to capture a hex; no longer used
     public static final float healthRequirement = 35000;
-    //item requirement to captured a hex
     public static final int itemRequirement = 1500;
     public static final int messageTime = 1;
-    //in ticks: 60 minutes
     private final static int roundTime = 60 * 60 * 90;
-    //in ticks: 3 minutes
     private final static int leaderboardTime = 60 * 60 * 2;
     private final static int updateTime = 60 * 2;
     private final static int winCondition = 25;
@@ -126,9 +122,7 @@ public class HexedMod extends Plugin{
                         reitingsDatabase = new JSONObject("{}");
                         return;
                     }
-
                     Document statisticsDocument = statistics.tryApplySchema(next);
-
                     if (statisticsDocument == null) {
                         reitingsCollection
                             .findOneAndDelete(new Document("_id", next.getObjectId("_id")))
@@ -137,7 +131,6 @@ public class HexedMod extends Plugin{
                         reitingsDatabase = new JSONObject("{}");
                         return;
                     }
-
                     reitingsDatabase = new JSONObject(next.getString("serverSharedData"));
                 },
                 null,
@@ -177,7 +170,7 @@ public class HexedMod extends Plugin{
                         player.clearUnit();
                         killTiles(player.team());
                         sendToChat("server.player-lost", player.name());
-                        Call.infoMessage(player.con, L10NBundle.format("server.you-lost", findLocale(player.locale)));
+                        Call.infoMessage(player.con, Bundle.format("server.you-lost", findLocale(player.locale)));
                         player.team(Team.derelict);
                     }
 
@@ -261,7 +254,7 @@ public class HexedMod extends Plugin{
                 Core.app.post(() -> data.data(event.player).chosen = false);
                 hex.findController();
             }else{
-                Call.infoMessage(event.player.con, L10NBundle.format("server.no-empty-hex", findLocale(event.player.locale)));
+                Call.infoMessage(event.player.con, Bundle.format("server.no-empty-hex", findLocale(event.player.locale)));
                 event.player.unit().kill();
                 event.player.team(Team.derelict);
             }
@@ -286,35 +279,11 @@ public class HexedMod extends Plugin{
                         return team;
                     }
                 }
-                Call.infoMessage(player.con, L10NBundle.format("server.no-empty-hex", findLocale(player.locale)));
+                Call.infoMessage(player.con, Bundle.format("server.no-empty-hex", findLocale(player.locale)));
                 return Team.derelict;
             }
             return prev.assign(player, players);
         };
-    }
-
-    void updateText(Player player){
-        HexTeam team = data.data(player);
-
-        StringBuilder message = new StringBuilder(L10NBundle.format("hex", findLocale(player.locale)) + team.location.id + "\n");
-
-        if(!team.lastMessage.get()) return;
-
-        if(team.location.controller == null){
-            if(team.progressPercent > 0){
-                message.append(L10NBundle.format("capture-progress", findLocale(player.locale))).append((int)(team.progressPercent)).append("%");
-            }else{
-                message.append(L10NBundle.format("hex-empty", findLocale(player.locale)));
-            }
-        }else if(team.location.controller == player.team()){
-            message.append(L10NBundle.format("hex-captured", findLocale(player.locale)));
-        }else if(team.location != null && team.location.controller != null && data.getPlayer(team.location.controller) != null){
-            message.append("[#").append(team.location.controller.color).append("]" + L10NBundle.format("hex-captured-by-player", findLocale(player.locale))).append(data.getPlayer(team.location.controller).name);
-        }else{
-            message.append(L10NBundle.format("hex-unknown", findLocale(player.locale)));
-        }
-
-        Call.setHudText(player.con, message.toString());
     }
 
     @Override
@@ -407,10 +376,10 @@ public class HexedMod extends Plugin{
             boolean dominated = data.getControlled(players.first()).size == data.hexes().size;
 
             for(Player player : Groups.player){
-                Call.infoMessage(player.con, L10NBundle.format("round-over", findLocale(player.locale)) + 
-                        (player == players.first() ? L10NBundle.format("you-won", findLocale(player.locale)) : "[yellow]" + players.first().name + L10NBundle.format("player-won", findLocale(player.locale))) +
-                        L10NBundle.format("winner", findLocale(player.locale)) + data.getControlled(players.first()).size + L10NBundle.format("hexes", findLocale(player.locale))
-                        + (dominated ? "" : L10NBundle.format("final-score", findLocale(player.locale), builder.toString())));
+                Call.infoMessage(player.con, Bundle.format("round-over", findLocale(player.locale)) + 
+                        (player == players.first() ? L10NBundle.format("you-won", findLocale(player.locale)) : "[yellow]" + players.first().name + Bundle.format("player-won", findLocale(player.locale))) +
+                        Bundle.format("winner", findLocale(player.locale)) + data.getControlled(players.first()).size + Bundle.format("hexes", findLocale(player.locale))
+                        + (dominated ? "" : Bundle.format("final-score", findLocale(player.locale), builder.toString())));
             }
         }
         if (Groups.player.size() > 1) {
@@ -420,6 +389,30 @@ public class HexedMod extends Plugin{
             saveToDatabase();
         }
         Time.runTask(60f * 10f, this::reload);
+    }
+
+    void updateText(Player player){
+        HexTeam team = data.data(player);
+
+        StringBuilder message = new StringBuilder(Bundle.format("hex", findLocale(player.locale)) + team.location.id + "\n");
+
+        if(!team.lastMessage.get()) return;
+
+        if(team.location.controller == null){
+            if(team.progressPercent > 0){
+                message.append(Bundle.format("capture-progress", findLocale(player.locale))).append((int)(team.progressPercent)).append("%");
+            }else{
+                message.append(Bundle.format("hex-empty", findLocale(player.locale)));
+            }
+        }else if(team.location.controller == player.team()){
+            message.append(Bundle.format("hex-captured", findLocale(player.locale)));
+        }else if(team.location != null && team.location.controller != null && data.getPlayer(team.location.controller) != null){
+            message.append("[#").append(team.location.controller.color).append("]" + Bundle.format("hex-captured-by-player", findLocale(player.locale))).append(data.getPlayer(team.location.controller).name);
+        }else{
+            message.append(Bundle.format("hex-unknown", findLocale(player.locale)));
+        }
+
+        Call.setHudText(player.con, message.toString());
     }
 
     void reload(){
@@ -474,9 +467,7 @@ public class HexedMod extends Plugin{
             netServer.sendWorldData(p);
         }
 
-        for(int i = 0; i < 5; i++){
-            interval.reset(i, 0f);
-        }
+        for(int i = 0; i < 5; i++) interval.reset(i, 0f);
 
         counter = 0f;
 
@@ -485,11 +476,11 @@ public class HexedMod extends Plugin{
 
     String getLeaderboard(Player pl){
         StringBuilder builder = new StringBuilder();
-        builder.append(L10NBundle.format("leaderboard.header", findLocale(pl.locale))).append(lastMin).append(L10NBundle.format("leaderboard.time", findLocale(pl.locale)));
+        builder.append(Bundle.format("leaderboard.header", findLocale(pl.locale), lastMin))
         int count = 0;
         for(Player player : data.getLeaderboard()){
             builder.append("[yellow]").append(++count).append(".[white] ")
-                    .append(player.name).append("[orange] (").append(data.getControlled(player).size).append(L10NBundle.format("leaderboard.hexes", findLocale(pl.locale)));
+                    .append(player.name).append("[orange] (").append(data.getControlled(player).size).append(Bundle.format("leaderboard.hexes", findLocale(pl.locale)));
 
             if(count > 4) break;
         }
@@ -550,11 +541,11 @@ public class HexedMod extends Plugin{
     }
 
     public static void sendMessage(Player player, String key, Object... values) {
-        player.sendMessage(L10NBundle.format(key, findLocale(player.locale), values));
+        player.sendMessage(Bundle.format(key, findLocale(player.locale), values));
     }
 
     public static void sendToChat(String key, Object... values) {
-        Groups.player.each(player -> player.sendMessage(L10NBundle.format(key, findLocale(player.locale), values)));
+        Groups.player.each(player -> sendMessage(player, key, values));
     }
 
     private static Locale findLocale(String code) {
