@@ -85,7 +85,7 @@ public class HexedMod extends Plugin{
     private Interval interval = new Interval(5);
 
     private HexData data;
-    private boolean restarting = false, registered = false;
+    private boolean restarting = false;
 
     private Schematic start;
     private double counter = 0f;
@@ -214,12 +214,8 @@ public class HexedMod extends Plugin{
 
                 counter += Time.delta;
 
-                if(counter > roundTime){
-                    endGame();
-                }
-            }else{
-                counter = 0;
-            }
+                if(counter > roundTime) endGame();
+            } else counter = 0;        
         });
 
         Events.on(BlockDestroyEvent.class, event -> {
@@ -227,7 +223,6 @@ public class HexedMod extends Plugin{
                 Hex hex = data.getHex(event.tile.pos());
 
                 if(hex != null){
-                    //update state
                     hex.spawnTime.reset();
                     hex.updateController();
                 }
@@ -270,7 +265,6 @@ public class HexedMod extends Plugin{
                 event.player.unit().kill();
                 event.player.team(Team.derelict);
             }
-
             data.data(event.player).lastMessage.reset();
         });
 
@@ -371,8 +365,6 @@ public class HexedMod extends Plugin{
 
     @Override
     public void registerClientCommands(CommandHandler handler){
-        if(registered) return;
-        registered = true;
 
         handler.<Player>register("spectator", "Режим наблюдателя. Уничтожает твою базу", (args, player) -> {
             if(player.team() == Team.derelict){
@@ -458,9 +450,9 @@ public class HexedMod extends Plugin{
         for(Player p : players){
             if(p.con == null) continue;
 
-            boolean wasAdmin = p.admin;
+            boolean admin = p.admin;
             p.reset();
-            p.admin = wasAdmin;
+            p.admin = admin;
             p.team(netServer.assignTeam(p, new Seq.SeqIterable<>(players)));
 
             if(p.team() != Team.derelict){
@@ -530,9 +522,7 @@ public class HexedMod extends Plugin{
             Tile tile = world.tile(st.x + ox, st.y + oy);
             if(tile == null) return;
 
-            if(tile.block() != Blocks.air){
-                tile.removeNet();
-            }
+            if(tile.block() != Blocks.air) tile.removeNet();
 
             tile.setNet(st.block, player.team(), st.rotation);
 
