@@ -1,9 +1,9 @@
 package hexed.database;
 
+import com.mongodb.lang.Nullable;
+
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
-
-import arc.util.Nullable;
 
 public class ArrowSubscriber<T> implements Subscriber<T> {
     private Callback<Subscription> subscribe;
@@ -41,7 +41,7 @@ public class ArrowSubscriber<T> implements Subscriber<T> {
     @Override
     public void onNext(T t) {
         try {
-            isReturnedValue = false;
+            isReturnedValue = true;
             if (this.next == null) return;
             this.next.call(t);
         } catch (Exception e) {

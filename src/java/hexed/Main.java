@@ -1,5 +1,6 @@
 package hexed;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.reactivestreams.client.MongoClient;
@@ -26,7 +27,7 @@ public class Main {
 
         ServerStatistics statistics = new ServerStatistics(collection);
 
-        collection.find(new Document("port", 3000)).subscribe(new ArrowSubscriber<>(
+        collection.find(new BasicDBObject("port", 3000)).subscribe(new ArrowSubscriber<>(
             subscribe -> subscribe.request(1),
             next -> {
                 if (next == null) {
@@ -37,14 +38,14 @@ public class Main {
 
                 if (statisticsDocument == null) {
                     collection
-                        .findOneAndDelete(new Document("port", 3000))
+                        .findOneAndDelete(new BasicDBObject("_id", next.getObjectId("_id")))
                         .subscribe(new ArrowSubscriber<Document>());
                     next = statistics.create(3000, "I DONT KNOOOOWWWW", "{}");
                 }
 
                 next.replace("serverSharedData", collection.toString());
                 collection
-                    .findOneAndReplace(new Document("port", 3000), next)
+                    .findOneAndReplace(new Document("_id", next.getObjectId("_id")), next)
                     .subscribe(new ArrowSubscriber<Document>());
             },
             null,

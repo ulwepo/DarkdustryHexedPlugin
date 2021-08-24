@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Locale;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.reactivestreams.client.MongoClient;
@@ -553,7 +554,7 @@ public class HexedMod extends Plugin{
     }
 
     private void saveToDatabase() {
-        reitingsCollection.find(new Document("port", Vars.port)).subscribe(new ArrowSubscriber<>(
+        reitingsCollection.find(new BasicDBObject("port", Vars.port)).subscribe(new ArrowSubscriber<>(
             subscribe -> subscribe.request(1),
             next -> {
                 if (next == null) {
@@ -564,14 +565,14 @@ public class HexedMod extends Plugin{
 
                 if (statisticsDocument == null) {
                     reitingsCollection
-                        .findOneAndDelete(new Document("_id", next.getObjectId("_id")))
+                        .findOneAndDelete(new BasicDBObject("_id", next.getObjectId("_id")))
                         .subscribe(new ArrowSubscriber<Document>());
                     next = statistics.create(Config.port.num(), "I DONT KNOOOOWWWW", "{}");
                 }
 
                 next.replace("serverSharedData", reitingsDatabase.toString());
                 reitingsCollection
-                    .findOneAndReplace(new Document("port", Config.port.num()), next)
+                    .findOneAndReplace(new BasicDBObject("_id", next.getObjectId("_id")), next)
                     .subscribe(new ArrowSubscriber<Document>());
             },
             null,
