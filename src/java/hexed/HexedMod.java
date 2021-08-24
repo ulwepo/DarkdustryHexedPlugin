@@ -1,7 +1,7 @@
 package hexed;
 
-import static arc.util.Log.info;
 import static arc.util.Log.err;
+import static arc.util.Log.info;
 import static mindustry.Vars.logic;
 import static mindustry.Vars.netServer;
 import static mindustry.Vars.state;
@@ -40,7 +40,6 @@ import hexed.HexData.HexTeam;
 import hexed.HexData.ProgressIncreaseEvent;
 import hexed.database.ArrowSubscriber;
 import hexed.models.ServerStatistics;
-import mindustry.Vars;
 import mindustry.content.Blocks;
 import mindustry.content.Items;
 import mindustry.core.GameState.State;
@@ -555,7 +554,7 @@ public class HexedMod extends Plugin{
     }
 
     private void saveToDatabase() {
-        reitingsCollection.find(new BasicDBObject("port", Vars.port)).subscribe(new ArrowSubscriber<>(
+        reitingsCollection.find(new BasicDBObject("port", Config.port.num())).subscribe(new ArrowSubscriber<>(
             subscribe -> subscribe.request(1),
             next -> {
                 if (next == null) {
