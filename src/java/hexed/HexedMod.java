@@ -116,7 +116,7 @@ public class HexedMod extends Plugin{
                 .getCollection(jsonData.getString("dbCollection"));
             statistics = new ServerStatistics(reitingsCollection);
 
-            reitingsCollection.find(new BasicDBObject("port", Vars.port)).subscribe(new ArrowSubscriber<>(
+            reitingsCollection.find(new BasicDBObject("port", Config.port.num())).subscribe(new ArrowSubscriber<>(
                 subscribe -> subscribe.request(1),
                 next -> {
                     if (next == null) {
