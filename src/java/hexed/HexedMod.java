@@ -364,7 +364,6 @@ public class HexedMod extends Plugin{
         restarting = true;
         Seq<Player> players = data.getLeaderboard();
         StringBuilder builder = new StringBuilder();
-        builder.append("\n");
         for(int i = 0; i < players.size && i < 4; i++){
             if(data.getControlled(players.get(i)).size > 1){
                 builder.append("[yellow]").append(i + 1).append(".[accent] ").append(players.get(i).name)
@@ -378,7 +377,7 @@ public class HexedMod extends Plugin{
             for(Player player : Groups.player){
                 Call.infoMessage(player.con, Bundle.format("round-over", findLocale(player.locale)) + 
                         (player == players.first() ? Bundle.format("you-won", findLocale(player.locale), data.getControlled(players.first()).size) : "[yellow]" + players.first().name + Bundle.format("player-won", findLocale(player.locale), data.getControlled(players.first()).size)) + 
-                        + (dominated ? "" : Bundle.format("final-score", findLocale(player.locale), builder.toString())));
+                        (dominated ? "" : Bundle.format("final-score", findLocale(player.locale), builder.toString())));
             }
         }
         if (Groups.player.size() > 1) {
