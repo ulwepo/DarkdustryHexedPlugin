@@ -68,8 +68,8 @@ public class HexedGenerator implements Cons<Tiles>{
                 {Blocks.iceSnow, Blocks.snow, Blocks.snow, Blocks.ice, Blocks.snow},
                 {Blocks.ice, Blocks.water, Blocks.darksand, Blocks.iceSnow, Blocks.iceSnow},
                 {Blocks.water, Blocks.water, Blocks.iceSnow, Blocks.water, Blocks.darksand},
-                {Blocks.darksand, Blocks.water, Blocks.snow, Blocks.darksand, Blocks.snow},
-                {Blocks.snow, Blocks.iceSnow, Blocks.darksand, Blocks.snow, Blocks.iceSnow}
+                {Blocks.darksand, Blocks.water, Blocks.snow, Blocks.darksand, Blocks.darksand},
+                {Blocks.snow, Blocks.ice, Blocks.darksand, Blocks.snow, Blocks.iceSnow}
         }, new Block[][]{
                 {Blocks.iceWall, Blocks.snowWall, Blocks.snowPine, Blocks.iceWall, Blocks.snowWall},
                 {Blocks.iceWall, Blocks.snowWall, Blocks.snowWall, Blocks.iceWall, Blocks.snowWall},
@@ -243,8 +243,6 @@ public class HexedGenerator implements Cons<Tiles>{
     public IntSeq getHex(){
         IntSeq array = new IntSeq();
         double h = Math.sqrt(3) * Hex.spacing / 2;
-        //base horizontal spacing=1.5w
-        //offset = 3/4w
         for(int x = 0; x < width / Hex.spacing - 2; x++){
             for(int y = 0; y < height / (h / 2) - 2; y++){
                 int cx = (int)(x * Hex.spacing * 1.5 + (y % 2) * Hex.spacing * 3.0 / 4) + Hex.spacing / 2;
