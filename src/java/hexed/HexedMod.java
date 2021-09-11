@@ -237,15 +237,15 @@ public class HexedMod extends Plugin{
         });
 
         Events.on(PlayerJoin.class, event -> {
+            createUserConfig(event.player.uuid());
+            int score = reitingsDatabase.getJSONObject(event.player.uuid()).getInt("rating");
+            event.player.name = Strings.format("[sky]@[lime]#[][] @", score, event.player.getInfo().lastName);
+
             if(!active() || event.player.team() == Team.derelict) return;
             if (teamTimers.containsKey(event.player.uuid())) {
                 teamTimers.remove(event.player.uuid());
                 return;
             }
-
-            createUserConfig(event.player.uuid());
-            int score = reitingsDatabase.getJSONObject(event.player.uuid()).getInt("rating");
-            event.player.name = Strings.format("[sky]@[lime]#[][] @", score, event.player.getInfo().lastName);
 
             Seq<Hex> copy = data.hexes().copy();
             copy.shuffle();
