@@ -19,6 +19,7 @@ import arc.util.Structs;
 import arc.util.Tmp;
 import arc.util.noise.Simplex;
 import mindustry.content.Blocks;
+import mindustry.graphics.CacheLayer;
 import mindustry.maps.Map;
 import mindustry.maps.filters.GenerateFilter;
 import mindustry.maps.filters.GenerateFilter.GenerateInput;
@@ -130,11 +131,11 @@ public class HexedGenerator implements Cons<Tiles>{
     }
 
     @Override
-    public void get(Tiles tiles){
+    public void get(Tiles tiles) {
         Seq<GenerateFilter> ores = new Seq<>();
         maps.addDefaultOres(ores);
         ores.each(o -> ((OreFilter)o).threshold -= 0.05f);
-        ores.insert(0, new OreFilter(){{
+        ores.insert(0, new OreFilter() {{
             ore = Blocks.oreScrap;
             scl += 2 / 2.1F;
         }});
@@ -145,8 +146,8 @@ public class HexedGenerator implements Cons<Tiles>{
         int s1 = Mathf.random(0, 10000);
         int s2 = Mathf.random(0, 10000);
 
-        for(int x = 0; x < width; x++){
-            for(int y = 0; y < height; y++){
+        for(int x = 0; x < width; x++) {
+            for(int y = 0; y < height; y++) {
                 int temp = Mathf.clamp((int)((Simplex.noise2d(s1, 12, 0.6, 1.0 / 400, x, y) - 0.5) * 10 * mode.blocks.length), 0, mode.blocks.length - 1);
                 int elev = Mathf.clamp((int)(((Simplex.noise2d(s2, 12, 0.6, 1.0 / 700, x, y) - 0.5) * 10 + 0.15f) * mode.blocks[0].length), 0, mode.blocks[0].length - 1);
 
@@ -154,7 +155,7 @@ public class HexedGenerator implements Cons<Tiles>{
                 Block wall = mode.blocks[temp][elev];
                 Block ore = Blocks.air;
 
-                for(GenerateFilter f : ores){
+                for(GenerateFilter f : ores) {
                     in.floor = Blocks.stone;
                     in.block = wall;
                     in.overlay = ore;
@@ -171,7 +172,7 @@ public class HexedGenerator implements Cons<Tiles>{
             }
         }
 
-        for(int i = 0; i < hex.size; i++){
+        for(int i = 0; i < hex.size; i++) {
             int x = Point2.x(hex.get(i));
             int y = Point2.y(hex.get(i));
             Geometry.circle(x, y, width, height, Hex.diameter, (cx, cy) -> {
@@ -220,6 +221,9 @@ public class HexedGenerator implements Cons<Tiles>{
             rivernoise.randomize();
             in.begin(width, height, tiles::getn);
             rivernoise.apply(tiles, in);
+            for (Tile tile : tiles) {
+                if (tile.floor().cacheLayer == CacheLayer.water) tile.setBlock(Blocks.air);
+            }
         }
 
         for(int i = 0; i < hex.size; i++){
