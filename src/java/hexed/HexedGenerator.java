@@ -235,7 +235,7 @@ public class HexedGenerator implements Cons<Tiles>{
             for(int x5 = offsetX; x5 < offsetX + 5; x5++){
                 for(int y5 = offsetY; y5 < offsetY + 5; y5++){
                     Tile t = tiles.get(x5, y5);
-                    t.setFloor(Blocks.metalFloor.asFloor());
+                    t.setFloor(Blocks.metalFloor5.asFloor());
                 }
             }
         }
