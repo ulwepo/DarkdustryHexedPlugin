@@ -490,9 +490,7 @@ public class HexedMod extends Plugin{
     void killTiles(Team team){
         data.data(team).dying = true;
         Time.runTask(8f, () -> data.data(team).dying = false);
-        for (Unit unit : Groups.unit) {
-            if(unit.team() == team) unit.kill();
-        }
+        Groups.unit.each(u -> u.team == team, unit -> Time.run(Mathf.random(360), unit::kill));
         for(int x = 0; x < world.width(); x++){
             for(int y = 0; y < world.height(); y++){
                 Tile tile = world.tile(x, y);
