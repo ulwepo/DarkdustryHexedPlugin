@@ -68,8 +68,8 @@ import mindustry.world.blocks.storage.CoreBlock;
 public class HexedMod extends Plugin{
 
     public static final float spawnDelay = 60 * 4;
-    public static final float healthRequirement = 35000;
-    public static final int itemRequirement = 1500;
+    public static final float healthRequirement = 50000;
+    public static final int itemRequirement = 3000;
     public static final int messageTime = 1;
     private final static int roundTime = 60 * 60 * 90;
     private final static int leaderboardTime = 60 * 60 * 2;
@@ -388,7 +388,7 @@ public class HexedMod extends Plugin{
             config.setJsonValue(reitingsDatabase.getJSONObject(players.get(0).uuid()), "rating", score);
             saveToDatabase();
         }
-        Time.runTask(60f * 10f, this::reload);
+        Time.runTask(60f * 15f, this::reload);
     }
 
     void updateText(Player player){
@@ -490,6 +490,9 @@ public class HexedMod extends Plugin{
     void killTiles(Team team){
         data.data(team).dying = true;
         Time.runTask(8f, () -> data.data(team).dying = false);
+        for (Unit unit : Groups.unit) {
+            if(unit.team() == team) unit.kill();
+        }
         for(int x = 0; x < world.width(); x++){
             for(int y = 0; y < world.height(); y++){
                 Tile tile = world.tile(x, y);
@@ -499,9 +502,6 @@ public class HexedMod extends Plugin{
                     });
                 }
             }
-        }
-        for(Unit unit : Groups.unit){
-            if(unit.team() == team) unit.kill();
         }
     }
 
