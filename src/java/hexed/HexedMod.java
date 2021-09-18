@@ -220,6 +220,9 @@ public class HexedMod extends Plugin{
                 if(hex != null){
                     hex.spawnTime.reset();
                     hex.updateController();
+
+                    Seq<Player> players = data.getLeaderboard();
+                    if (players.size() > 3 && players.count(p -> p.team != Team.derelict) == 1 && data.getControlled(players.first()).size > 5) endGame();
                 }
             }
         });
