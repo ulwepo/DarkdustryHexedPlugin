@@ -161,7 +161,7 @@ public class HexedMod extends Plugin{
         rules.canGameOver = false;
         rules.coreCapture = false;
 
-        start = Schematics.readBase64("bXNjaAF4nE2SS5LTMBCGW7JsPZxkJgfxPdizpFhoHEGlymO5ZIdhdlyFK1DFPcJ9gNCtP1WMlejXo/tTd0vU07EhM8fnROFd+ppO77dYNupPaR3LednOeSaibopPaVrp8OH6/frz17frD+k/7qkf87KkMrzEaaLjm8kwxfI5kRvz/CW95kJ2HeO2pUL9mnlvWOKcJmpiGck+1Z1X6p7TfGITd5mnHGW0G3NJw3wZp3RZ6fjG9X5AWPILHznnU6I+nsvwKY5bZhZR4j+p+iPNjT8DaSEdaVFLdeognuoXID1kB8oeswcxVBgrGTTcGSxWpgJTganAVMI0LD1kh8U77JG0+h8cNwYxt4ZemRpMDaYGU4OpwdTCtCx7UA4C1nKCZRQ7NSRNO+7alr21ZzsnyRpx7Xi9+hhUp6ZkWVophKGDU7e/hDrWsI2E3SHiAAeZVUYLkw5l6qRMvWTimtsfotvvGr3E0lHfUq2Hpb26l9TCSZJhE1tNfF1nqsSsJSlJRBsWA6n36lAv8ariIB57tV4O93q/ao9HIgZM8YB5wDxgHjAPmAfMA+ZRfI8L9ZK9yANMHkUCXktARQPQAegAdAA6AB3w/gLiDEAHvL+AE4Kc8A/s5VeN");
+        start = Schematics.readBase64("bXNjaAF4nE2SX3LbIBDGFyQh/sh2fINcQCfK5IHItPWMIjSS3DRvuUqu0Jnew71OX5JdPs80wuYDdvmxu0CBjhXVU3xOFH6kX+l0v25x2Sic0jos53k754mIzBif0rjS/uH6fv3z9+36W/rHHYUhz3Na+pc4jnT8MunHuHxPZIc8/UyveaF2HeK2pYXCmtnWz3FKI1VxGah9KpZXOn4x3QDmOU0n3mUv05ijjLohL6mfLsOYLiv5Ob/wkVM+cQbxvPTf4rBlZhEl/pMqP9Lc+KshDcSQFm2pTC3EUfk8JEA6UHaYHcRRYaxkUHFXY7EwFZgKTAWmEmbNEiAdFm+wO9Lqf3DcGMTcEnphajA1mBpMLcyW/TrSsm8vKC1My4vsVpE07bhrGjZqz3wryVbsrCXsUogSvWVpMNvLvEZwtQRnEJc4VBDeElgaK5UwZRxk/PGvmDt47bC1BNaAZ1A5I5UzkhzplpOoJUxDQcLk3S3t1K2+LZXracXTsYiLK+sHSdvidi3qVPxELMTBVmpvcZ+3K3Z4HA55OQlApDwOB5gDzAHmAHOAOVykw0U6SVHkAJc7EY9X4lFeD7QH2gPtgfZAe7w7jzg90B7vzuMELyd8Ao5MVAI=");
 
         Events.run(Trigger.update, () -> {
             if(active()){
