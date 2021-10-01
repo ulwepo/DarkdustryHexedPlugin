@@ -15,30 +15,17 @@ public class ConfigurationManager {
     private Fi jsonFile;
     private Json json;
 
-    public ConfigurationManager(String configPath, String fileName) throws IOException {
-        init(configPath, fileName);
-    }
-
-    public ConfigurationManager(String fileName) throws IOException {
-        init("config/mods/" + getPluginName() + "/", fileName);
-    }
-
     public ConfigurationManager() throws IOException {
-        init("config/mods/" + getPluginName() + "/", "settings.json");
+        init("config/mods/" + getPluginName() + "/");
     }
 
     public JSONObject getJsonData() {
-        JsonValue ДерьмоОтАнюка = json.fromJson(null, jsonFile);
-        return new JSONObject(ДерьмоОтАнюка.toJson(JsonWriter.OutputType.json));
+        JsonValue value = json.fromJson(null, jsonFile);
+        return new JSONObject(value.toJson(JsonWriter.OutputType.json));
     }
 
-    public void saveJsonData(JSONObject jsonData) {
-        String stringJson = jsonData.toString(1);
-        jsonFile.writeString(stringJson);
-    }
-
-    private void init(String configPath, String configName) throws IOException {
-        File configurationFile = new File(configPath, configName);
+    private void init(String configPath) throws IOException {
+        File configurationFile = new File(configPath, "settings.json");
         if (!configurationFile.getParentFile().exists()) {
             boolean isCreated = configurationFile.getParentFile().mkdirs();
             if (!isCreated) throw new FileSystemException(configPath);
@@ -48,9 +35,9 @@ public class ConfigurationManager {
         json = new Json(JsonWriter.OutputType.json);
 
         if (!configurationFile.exists()) {
-            InputStream in = getClass().getResourceAsStream("/config/" + configName);
+            InputStream in = getClass().getResourceAsStream("/config/" + "settings.json");
 
-            if (in == null) throw new FileNotFoundException("resources:///config/" + configName);
+            if (in == null) throw new FileNotFoundException("resources:///config/" + "settings.json");
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 
@@ -63,17 +50,17 @@ public class ConfigurationManager {
 
     private String getPluginName() throws IOException {
         InputStream in = getClass().getResourceAsStream("/plugin.json");
-        String pluginJson = "";
+        StringBuilder pluginJson = new StringBuilder();
 
         if (in == null) throw new FileNotFoundException("resources:///plugin.json");
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
         String line;
         while ((line = reader.readLine()) != null) {
-            pluginJson += line;
+            pluginJson.append(line);
         }
 
-        return new JSONObject(pluginJson).getString("name");
+        return new JSONObject(pluginJson.toString()).getString("name");
     }
 
     public void setJsonValue(JSONObject jsonData, String name, String value) {

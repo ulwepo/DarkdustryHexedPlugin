@@ -1,7 +1,7 @@
 package hexed.database;
 
 public class NonRequired<T> extends MongoAccessor<T> {
-    private T defaultDefault;
+    private final T defaultDefault;
 
     public NonRequired(String key, Class<T> valueClass) {
         this(key, valueClass, null);

@@ -49,11 +49,6 @@ public class Bundle{
         return bundle != null && bundle.containsKey(key) ? bundle.get(key) : "???" + key + "???";
     }
 
-    public static boolean has(String key, Locale locale){
-        StringMap props = getOrLoad(locale);
-        return props != null && props.containsKey(key);
-    }
-
     public static String format(String key, Locale locale, Object... values){
         String pattern = get(key, locale);
         MessageFormat format = formats.get(locale);

@@ -14,7 +14,7 @@ import java.util.*;
 import static mindustry.Vars.*;
 
 public class Hex{
-    private float[] progress = new float[256];
+    private final float[] progress = new float[256];
 
     public final static int size = 516;
     public final static int diameter = 74;
@@ -43,10 +43,6 @@ public class Hex{
 
     public float getProgressPercent(Team team){
         return progress[team.id] / HexedMod.itemRequirement * 100;
-    }
-
-    public float getProgress(Team team){
-        return progress[team.id];
     }
 
     public boolean hasCore(){

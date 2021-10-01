@@ -1,11 +1,7 @@
 package hexed.database;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
-import com.mongodb.client.result.InsertOneResult;
 import com.mongodb.reactivestreams.client.MongoCollection;
 
 import org.bson.Document;
@@ -19,19 +15,15 @@ import hexed.database.events.OnSubscribe;
 public class MongoSchema<R, N> extends MongoEvents {
     public HashSet<MongoAccessor<?>> schema = new HashSet<>();
     
-    private MongoCollection<Document> collection;
+    private final MongoCollection<Document> collection;
 
     public MongoSchema(MongoCollection<Document> collection, MongoAccessor<?>... accessors) {
         super();
         
         this.collection = collection;
-        for (MongoAccessor<?> anyValue : accessors) {
-            schema.add(anyValue);
-        }
+        schema.addAll(Arrays.asList(accessors));
 
-        this.<OnSubscribe>addListener(OnSubscribe.class, (subscriber) -> {
-            subscriber.subscription.request(1);
-        });
+        this.<OnSubscribe>addListener(OnSubscribe.class, (subscriber) -> subscriber.subscription.request(1));
     }
 
     public Document create(Map<String, Object> data) {
@@ -41,7 +33,7 @@ public class MongoSchema<R, N> extends MongoEvents {
 
             while (iterableSchema.hasNext()) {
                 MongoAccessor<?> valueAccessor = iterableSchema.next();
-                if (!((MongoAccessor<?>) valueAccessor).getKey().equals(key)) continue;
+                if (!valueAccessor.getKey().equals(key)) continue;
                 accessor = valueAccessor;
                 break;
             }
@@ -68,11 +60,11 @@ public class MongoSchema<R, N> extends MongoEvents {
         Document insertDocument = new Document(insertMap);
         MongoSchema<R, N> self = this;
         
-        this.collection.insertOne(insertDocument).subscribe(new ArrowSubscriber<InsertOneResult>(
-            subscribe -> self.fireEvent(OnSubscribe.class, subscribe),
-            next -> self.fireEvent(OnNext.class, next),
-            complete -> self.fireEvent(OnComplete.class, complete),
-            error -> self.fireEvent(OnError.class, error)
+        this.collection.insertOne(insertDocument).subscribe(new ArrowSubscriber<>(
+                subscribe -> self.fireEvent(OnSubscribe.class, subscribe),
+                next -> self.fireEvent(OnNext.class, next),
+                complete -> self.fireEvent(OnComplete.class, complete),
+                error -> self.fireEvent(OnError.class, error)
         ));
 
         return insertDocument;

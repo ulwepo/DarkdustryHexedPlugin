@@ -12,15 +12,15 @@ import mindustry.world.Tile;
 
 public class HexData{
     /** All hexes on the map. No order. */
-    private Seq<Hex> hexes = new Seq<>();
+    private final Seq<Hex> hexes = new Seq<>();
     /** Maps world pos -> hex */
-    private IntMap<Hex> hexPos = new IntMap<>();
+    private final IntMap<Hex> hexPos = new IntMap<>();
     /** Maps team ID -> player */
-    private IntMap<Player> teamMap = new IntMap<>();
+    private final IntMap<Player> teamMap = new IntMap<>();
     /** Maps team ID -> list of controlled hexes */
-    private IntMap<Seq<Hex>> control = new IntMap<>();
+    private final IntMap<Seq<Hex>> control = new IntMap<>();
     /** Data of specific teams. */
-    private HexTeam[] teamData = new HexTeam[256];
+    private final HexTeam[] teamData = new HexTeam[256];
 
     public void updateStats(){
         teamMap.clear();

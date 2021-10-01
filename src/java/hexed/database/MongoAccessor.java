@@ -1,8 +1,8 @@
 package hexed.database;
 
 public class MongoAccessor<T> {
-    private Class<T> valueClass;
-    private String key;
+    private final Class<T> valueClass;
+    private final String key;
     
     public MongoAccessor(String key, Class<T> valueClass) {
         this.key = key;
@@ -26,7 +26,7 @@ public class MongoAccessor<T> {
         return obj instanceof MongoAccessor<?> accessor
             && accessor.valueClass != null
             && accessor.key != null
-            && accessor.key == this.key
+            && accessor.key.equals(this.key)
             && accessor.valueClass == this.valueClass;
     }
 

@@ -23,16 +23,15 @@ ext {
 
     artifactBaseName = plugin.name + (!plugin.version.isEmpty() ? "-$plugin.version" : "")
 
-    versions = [:]
-    versions.mindustry = 'v' + plugin.minGameVersion
+    versionMindustry = 'v131'
 }
 
 dependencies {
-    implementation 'org.json:json:20180130'
-    implementation 'org.mongodb:mongodb-driver-reactivestreams:4.2.3'
+    implementation 'org.json:json:20210307'
+    implementation 'org.mongodb:mongodb-driver-reactivestreams:4.3.2'
     implementation 'org.slf4j:slf4j-log4j12:2.0.0-alpha4'
-    compileOnly "com.github.Anuken.Arc:arc-core:$versions.mindustry"
-    compileOnly "com.github.Anuken.Mindustry:core:$versions.mindustry"
+    compileOnly "com.github.Anuken.Arc:arc-core:$versionMindustry"
+    compileOnly "com.github.Anuken.Mindustry:core:$versionMindustry"
 }
 
 tasks.withType(JavaCompile) {

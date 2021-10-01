@@ -185,9 +185,7 @@ public class HexedGenerator implements Cons<Tiles>{
                 Tmp.v1.trnsExact(f, Hex.spacing + 12);
                 if(Structs.inBounds(x + (int)Tmp.v1.x, y + (int)Tmp.v1.y, width, height)){
                     Tmp.v1.trnsExact(f, Hex.spacing / 2 + 7);
-                    Bresenham2.line(x, y, x + (int)Tmp.v1.x, y + (int)Tmp.v1.y, (cx, cy) -> {
-                        Geometry.circle(cx, cy, width, height, 3, (c2x, c2y) -> tiles.getn(c2x, c2y).setBlock(Blocks.air));
-                    });
+                    Bresenham2.line(x, y, x + (int)Tmp.v1.x, y + (int)Tmp.v1.y, (cx, cy) -> Geometry.circle(cx, cy, width, height, 3, (c2x, c2y) -> tiles.getn(c2x, c2y).setBlock(Blocks.air)));
                 }
             });
         }

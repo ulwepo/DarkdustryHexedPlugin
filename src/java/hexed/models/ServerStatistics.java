@@ -25,5 +25,5 @@ public class ServerStatistics extends MongoSchema<String, Object> {
             "name", name,
             "serverSharedData", serverSharedData
         ));
-    };
+    }
 }

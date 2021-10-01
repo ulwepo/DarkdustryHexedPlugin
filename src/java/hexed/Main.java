@@ -8,6 +8,7 @@ import com.mongodb.reactivestreams.client.MongoClients;
 import com.mongodb.reactivestreams.client.MongoCollection;
 import com.mongodb.reactivestreams.client.MongoDatabase;
 
+import mindustry.net.Administration;
 import org.bson.Document;
 
 import hexed.database.ArrowSubscriber;
@@ -27,11 +28,11 @@ public class Main {
 
         ServerStatistics statistics = new ServerStatistics(collection);
 
-        collection.find(new BasicDBObject("port", 3000)).subscribe(new ArrowSubscriber<>(
+        collection.find(new BasicDBObject("port", Administration.Config.port.num())).subscribe(new ArrowSubscriber<>(
             subscribe -> subscribe.request(1),
             next -> {
                 if (next == null) {
-                    next = statistics.create(3000, "I DONT KNOOOOWWWW", "{}");
+                    next = statistics.create(Administration.Config.port.num(), "I DONT KNOOOOWWWW", "{}");
                 }
 
                 Document statisticsDocument = statistics.tryApplySchema(next);
@@ -39,14 +40,14 @@ public class Main {
                 if (statisticsDocument == null) {
                     collection
                         .findOneAndDelete(new BasicDBObject("_id", next.getObjectId("_id")))
-                        .subscribe(new ArrowSubscriber<Document>());
-                    next = statistics.create(3000, "I DONT KNOOOOWWWW", "{}");
+                        .subscribe(new ArrowSubscriber<>());
+                    next = statistics.create(Administration.Config.port.num(), "I DONT KNOOOOWWWW", "{}");
                 }
 
                 next.replace("serverSharedData", collection.toString());
                 collection
                     .findOneAndReplace(new Document("_id", next.getObjectId("_id")), next)
-                    .subscribe(new ArrowSubscriber<Document>());
+                    .subscribe(new ArrowSubscriber<>());
             },
             null,
             null

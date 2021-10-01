@@ -58,7 +58,6 @@ import mindustry.game.Team;
 import mindustry.gen.Call;
 import mindustry.gen.Groups;
 import mindustry.gen.Player;
-import mindustry.gen.Unit;
 import mindustry.mod.Plugin;
 import mindustry.net.Administration.Config;
 import mindustry.type.ItemStack;
@@ -68,7 +67,6 @@ import mindustry.world.blocks.storage.CoreBlock;
 public class HexedMod extends Plugin{
 
     public static final float spawnDelay = 60 * 4;
-    public static final float healthRequirement = 50000;
     public static final int itemRequirement = 3000;
     public static final int messageTime = 1;
     private final static int roundTime = 60 * 60 * 90;
@@ -80,7 +78,7 @@ public class HexedMod extends Plugin{
     protected static HexedGenerator.Mode mode;
 
     private final Rules rules = new Rules();
-    private Interval interval = new Interval(5);
+    private final Interval interval = new Interval(5);
 
     private HexData data;
     private boolean restarting = false;
@@ -89,11 +87,10 @@ public class HexedMod extends Plugin{
     private double counter = 0f;
     private int lastMin;
 
-    private HashMap<String, Team> teamTimers = new HashMap<>();
+    private final HashMap<String, Team> teamTimers = new HashMap<>();
 
     //По сути база данных для рейтингов
     private final ConfigurationManager config;
-    private JSONObject jsonData;
     private MongoCollection<Document> reitingsCollection;
     private ServerStatistics statistics;
     private JSONObject reitingsDatabase;
@@ -101,10 +98,10 @@ public class HexedMod extends Plugin{
 
     public HexedMod() throws IOException {
         this.config  = new ConfigurationManager();
-        this.jsonData = config.getJsonData();
+        JSONObject jsonData = config.getJsonData();
 
         try {
-            ConnectionString connString = new ConnectionString(this.jsonData.getString("mongoURI"));
+            ConnectionString connString = new ConnectionString(jsonData.getString("mongoURI"));
         
             MongoClientSettings settings = MongoClientSettings.builder()
                 .applyConnectionString(connString)
@@ -128,7 +125,7 @@ public class HexedMod extends Plugin{
                     if (statisticsDocument == null) {
                         reitingsCollection
                             .findOneAndDelete(new BasicDBObject("_id", next.getObjectId("_id")))
-                            .subscribe(new ArrowSubscriber<Document>());
+                            .subscribe(new ArrowSubscriber<>());
                         statistics.create(Config.port.num(), "I DONT KNOOOOWWWW", "{}");
                         reitingsDatabase = new JSONObject("{}");
                         return;
@@ -176,9 +173,9 @@ public class HexedMod extends Plugin{
                         player.team(Team.derelict);
                     }
 
-                    if(player.team() == Team.derelict){
+                    if (player.team() == Team.derelict) {
                         player.clearUnit();
-                    }else if(data.getControlled(player).size == data.hexes().size){
+                    } else if (data.getControlled(player).size == data.hexes().size) {
                         endGame();
                         break;
                     }
@@ -188,21 +185,21 @@ public class HexedMod extends Plugin{
                 }
 
                 int minsToGo = (int)(roundTime - counter) / 60 / 60;
-                if(minsToGo != lastMin){
+                if (minsToGo != lastMin) {
                     lastMin = minsToGo;
                 }
 
-                if(interval.get(timerBoard, leaderboardTime)){
+                if (interval.get(timerBoard, leaderboardTime)) {
                     Groups.player.each(player -> Call.infoToast(player.con, getLeaderboard(player), 15f));
                 }
 
-                if(interval.get(timerUpdate, updateTime)){
+                if (interval.get(timerUpdate, updateTime)) {
                     data.updateControl();
                 }
 
-                if(interval.get(timerWinCheck, 60 * 2)){
+                if (interval.get(timerWinCheck, 60 * 2)) {
                     Seq<Player> players = data.getLeaderboard();
-                    if(!players.isEmpty() && data.getControlled(players.first()).size >= winCondition && players.size > 1 && data.getControlled(players.get(1)).size <= 1){
+                    if (!players.isEmpty() && data.getControlled(players.first()).size >= winCondition && players.size > 1 && data.getControlled(players.get(1)).size <= 1) {
                         endGame();
                     }
                 }
@@ -241,10 +238,8 @@ public class HexedMod extends Plugin{
 
         Events.on(PlayerJoin.class, event -> {
             createUserConfig(event.player.uuid());
-            int score = reitingsDatabase.getJSONObject(event.player.uuid()).getInt("rating");
-            event.player.name = Strings.format("[sky]@[lime]#[][] @", score, event.player.getInfo().lastName);
 
-            if(!active() || event.player.team() == Team.derelict) return;
+            if (!active() || event.player.team() == Team.derelict) return;
             if (teamTimers.containsKey(event.player.uuid())) {
                 teamTimers.remove(event.player.uuid());
                 return;
@@ -254,11 +249,11 @@ public class HexedMod extends Plugin{
             copy.shuffle();
             Hex hex = copy.find(h -> h.controller == null && h.spawnTime.get());
 
-            if(hex != null){
+            if (hex != null) {
                 loadout(event.player, hex.x, hex.y);
                 Core.app.post(() -> data.data(event.player).chosen = false);
                 hex.findController();
-            }else{
+            } else {
                 Call.infoMessage(event.player.con, Bundle.format("server.no-empty-hex", findLocale(event.player.locale)));
                 event.player.unit().kill();
                 event.player.team(Team.derelict);
@@ -276,10 +271,10 @@ public class HexedMod extends Plugin{
         netServer.assigner = (player, players) -> {
             Seq<Player> arr = Seq.with(players);
 
-            if(active()){
+            if (active()) {
                 if (teamTimers.containsKey(player.uuid())) return teamTimers.get(player.uuid());
-                for(Team team : Team.all){
-                    if(team.id > 5 && !team.active() && !arr.contains(p -> p.team() == team) && !data.data(team).dying && !data.data(team).chosen && !teamTimers.containsValue(team)) {
+                for (Team team : Team.all) {
+                    if (team.id > 5 && !team.active() && !arr.contains(p -> p.team() == team) && !data.data(team).dying && !data.data(team).chosen && !teamTimers.containsValue(team)) {
                         data.data(team).chosen = true;
                         return team;
                     }
@@ -292,26 +287,27 @@ public class HexedMod extends Plugin{
     }
 
     @Override
-    public void registerServerCommands(CommandHandler handler){
-        handler.register("hexed", "[mode/list]", "Начать хостить в режиме Хексов.", args -> {
-            if(args.length > 0 && args[0].equalsIgnoreCase("list")){
+    public void registerServerCommands(CommandHandler handler) {
+        handler.removeCommand("host");
+        handler.register("hexed", "[mode/list]", "Запустить сервер в режиме Хексов.", args -> {
+            if (args.length > 0 && args[0].equalsIgnoreCase("list")) {
                 Log.info("Доступные режимы:");
-                for(HexedGenerator.Mode value : HexedGenerator.Mode.values()){
+                for (HexedGenerator.Mode value : HexedGenerator.Mode.values()) {
                     info("- @", value);
                 }
                 return;
             }
 
-            if(!state.is(State.menu)){
+            if (!state.is(State.menu)) {
                 Log.err("Сначала останови сервер!");
                 return;
             }
 
             HexedGenerator.Mode custom = null;
-            if(args.length > 0){
-                try{
+            if (args.length > 0) {
+                try {
                     custom = HexedGenerator.Mode.valueOf(args[0]);
-                }catch(Throwable t){
+                } catch(Throwable t) {
                     Log.err("Неверное название режима.");
                 }
             }
@@ -330,20 +326,18 @@ public class HexedMod extends Plugin{
             netServer.openServer();
         });
 
-        handler.register("countdown", "Get the hexed restart countdown.", args -> {
-            info("Время до конца раунда: &lc@ минут", (int)(roundTime - counter) / 60 / 60);
-        });
+        handler.register("time", "Узнать время до конца раунда.", args -> info("Время до конца раунда: &lc@ минут", (int)(roundTime - counter) / 60 / 60));
 
-        handler.register("end", "End the game.", args -> endGame());
+        handler.register("end", "Принудительно закончить раунд.", args -> endGame());
     }
 
     @Override
-    public void registerClientCommands(CommandHandler handler){
+    public void registerClientCommands(CommandHandler handler) {
 
         handler.<Player>register("spectator", "Режим наблюдателя. Уничтожает твою базу", (args, player) -> {
-            if(player.team() == Team.derelict){
+            if (player.team() == Team.derelict) {
                 sendMessage(player, "commands.already-spectator");
-            }else{
+            } else {
                 killTiles(player.team());
                 player.unit().kill();
                 player.team(Team.derelict);
@@ -351,35 +345,33 @@ public class HexedMod extends Plugin{
         });
 
         handler.<Player>register("captured", "Узнать количество захваченных хексов.", (args, player) -> {
-            if(player.team() == Team.derelict){
+            if (player.team() == Team.derelict) {
                 sendMessage(player, "commands.no-hexes-spectator");
-            }else{
+            } else {
                 sendMessage(player, "commands.hex-amount", data.getControlled(player).size);
             }
         });
 
-        handler.<Player>register("leaderboard", "Показать таблицу лидеров.", (args, player) -> {
-            player.sendMessage(getLeaderboard(player));
-        });
+        handler.<Player>register("leaderboard", "Показать таблицу лидеров.", (args, player) -> player.sendMessage(getLeaderboard(player)));
     }
 
-    void endGame(){
-        if(restarting) return;
+    void endGame() {
+        if (restarting) return;
 
         restarting = true;
         Seq<Player> players = data.getLeaderboard();
         StringBuilder builder = new StringBuilder();
-        for(int i = 0; i < players.size && i < 4; i++){
-            if(data.getControlled(players.get(i)).size > 1){
+        for (int i = 0; i < players.size && i < 4; i++) {
+            if (data.getControlled(players.get(i)).size > 1) {
                 builder.append("[yellow]").append(i + 1).append(".[accent] ").append(players.get(i).name)
                         .append("[lightgray] (x").append(data.getControlled(players.get(i)).size).append(")[]\n");
             }
         }
 
-        if(!players.isEmpty()){
+        if (!players.isEmpty()) {
             boolean dominated = data.getControlled(players.first()).size == data.hexes().size;
 
-            for(Player player : Groups.player){
+            for (Player player : Groups.player) {
                 Call.infoMessage(player.con, Bundle.format("round-over", findLocale(player.locale)) + 
                         (player == players.first() ? Bundle.format("you-won", findLocale(player.locale), data.getControlled(players.first()).size) : "[yellow]" + players.first().name + Bundle.format("player-won", findLocale(player.locale), data.getControlled(players.first()).size)) + 
                         (dominated ? "" : Bundle.format("final-score", findLocale(player.locale), builder.toString())));
@@ -394,34 +386,34 @@ public class HexedMod extends Plugin{
         Time.runTask(60f * 15f, this::reload);
     }
 
-    void updateText(Player player){
+    void updateText(Player player) {
         HexTeam team = data.data(player);
 
         StringBuilder message = new StringBuilder(Bundle.format("hex", findLocale(player.locale)) + team.location.id + "\n");
 
-        if(!team.lastMessage.get()) return;
+        if (!team.lastMessage.get()) return;
 
-        if(team.location.controller == null){
-            if(team.progressPercent > 0){
+        if (team.location.controller == null) {
+            if (team.progressPercent > 0) {
                 message.append(Bundle.format("capture-progress", findLocale(player.locale))).append((int)(team.progressPercent)).append("%");
-            }else{
+            } else {
                 message.append(Bundle.format("hex-empty", findLocale(player.locale)));
             }
-        }else if(team.location.controller == player.team()){
+        } else if (team.location.controller == player.team()) {
             message.append(Bundle.format("hex-captured", findLocale(player.locale)));
-        }else if(team.location != null && team.location.controller != null && data.getPlayer(team.location.controller) != null){
-            message.append("[#").append(team.location.controller.color).append("]" + Bundle.format("hex-captured-by-player", findLocale(player.locale))).append(data.getPlayer(team.location.controller).name);
-        }else{
+        } else if (team.location != null && team.location.controller != null && data.getPlayer(team.location.controller) != null){
+            message.append("[#").append(team.location.controller.color).append("]").append(Bundle.format("hex-captured-by-player", findLocale(player.locale))).append(data.getPlayer(team.location.controller).name);
+        } else {
             message.append(Bundle.format("hex-unknown", findLocale(player.locale)));
         }
 
         Call.setHudText(player.con, message.toString());
     }
 
-    void reload(){
+    void reload() {
         Seq<Player> players = new Seq<>();
-        for(Player p : Groups.player){
-            if(p.isLocal()) continue;
+        for (Player p : Groups.player) {
+            if (p.isLocal()) continue;
             players.add(p);
             p.clearUnit();
         }
@@ -443,23 +435,23 @@ public class HexedMod extends Plugin{
 
         logic.play();
 
-        for(Player p : players){
-            if(p.con == null) continue;
+        for (Player p : players) {
+            if (p.con == null) continue;
 
             boolean admin = p.admin;
             p.reset();
             p.admin = admin;
             p.team(netServer.assignTeam(p, new Seq.SeqIterable<>(players)));
 
-            if(p.team() != Team.derelict){
+            if (p.team() != Team.derelict) {
                 Seq<Hex> copy = data.hexes().copy();
                 copy.shuffle();
                 Hex hex = copy.find(h -> h.controller == null && h.spawnTime.get());
-                if(hex != null){
+                if (hex != null) {
                     loadout(p, hex.x, hex.y);
                     Core.app.post(() -> data.data(p).chosen = false);
                     hex.findController();
-                }else{
+                } else {
                     Call.infoMessage(p.con, Bundle.format("server.no-empty-hex", findLocale(p.locale)));
                     p.unit().kill();
                     p.team(Team.derelict);
@@ -470,66 +462,66 @@ public class HexedMod extends Plugin{
             netServer.sendWorldData(p);
         }
 
-        for(int i = 0; i < 5; i++) interval.reset(i, 0f);
+        for (int i = 0; i < 5; i++) interval.reset(i, 0f);
 
         counter = 0f;
 
         restarting = false;
     }
 
-    String getLeaderboard(Player pl){
+    String getLeaderboard(Player pl) {
         StringBuilder builder = new StringBuilder();
         builder.append(Bundle.format("leaderboard.header", findLocale(pl.locale), lastMin));
         int count = 0;
-        for(Player player : data.getLeaderboard()){
+        for (Player player : data.getLeaderboard()) {
             builder.append("[yellow]").append(++count).append(".[white] ")
                     .append(player.name).append(Bundle.format("leaderboard.hexes", findLocale(pl.locale), data.getControlled(player).size));
 
-            if(count > 4) break;
+            if (count > 4) break;
         }
         return builder.toString();
     }
 
-    void killTiles(Team team){
+    void killTiles(Team team) {
         data.data(team).dying = true;
         Time.runTask(8f, () -> data.data(team).dying = false);
         Groups.unit.each(u -> u.team == team, unit -> Time.run(Mathf.random(360), unit::kill));
-        for(int x = 0; x < world.width(); x++){
-            for(int y = 0; y < world.height(); y++){
+        for (int x = 0; x < world.width(); x++) {
+            for (int y = 0; y < world.height(); y++) {
                 Tile tile = world.tile(x, y);
-                if(tile.build != null && tile.team() == team){
+                if (tile.build != null && tile.team() == team) {
                     Time.run(Mathf.random(60f * 6), () -> {
-                        if(tile.block() != Blocks.air) tile.removeNet();
+                        if (tile.block() != Blocks.air) tile.removeNet();
                     });
                 }
             }
         }
     }
 
-    void loadout(Player player, int x, int y){
+    void loadout(Player player, int x, int y) {
         Stile coreTile = start.tiles.find(s -> s.block instanceof CoreBlock);
-        if(coreTile == null) throw new IllegalArgumentException("Schematic has no core tile. Exiting.");
+        if (coreTile == null) throw new IllegalArgumentException("Schematic has no core tile. Exiting.");
         int ox = x - coreTile.x, oy = y - coreTile.y;
         start.tiles.each(st -> {
             Tile tile = world.tile(st.x + ox, st.y + oy);
-            if(tile == null) return;
+            if (tile == null) return;
 
-            if(tile.block() != Blocks.air) tile.removeNet();
+            if (tile.block() != Blocks.air) tile.removeNet();
 
             tile.setNet(st.block, player.team(), st.rotation);
 
-            if(st.config != null){
+            if (st.config != null) {
                 tile.build.configureAny(st.config);
             }
-            if(tile.block() instanceof CoreBlock){
-                for(ItemStack stack : state.rules.loadout){
+            if (tile.block() instanceof CoreBlock) {
+                for (ItemStack stack : state.rules.loadout) {
                     Call.setItem(tile.build, stack.item, stack.amount);
                 }
             }
         });
     }
 
-    public boolean active(){
+    public boolean active() {
         return state.rules.tags.getBool("hexed") && !state.is(State.menu);
     }
 
@@ -568,14 +560,14 @@ public class HexedMod extends Plugin{
                 if (statisticsDocument == null) {
                     reitingsCollection
                         .findOneAndDelete(new BasicDBObject("_id", next.getObjectId("_id")))
-                        .subscribe(new ArrowSubscriber<Document>());
+                        .subscribe(new ArrowSubscriber<>());
                     next = statistics.create(Config.port.num(), "I DONT KNOOOOWWWW", "{}");
                 }
 
                 next.replace("serverSharedData", reitingsDatabase.toString());
                 reitingsCollection
                     .findOneAndReplace(new BasicDBObject("_id", next.getObjectId("_id")), next)
-                    .subscribe(new ArrowSubscriber<Document>());
+                    .subscribe(new ArrowSubscriber<>());
             },
             null,
             null
