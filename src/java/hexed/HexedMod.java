@@ -150,9 +150,9 @@ public class HexedMod extends Plugin{
         rules.tags.put("hexed", "true");
         rules.loadout = ItemStack.list(Items.copper, 300, Items.lead, 300, Items.graphite, 150, Items.metaglass, 100, Items.silicon, 200, Items.titanium, 25);
         rules.buildCostMultiplier = 1f;
-        rules.buildSpeedMultiplier = 1f / 2f;
+        rules.buildSpeedMultiplier = 2f;
         rules.blockHealthMultiplier = 1.5f;
-        rules.unitBuildSpeedMultiplier = 3.6f;
+        rules.unitBuildSpeedMultiplier = 1.25f;
         rules.enemyCoreBuildRadius = (Hex.diameter) * tilesize / 2f;
         rules.unitDamageMultiplier = 1.4f;
         rules.canGameOver = false;
