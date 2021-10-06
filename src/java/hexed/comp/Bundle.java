@@ -49,6 +49,10 @@ public class Bundle{
         return bundle != null && bundle.containsKey(key) ? bundle.get(key) : "???" + key + "???";
     }
 
+    public static String get(String key){
+        return get(key, defaultLocale());
+    }
+
     public static String format(String key, Locale locale, Object... values){
         String pattern = get(key, locale);
         MessageFormat format = formats.get(locale);

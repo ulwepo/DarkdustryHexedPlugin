@@ -15,9 +15,11 @@ import arc.struct.IntSeq;
 import arc.struct.Seq;
 import arc.struct.StringMap;
 import arc.util.Reflect;
+import arc.util.Strings;
 import arc.util.Structs;
 import arc.util.Tmp;
 import arc.util.noise.Simplex;
+import hexed.comp.Bundle;
 import mindustry.content.Blocks;
 import mindustry.graphics.CacheLayer;
 import mindustry.maps.Map;
@@ -252,7 +254,8 @@ public class HexedGenerator implements Cons<Tiles> {
             }
         }
 
-        state.map = new Map(StringMap.of("name", "[gold]Hexed arena"));
+        String mapName = Bundle.get(Strings.format("mode.@.name", mode));
+        state.map = new Map(StringMap.of("name", mapName));
         state.map.tags.put("author", "[gray]Skat");
     }
 
