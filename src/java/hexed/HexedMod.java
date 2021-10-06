@@ -19,6 +19,9 @@ import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoClients;
 import com.mongodb.reactivestreams.client.MongoCollection;
 
+import hexed.comp.NoPauseRules;
+import mindustry.game.*;
+import mindustry.io.JsonIO;
 import org.bson.Document;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -50,11 +53,7 @@ import mindustry.game.EventType.BlockDestroyEvent;
 import mindustry.game.EventType.PlayerJoin;
 import mindustry.game.EventType.PlayerLeave;
 import mindustry.game.EventType.Trigger;
-import mindustry.game.Rules;
-import mindustry.game.Schematic;
 import mindustry.game.Schematic.Stile;
-import mindustry.game.Schematics;
-import mindustry.game.Team;
 import mindustry.gen.Call;
 import mindustry.gen.Groups;
 import mindustry.gen.Player;
@@ -64,7 +63,7 @@ import mindustry.type.ItemStack;
 import mindustry.world.Tile;
 import mindustry.world.blocks.storage.CoreBlock;
 
-public class HexedMod extends Plugin{
+public class HexedMod extends Plugin {
 
     public static final float spawnDelay = 60 * 4;
     public static final int itemRequirement = 3000;
@@ -77,7 +76,8 @@ public class HexedMod extends Plugin{
 
     protected static HexedGenerator.Mode mode;
 
-    private final Rules rules = new Rules();
+    private Rules rules = new Rules();
+    private NoPauseRules hexRules;
     private final Interval interval = new Interval(5);
 
     private HexData data;
@@ -93,8 +93,7 @@ public class HexedMod extends Plugin{
     private final ConfigurationManager config;
     private MongoCollection<Document> reitingsCollection;
     private ServerStatistics statistics;
-    private JSONObject reitingsDatabase;
-
+    private JSONObject ratingsDatabase;
 
     public HexedMod() throws IOException {
         this.config  = new ConfigurationManager();
@@ -118,7 +117,7 @@ public class HexedMod extends Plugin{
                 next -> {
                     if (next == null) {
                         statistics.create(Config.port.num(), "I DONT KNOOOOWWWW", "{}");
-                        reitingsDatabase = new JSONObject("{}");
+                        ratingsDatabase = new JSONObject("{}");
                         return;
                     }
                     Document statisticsDocument = statistics.tryApplySchema(next);
@@ -127,16 +126,16 @@ public class HexedMod extends Plugin{
                             .findOneAndDelete(new BasicDBObject("_id", next.getObjectId("_id")))
                             .subscribe(new ArrowSubscriber<>());
                         statistics.create(Config.port.num(), "I DONT KNOOOOWWWW", "{}");
-                        reitingsDatabase = new JSONObject("{}");
+                        ratingsDatabase = new JSONObject("{}");
                         return;
                     }
-                    reitingsDatabase = new JSONObject(next.getString("serverSharedData"));
+                    ratingsDatabase = new JSONObject(next.getString("serverSharedData"));
                 },
                 null,
                 null
             ));
 
-            while (reitingsDatabase == null) {
+            while (ratingsDatabase == null) {
                 Thread.sleep(500);
             }
         } catch (JSONException | InterruptedException error) {
@@ -145,8 +144,7 @@ public class HexedMod extends Plugin{
     }
 
     @Override
-    public void init(){
-        rules.pvp = true;
+    public void init() {
         rules.tags.put("hexed", "true");
         rules.loadout = ItemStack.list(Items.copper, 300, Items.lead, 300, Items.graphite, 150, Items.metaglass, 100, Items.silicon, 200, Items.titanium, 25);
         rules.buildCostMultiplier = 1f;
@@ -161,10 +159,10 @@ public class HexedMod extends Plugin{
         start = Schematics.readBase64("bXNjaAF4nE2SX3LbIBDGFyQh/sh2fINcQCfK5IHItPWMIjSS3DRvuUqu0Jnew71OX5JdPs80wuYDdvmxu0CBjhXVU3xOFH6kX+l0v25x2Sic0jos53k754mIzBif0rjS/uH6fv3z9+36W/rHHYUhz3Na+pc4jnT8MunHuHxPZIc8/UyveaF2HeK2pYXCmtnWz3FKI1VxGah9KpZXOn4x3QDmOU0n3mUv05ijjLohL6mfLsOYLiv5Ob/wkVM+cQbxvPTf4rBlZhEl/pMqP9Lc+KshDcSQFm2pTC3EUfk8JEA6UHaYHcRRYaxkUHFXY7EwFZgKTAWmEmbNEiAdFm+wO9Lqf3DcGMTcEnphajA1mBpMLcyW/TrSsm8vKC1My4vsVpE07bhrGjZqz3wryVbsrCXsUogSvWVpMNvLvEZwtQRnEJc4VBDeElgaK5UwZRxk/PGvmDt47bC1BNaAZ1A5I5UzkhzplpOoJUxDQcLk3S3t1K2+LZXracXTsYiLK+sHSdvidi3qVPxELMTBVmpvcZ+3K3Z4HA55OQlApDwOB5gDzAHmAHOAOVykw0U6SVHkAJc7EY9X4lFeD7QH2gPtgfZAe7w7jzg90B7vzuMELyd8Ao5MVAI=");
 
         Events.run(Trigger.update, () -> {
-            if(active()){
+            if (active()) {
                 data.updateStats();
 
-                for(Player player : Groups.player){
+                for (Player player : Groups.player) {
                     if(player.team() != Team.derelict && player.team().cores().isEmpty()){
                         player.clearUnit();
                         killTiles(player.team());
@@ -180,8 +178,16 @@ public class HexedMod extends Plugin{
                         break;
                     }
                     createUserConfig(player.uuid());
-                    int score = reitingsDatabase.getJSONObject(player.uuid()).getInt("rating");
+                    int score = ratingsDatabase.getJSONObject(player.uuid()).getInt("rating");
                     player.name = Strings.format("[sky]@[lime]#[][] @", score, player.getInfo().lastName);
+                }
+
+                state.serverPaused = false;
+                rules = state.rules;
+                if (rules.pvp && rules instanceof NoPauseRules) {
+                    rules.pvp = false;
+                    rules.unitCap = Short.MAX_VALUE;
+                    rules.unitCapVariable = false;
                 }
 
                 int minsToGo = (int)(roundTime - counter) / 60 / 60;
@@ -207,25 +213,25 @@ public class HexedMod extends Plugin{
                 counter += Time.delta;
 
                 if(counter > roundTime) endGame();
-            } else counter = 0;        
+            } else counter = 0;
         });
 
         Events.on(BlockDestroyEvent.class, event -> {
-            if(event.tile.block() instanceof CoreBlock){
+            if (event.tile.block() instanceof CoreBlock) {
                 Hex hex = data.getHex(event.tile.pos());
 
-                if(hex != null){
+                if (hex != null) {
                     hex.spawnTime.reset();
                     hex.updateController();
 
                     Seq<Player> players = data.getLeaderboard();
-                    if (players.size > 3 && players.count(p -> p.team() != Team.derelict) == 1 && data.getControlled(players.first()).size > 5) endGame();
+                    if (players.size > 2 && players.count(p -> p.team() != Team.derelict) == 1 && data.getControlled(players.first()).size > 5) endGame();
                 }
             }
         });
 
         Events.on(PlayerLeave.class, event -> {
-            if(active() && event.player.team() != Team.derelict) {
+            if (active() && event.player.team() != Team.derelict) {
                 teamTimers.put(event.player.uuid(), event.player.team());
                 Timer.schedule(() -> {
                     int count = Groups.player.count(p -> p.team() == event.player.team());
@@ -261,6 +267,22 @@ public class HexedMod extends Plugin{
             data.data(event.player).lastMessage.reset();
         });
 
+        Events.on(EventType.WorldLoadEvent.class, event -> Time.runTask(5f, () -> {
+            rules = state.rules;
+            if (rules.pvp && !(rules instanceof NoPauseRules)) {
+                rules.pvp = false;
+                rules.unitCap = Short.MAX_VALUE;
+                rules.unitCapVariable = false;
+                hexRules = new NoPauseRules();
+                JsonIO.copy(rules, hexRules);
+                state.rules = hexRules;
+            } else if (rules.pvp) {
+                rules.pvp = false;
+                rules.unitCap = Short.MAX_VALUE;
+                rules.unitCapVariable = false;
+            }
+        }));
+
         Events.on(ProgressIncreaseEvent.class, event -> updateText(event.player));
 
         Events.on(HexCaptureEvent.class, event -> updateText(event.player));
@@ -289,6 +311,8 @@ public class HexedMod extends Plugin{
     @Override
     public void registerServerCommands(CommandHandler handler) {
         handler.removeCommand("host");
+        handler.removeCommand("gameover");
+
         handler.register("hexed", "[mode/list]", "Запустить сервер в режиме Хексов.", args -> {
             if (args.length > 0 && args[0].equalsIgnoreCase("list")) {
                 Log.info("Доступные режимы:");
@@ -336,20 +360,21 @@ public class HexedMod extends Plugin{
 
         handler.<Player>register("spectator", "Режим наблюдателя. Уничтожает твою базу", (args, player) -> {
             if (player.team() == Team.derelict) {
-                sendMessage(player, "commands.already-spectator");
-            } else {
-                killTiles(player.team());
-                player.unit().kill();
-                player.team(Team.derelict);
+                bundled(player, "commands.spectator.already");
+                return;
             }
+            killTiles(player.team());
+            player.unit().kill();
+            player.team(Team.derelict);
+            bundled(player, "commands.spectator.success");
         });
 
         handler.<Player>register("captured", "Узнать количество захваченных хексов.", (args, player) -> {
             if (player.team() == Team.derelict) {
-                sendMessage(player, "commands.no-hexes-spectator");
-            } else {
-                sendMessage(player, "commands.hex-amount", data.getControlled(player).size);
+                bundled(player, "commands.captured.spectator");
+                return;
             }
+            bundled(player, "commands.captured.hexes", data.getControlled(player).size);
         });
 
         handler.<Player>register("leaderboard", "Показать таблицу лидеров.", (args, player) -> player.sendMessage(getLeaderboard(player)));
@@ -363,8 +388,7 @@ public class HexedMod extends Plugin{
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < players.size && i < 4; i++) {
             if (data.getControlled(players.get(i)).size > 1) {
-                builder.append("[yellow]").append(i + 1).append(".[accent] ").append(players.get(i).name)
-                        .append("[lightgray] (x").append(data.getControlled(players.get(i)).size).append(")[]\n");
+                builder.append("[yellow]").append(i + 1).append(".[accent] ").append(players.get(i).name).append("[lightgray] (x").append(data.getControlled(players.get(i)).size).append(")[]\n");
             }
         }
 
@@ -378,9 +402,9 @@ public class HexedMod extends Plugin{
             }
         }
         if (Groups.player.size() > 1) {
-            int score = reitingsDatabase.getJSONObject(players.get(0).uuid()).getInt("rating");
+            int score = ratingsDatabase.getJSONObject(players.get(0).uuid()).getInt("rating");
             score++;
-            config.setJsonValue(reitingsDatabase.getJSONObject(players.get(0).uuid()), "rating", score);
+            config.setJsonValue(ratingsDatabase.getJSONObject(players.get(0).uuid()), "rating", score);
             saveToDatabase();
         }
         Time.runTask(60f * 15f, this::reload);
@@ -526,19 +550,19 @@ public class HexedMod extends Plugin{
     }
 
     private void createUserConfig(String uuid) {
-        if (!reitingsDatabase.has(uuid)) {
+        if (!ratingsDatabase.has(uuid)) {
             HashMap<String, Integer> userConfigurations = new HashMap<>();
             userConfigurations.put("rating", 0);
-            reitingsDatabase.put(uuid, userConfigurations);
+            ratingsDatabase.put(uuid, userConfigurations);
         }
     }
 
-    public static void sendMessage(Player player, String key, Object... values) {
+    public static void bundled(Player player, String key, Object... values) {
         player.sendMessage(Bundle.format(key, findLocale(player.locale), values));
     }
 
     public static void sendToChat(String key, Object... values) {
-        Groups.player.each(player -> sendMessage(player, key, values));
+        Groups.player.each(player -> bundled(player, key, values));
     }
 
     private static Locale findLocale(String code) {
@@ -564,7 +588,7 @@ public class HexedMod extends Plugin{
                     next = statistics.create(Config.port.num(), "I DONT KNOOOOWWWW", "{}");
                 }
 
-                next.replace("serverSharedData", reitingsDatabase.toString());
+                next.replace("serverSharedData", ratingsDatabase.toString());
                 reitingsCollection
                     .findOneAndReplace(new BasicDBObject("_id", next.getObjectId("_id")), next)
                     .subscribe(new ArrowSubscriber<>());

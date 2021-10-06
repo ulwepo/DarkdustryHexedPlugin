@@ -6,10 +6,10 @@ import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
 public class ArrowSubscriber<T> implements Subscriber<T> {
-    private Callback<Subscription> subscribe;
-    private Callback<T> next;
-    private Callback<?> complete;
-    private Callback<Throwable> error;
+    private final Callback<Subscription> subscribe;
+    private final Callback<T> next;
+    private final Callback<?> complete;
+    private final Callback<Throwable> error;
     private boolean isReturnedValue = false;
 
     public ArrowSubscriber() {
