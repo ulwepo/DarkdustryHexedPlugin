@@ -53,19 +53,19 @@ public class HexedGenerator implements Cons<Tiles> {
 
         oilFlats(new Block[][] {
                 {Blocks.sand, Blocks.darksand, Blocks.sand, Blocks.shale},
-                {Blocks.darksand, Blocks.sand, Blocks.sand, Blocks.sand},
+                {Blocks.shale, Blocks.sand, Blocks.sand, Blocks.sand},
                 {Blocks.darksand, Blocks.sand, Blocks.sand, Blocks.sand},
                 {Blocks.tar, Blocks.sand, Blocks.tar, Blocks.darksand},
                 {Blocks.darksand, Blocks.shale, Blocks.darksand, Blocks.shale}
         }, new Block[][] {
-                {Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall, Blocks.sandWall},
-                {Blocks.shaleWall, Blocks.sandWall, Blocks.sandWall, Blocks.shaleWall},
+                {Blocks.sandWall, Blocks.duneWall, Blocks.sandWall, Blocks.shaleWall},
+                {Blocks.shaleWall, Blocks.sandWall, Blocks.sandWall, Blocks.sandWall},
                 {Blocks.sandWall, Blocks.sandWall, Blocks.sandWall, Blocks.sandWall},
                 {Blocks.sandWall, Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall},
-                {Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall, Blocks.sandWall}
+                {Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall, Blocks.shaleWall}
         }),
 
-        ice(new Block[][] {
+        winter(new Block[][] {
                 {Blocks.iceSnow, Blocks.snow, Blocks.snow, Blocks.darksand, Blocks.snow},
                 {Blocks.ice, Blocks.water, Blocks.darksand, Blocks.iceSnow, Blocks.iceSnow},
                 {Blocks.water, Blocks.water, Blocks.iceSnow, Blocks.water, Blocks.darksand},
@@ -107,14 +107,14 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall, Blocks.sandWall}
         }),
 
-        spores(new Block[][] {
+        spore(new Block[][] {
                 {Blocks.moss, Blocks.sporeMoss, Blocks.sand, Blocks.moss},
                 {Blocks.moss, Blocks.dacite, Blocks.taintedWater, Blocks.sporeMoss},
                 {Blocks.darksandTaintedWater, Blocks.taintedWater, Blocks.moss, Blocks.hotrock},
                 {Blocks.darksand, Blocks.sand, Blocks.darksandWater, Blocks.darksand},
                 {Blocks.moss, Blocks.moss, Blocks.sporeMoss, Blocks.darksand}
         }, new Block[][] {
-                {Blocks.sporeWall, Blocks.duneWall, Blocks.sandWall, Blocks.sporeWall},
+                {Blocks.sporeWall, Blocks.sporeWall, Blocks.sandWall, Blocks.sporeWall},
                 {Blocks.duneWall, Blocks.sandWall, Blocks.sporeWall, Blocks.sporeWall},
                 {Blocks.duneWall, Blocks.sporeWall, Blocks.duneWall, Blocks.sporeWall},
                 {Blocks.duneWall, Blocks.sandWall, Blocks.sporeWall, Blocks.sandWall},
@@ -181,6 +181,7 @@ public class HexedGenerator implements Cons<Tiles> {
                     tile.setBlock(Blocks.air);
                 }
             });
+
             Angles.circle(3, 360f / 3 / 2f - 90, f -> {
                 Tmp.v1.trnsExact(f, Hex.spacing + 12);
                 if(Structs.inBounds(x + (int)Tmp.v1.x, y + (int)Tmp.v1.y, width, height)){
@@ -214,6 +215,19 @@ public class HexedGenerator implements Cons<Tiles> {
         if (mode == Mode.rived) {
             RiverNoiseFilter rivernoise = new RiverNoiseFilter();
             Reflect.set(rivernoise, "floor", Blocks.sand);
+            Reflect.set(rivernoise, "floor2", Blocks.water);
+
+            rivernoise.randomize();
+            in.begin(width, height, tiles::getn);
+            rivernoise.apply(tiles, in);
+            for (Tile tile : tiles) {
+                if (tile.floor().cacheLayer == CacheLayer.water) tile.setBlock(Blocks.air);
+            }
+        }
+
+        if (mode == Mode.winter) {
+            RiverNoiseFilter rivernoise = new RiverNoiseFilter();
+            Reflect.set(rivernoise, "floor", Blocks.ice);
             Reflect.set(rivernoise, "floor2", Blocks.water);
 
             rivernoise.randomize();
