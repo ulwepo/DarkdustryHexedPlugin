@@ -216,7 +216,7 @@ public class HexedMod extends Plugin {
         });
 
         Events.on(BlockDestroyEvent.class, event -> {
-            if (event.tile.block() instanceof CoreBlock) {
+            if (active() && event.tile.block() instanceof CoreBlock) {
                 Hex hex = data.getHex(event.tile.pos());
 
                 if (hex != null) {
