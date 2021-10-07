@@ -91,7 +91,7 @@ public class HexedMod extends Plugin {
 
     //По сути база данных для рейтингов
     private final ConfigurationManager config;
-    private MongoCollection<Document> reitingsCollection;
+    private MongoCollection<Document> ratingsCollection;
     private ServerStatistics statistics;
     private JSONObject ratingsDatabase;
 
@@ -107,12 +107,12 @@ public class HexedMod extends Plugin {
                 .retryWrites(true)
                 .build();
             MongoClient mongodb = MongoClients.create(settings);
-            reitingsCollection = mongodb
+            ratingsCollection = mongodb
                 .getDatabase(jsonData.getString("dbName"))
                 .getCollection(jsonData.getString("dbCollection"));
-            statistics = new ServerStatistics(reitingsCollection);
+            statistics = new ServerStatistics(ratingsCollection);
 
-            reitingsCollection.find(new BasicDBObject("port", Config.port.num())).subscribe(new ArrowSubscriber<>(
+            ratingsCollection.find(new BasicDBObject("port", Config.port.num())).subscribe(new ArrowSubscriber<>(
                 subscribe -> subscribe.request(1),
                 next -> {
                     if (next == null) {
@@ -122,7 +122,7 @@ public class HexedMod extends Plugin {
                     }
                     Document statisticsDocument = statistics.tryApplySchema(next);
                     if (statisticsDocument == null) {
-                        reitingsCollection
+                        ratingsCollection
                             .findOneAndDelete(new BasicDBObject("_id", next.getObjectId("_id")))
                             .subscribe(new ArrowSubscriber<>());
                         statistics.create(Config.port.num(), "I DONT KNOOOOWWWW", "{}");
@@ -371,6 +371,24 @@ public class HexedMod extends Plugin {
         });
 
         handler.<Player>register("leaderboard", "Показать таблицу лидеров.", (args, player) -> player.sendMessage(getLeaderboard(player)));
+
+        handler.<Player>register("hexstatus", "Узнать статус хекса на своем местоположении.", (args, player) -> {
+            Hex hex = data.data(player).location;
+            if (hex != null) {
+                hex.updateController();
+                StringBuilder status = new StringBuilder();
+                status.append(Bundle.get("commands.hexstatus.hex", findLocale(player))).append(hex.id).append("[]\n");
+                status.append(Bundle.get("commands.hexstatus.owner", findLocale(player))).append(hex.controller != null && data.getPlayer(hex.controller) != null ? data.getPlayer(hex.controller).name : Bundle.get("commands.hexstatus.owner.none", findLocale(player))).append("\n");
+                for (Teams.TeamData data : state.teams.getActive()) {
+                    if (hex.getProgressPercent(data.team) > 0) {
+                        status.append("[white]|> [accent]").append(this.data.getPlayer(data.team).name).append("[lightgray]: [accent]").append((int)hex.getProgressPercent(data.team)).append(Bundle.get("commands.hexstatus.captured", findLocale(player))).append("\n");
+                    }
+                }
+                player.sendMessage(status.toString());
+                return;
+            }
+            bundled(player, "commands.hexstatus.not-found");
+        });
     }
 
     void endGame() {
@@ -562,7 +580,7 @@ public class HexedMod extends Plugin {
     }
 
     private void saveToDatabase() {
-        reitingsCollection.find(new BasicDBObject("port", Config.port.num())).subscribe(new ArrowSubscriber<>(
+        ratingsCollection.find(new BasicDBObject("port", Config.port.num())).subscribe(new ArrowSubscriber<>(
             subscribe -> subscribe.request(1),
             next -> {
                 if (next == null) {
@@ -572,14 +590,14 @@ public class HexedMod extends Plugin {
                 Document statisticsDocument = statistics.tryApplySchema(next);
 
                 if (statisticsDocument == null) {
-                    reitingsCollection
+                    ratingsCollection
                         .findOneAndDelete(new BasicDBObject("_id", next.getObjectId("_id")))
                         .subscribe(new ArrowSubscriber<>());
                     next = statistics.create(Config.port.num(), "I DONT KNOOOOWWWW", "{}");
                 }
 
                 next.replace("serverSharedData", ratingsDatabase.toString());
-                reitingsCollection
+                ratingsCollection
                     .findOneAndReplace(new BasicDBObject("_id", next.getObjectId("_id")), next)
                     .subscribe(new ArrowSubscriber<>());
             },

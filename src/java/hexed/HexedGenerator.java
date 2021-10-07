@@ -215,26 +215,26 @@ public class HexedGenerator implements Cons<Tiles> {
         }
 
         if (mode == Mode.rived) {
-            RiverNoiseFilter rivernoise = new RiverNoiseFilter();
-            Reflect.set(rivernoise, "floor", Blocks.sand);
-            Reflect.set(rivernoise, "floor2", Blocks.water);
+            RiverNoiseFilter noise = new RiverNoiseFilter();
+            Reflect.set(noise, "floor", Blocks.sand);
+            Reflect.set(noise, "floor2", Blocks.water);
 
-            rivernoise.randomize();
+            noise.randomize();
             in.begin(width, height, tiles::getn);
-            rivernoise.apply(tiles, in);
+            noise.apply(tiles, in);
             for (Tile tile : tiles) {
                 if (tile.floor().cacheLayer == CacheLayer.water) tile.setBlock(Blocks.air);
             }
         }
 
         if (mode == Mode.winter) {
-            RiverNoiseFilter rivernoise = new RiverNoiseFilter();
-            Reflect.set(rivernoise, "floor", Blocks.ice);
-            Reflect.set(rivernoise, "floor2", Blocks.water);
+            RiverNoiseFilter noise = new RiverNoiseFilter();
+            Reflect.set(noise, "floor", Blocks.ice);
+            Reflect.set(noise, "floor2", Blocks.water);
 
-            rivernoise.randomize();
+            noise.randomize();
             in.begin(width, height, tiles::getn);
-            rivernoise.apply(tiles, in);
+            noise.apply(tiles, in);
             for (Tile tile : tiles) {
                 if (tile.floor().cacheLayer == CacheLayer.water) tile.setBlock(Blocks.air);
             }
@@ -254,9 +254,8 @@ public class HexedGenerator implements Cons<Tiles> {
             }
         }
 
-        String mapName = Bundle.get(Strings.format("mode.@.name", mode));
-        state.map = new Map(StringMap.of("name", mapName));
-        state.map.tags.put("author", "[gray]Skat");
+        state.map = new Map(StringMap.of("name", Bundle.getModeName(Strings.format("mode.@.name", mode))));
+        state.map.tags.put("author", "[gray]Skykatik");
     }
 
     public IntSeq getHex() {

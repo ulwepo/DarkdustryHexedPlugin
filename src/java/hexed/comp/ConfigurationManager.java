@@ -8,8 +8,6 @@ import org.json.JSONObject;
 
 import java.io.*;
 import java.nio.file.FileSystemException;
-import java.util.Collection;
-import java.util.Map;
 
 public class ConfigurationManager {
     private Fi jsonFile;
@@ -63,47 +61,7 @@ public class ConfigurationManager {
         return new JSONObject(pluginJson.toString()).getString("name");
     }
 
-    public void setJsonValue(JSONObject jsonData, String name, String value) {
-        jsonData.remove(name);
-        jsonData.put(name, value);
-    }
-
     public void setJsonValue(JSONObject jsonData, String name, int value) {
-        jsonData.remove(name);
-        jsonData.put(name, value);
-    }
-
-    public void setJsonValue(JSONObject jsonData, String name, long value) {
-        jsonData.remove(name);
-        jsonData.put(name, value);
-    }
-
-    public void setJsonValue(JSONObject jsonData, String name, float value) {
-        jsonData.remove(name);
-        jsonData.put(name, value);
-    }
-
-    public void setJsonValue(JSONObject jsonData, String name, double value) {
-        jsonData.remove(name);
-        jsonData.put(name, value);
-    }
-
-    public void setJsonValue(JSONObject jsonData, String name, Object value) {
-        jsonData.remove(name);
-        jsonData.put(name, value);
-    }
-
-    public void setJsonValue(JSONObject jsonData, String name, boolean value) {
-        jsonData.remove(name);
-        jsonData.put(name, value);
-    }
-
-    public <T, V> void setJsonValue(JSONObject jsonData, String name, Map<T, V> value) {
-        jsonData.remove(name);
-        jsonData.put(name, value);
-    }
-
-    public <T> void setJsonValue(JSONObject jsonData, String name, Collection<T> value) {
         jsonData.remove(name);
         jsonData.put(name, value);
     }
