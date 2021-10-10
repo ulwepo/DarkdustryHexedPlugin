@@ -394,6 +394,7 @@ public class HexedMod extends Plugin {
     void endGame() {
         if (restarting) return;
 
+        state.teams.active.each(team -> team.core().items().clear());
         restarting = true;
         Seq<Player> players = data.getLeaderboard();
         StringBuilder builder = new StringBuilder();
