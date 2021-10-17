@@ -17,7 +17,7 @@ repositories {
 ext {
     artifactBaseName = 'HexedPlugin'
 
-    versionMindustry = 'v131'
+    versionMindustry = 'v132'
 }
 
 dependencies {

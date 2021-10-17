@@ -27,6 +27,7 @@ import mindustry.maps.filters.GenerateFilter;
 import mindustry.maps.filters.GenerateFilter.GenerateInput;
 import mindustry.maps.filters.OreFilter;
 import mindustry.maps.filters.RiverNoiseFilter;
+import mindustry.maps.filters.ScatterFilter;
 import mindustry.world.Block;
 import mindustry.world.Tile;
 import mindustry.world.Tiles;
@@ -121,6 +122,20 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.duneWall, Blocks.sporeWall, Blocks.duneWall, Blocks.sporeWall},
                 {Blocks.duneWall, Blocks.sandWall, Blocks.sporeWall, Blocks.sandWall},
                 {Blocks.sporeWall, Blocks.shaleWall, Blocks.sandWall, Blocks.sporeWall}
+        }),
+
+        nuclear(new Block[][] {
+                {Blocks.stone, Blocks.shale, Blocks.moss, Blocks.darksand},
+                {Blocks.craters, Blocks.stone, Blocks.taintedWater, Blocks.sand},
+                {Blocks.shale, Blocks.sand, Blocks.craters, Blocks.sand},
+                {Blocks.slag, Blocks.moss, Blocks.cryofluid, Blocks.snow},
+                {Blocks.shale, Blocks.hotrock, Blocks.dacite, Blocks.darksand}
+        }, new Block[][] {
+                {Blocks.stoneWall, Blocks.duneWall, Blocks.sporePine, Blocks.shaleWall},
+                {Blocks.stoneWall, Blocks.stoneWall, Blocks.sporeWall, Blocks.sandWall},
+                {Blocks.duneWall, Blocks.sandWall, Blocks.stoneWall, Blocks.sandWall},
+                {Blocks.darkMetal, Blocks.sporePine, Blocks.darkMetal, Blocks.snowWall},
+                {Blocks.duneWall, Blocks.stoneWall, Blocks.dirtWall, Blocks.duneWall}
         });
 
         final Block[][] floors;
@@ -169,7 +184,7 @@ public class HexedGenerator implements Cons<Tiles> {
                         ore = in.overlay;
                     }
                 }
-                if (floor == Blocks.tar || floor == Blocks.slag) ore = Blocks.air;
+                if (floor == Blocks.tar || floor == Blocks.slag || floor == Blocks.cryofluid) ore = Blocks.air;
                 tiles.set(x, y, new Tile(x, y, floor.id, ore.id, wall.id));
             }
         }
@@ -238,6 +253,17 @@ public class HexedGenerator implements Cons<Tiles> {
             for (Tile tile : tiles) {
                 if (tile.floor().cacheLayer == CacheLayer.water) tile.setBlock(Blocks.air);
             }
+        }
+
+        if (mode == Mode.nuclear) {
+            ScatterFilter scatter = new ScatterFilter();
+            Reflect.set(scatter, "flooronto", Blocks.snow);
+            Reflect.set(scatter, "floor", Blocks.iceSnow);
+            Reflect.set(scatter, "block", Blocks.whiteTreeDead);
+
+            scatter.randomize();
+            in.begin(width, height, tiles::getn);
+            scatter.apply(tiles, in);
         }
 
         for (int i = 0; i < hex.size; i++) {

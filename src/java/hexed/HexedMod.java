@@ -193,7 +193,7 @@ public class HexedMod extends Plugin {
                 }
 
                 if (interval.get(timerBoard, leaderboardTime)) {
-                    Groups.player.each(player -> Call.infoToast(player.con, getLeaderboard(player), 15f));
+                    Groups.player.each(player -> Call.infoToast(player.con, getLeaderboard(player), 12f));
                 }
 
                 if (interval.get(timerUpdate, updateTime)) {
@@ -322,7 +322,7 @@ public class HexedMod extends Plugin {
             if (args.length > 0) {
                 try {
                     custom = HexedGenerator.Mode.valueOf(args[0]);
-                } catch(Throwable t) {
+                } catch(Exception e) {
                     Log.err("Неверное название режима. Будет выбран случайный режим.");
                 }
             }
@@ -404,11 +404,11 @@ public class HexedMod extends Plugin {
             if (hex != null) {
                 hex.updateController();
                 StringBuilder status = new StringBuilder();
-                status.append(Bundle.get("commands.hexstatus.hex", findLocale(player))).append(hex.id).append("[]\n");
-                status.append(Bundle.get("commands.hexstatus.owner", findLocale(player))).append(hex.controller != null && data.getPlayer(hex.controller) != null ? data.getPlayer(hex.controller).name : Bundle.get("commands.hexstatus.owner.none", findLocale(player))).append("\n");
+                status.append(Bundle.format("commands.hexstatus.hex", findLocale(player))).append(hex.id).append("[]\n");
+                status.append(Bundle.format("commands.hexstatus.owner", findLocale(player))).append(hex.controller != null && data.getPlayer(hex.controller) != null ? data.getPlayer(hex.controller).coloredName() : Bundle.format("commands.hexstatus.owner.none", findLocale(player))).append("\n");
                 for (Teams.TeamData data : state.teams.getActive()) {
-                    if (hex.getProgressPercent(data.team) > 0) {
-                        status.append("[white]|> [accent]").append(this.data.getPlayer(data.team).name).append("[lightgray]: [accent]").append((int)hex.getProgressPercent(data.team)).append(Bundle.get("commands.hexstatus.captured", findLocale(player))).append("\n");
+                    if (hex.getProgressPercent(data.team) > 0 && hex.getProgressPercent(data.team) <= 100) {
+                        status.append("[white]|> [accent]").append(this.data.getPlayer(data.team).coloredName()).append("[lightgray]: [accent]").append(Bundle.format("commands.hexstatus.captured", findLocale(player), (int)hex.getProgressPercent(data.team))).append("\n");
                     }
                 }
                 player.sendMessage(status.toString());
@@ -476,7 +476,7 @@ public class HexedMod extends Plugin {
         } else if (team.location.controller == player.team()) {
             message.append(Bundle.format("hex-captured", findLocale(player)));
         } else if (team.location != null && team.location.controller != null && data.getPlayer(team.location.controller) != null) {
-            message.append("[#").append(team.location.controller.color).append("]").append(Bundle.format("hex-captured-by-player", findLocale(player))).append(data.getPlayer(team.location.controller).name);
+            message.append("[#").append(team.location.controller.color).append("]").append(Bundle.format("hex-captured-by-player", findLocale(player))).append(data.getPlayer(team.location.controller).coloredName());
         } else {
             message.append(Bundle.format("hex-unknown", findLocale(player)));
         }
@@ -539,7 +539,6 @@ public class HexedMod extends Plugin {
         for (int i = 0; i < 5; i++) interval.reset(i, 0f);
 
         counter = 0f;
-
         restarting = false;
     }
 
@@ -548,7 +547,7 @@ public class HexedMod extends Plugin {
         builder.append(Bundle.format("leaderboard.header", findLocale(p), lastMin));
         int count = 0;
         for (Player player : data.getLeaderboard()) {
-            builder.append("[yellow]").append(++count).append(".[white] ").append(player.name).append(Bundle.format("leaderboard.hexes", findLocale(p), data.getControlled(player).size));
+            builder.append("[yellow]").append(++count).append(".[white] ").append(player.coloredName()).append(Bundle.format("leaderboard.hexes", findLocale(p), data.getControlled(player).size));
             if (count > 4) break;
         }
         return builder.toString();
