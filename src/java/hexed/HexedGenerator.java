@@ -125,11 +125,11 @@ public class HexedGenerator implements Cons<Tiles> {
         }),
 
         nuclear(new Block[][] {
-                {Blocks.stone, Blocks.darksand, Blocks.moss, Blocks.shale},
+                {Blocks.stone, Blocks.shale, Blocks.moss, Blocks.darksand},
                 {Blocks.craters, Blocks.stone, Blocks.taintedWater, Blocks.sand},
-                {Blocks.darksand, Blocks.sand, Blocks.craters, Blocks.sand},
+                {Blocks.shale, Blocks.sand, Blocks.craters, Blocks.sand},
                 {Blocks.slag, Blocks.moss, Blocks.cryofluid, Blocks.snow},
-                {Blocks.darksand, Blocks.hotrock, Blocks.dacite, Blocks.darksand}
+                {Blocks.shale, Blocks.hotrock, Blocks.dacite, Blocks.darksand}
         }, new Block[][] {
                 {Blocks.stoneWall, Blocks.duneWall, Blocks.sporePine, Blocks.shaleWall},
                 {Blocks.stoneWall, Blocks.stoneWall, Blocks.sporeWall, Blocks.sandWall},
