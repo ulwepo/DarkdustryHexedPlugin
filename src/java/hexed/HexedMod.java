@@ -158,27 +158,6 @@ public class HexedMod extends Plugin {
                         endGame();
                         break;
                     }
-                    createUserConfig(player);
-                    
-                    hexedCollection
-                        .find(
-                            new BsonDocument(
-                                "UUID",
-                                new BsonString(player.uuid())
-                            )
-                        ).subscribe(
-                            new ArrowSubscriber<>(
-                                subscribe -> subscribe.request(1),
-                                next -> {
-                                    Document playerStatistics = userStatisticsSchema.tryApplySchema(next);
-                                    int wins = playerStatistics.get("wins", 0);
-
-                                    player.name = Strings.format("[sky]@[lime]#[][] @", wins, player.getInfo().lastName);
-                                },
-                                null,
-                                null
-                            )
-                        );
                 }
 
                 state.serverPaused = false;
@@ -240,7 +219,7 @@ public class HexedMod extends Plugin {
         });
 
         Events.on(PlayerJoin.class, event -> {
-            createUserConfig(event.player);
+            updateUserInfo(event.player);
 
             if (!active() || event.player.team() == Team.derelict) return;
             if (teamTimers.containsKey(event.player.uuid())) {
@@ -264,15 +243,18 @@ public class HexedMod extends Plugin {
             data.data(event.player).lastMessage.reset();
         });
 
-        Events.on(EventType.WorldLoadEvent.class, event -> Time.runTask(5f, () -> {
-            rules = state.rules;
-            if (rules.pvp && !(rules instanceof NoPauseRules)) {
-                rules.pvp = false;
-                hexRules = new NoPauseRules();
-                JsonIO.copy(rules, hexRules);
-                state.rules = hexRules;
-            } else if (rules.pvp) rules.pvp = false;
-        }));
+        Events.on(EventType.WorldLoadEvent.class, event -> {
+            Groups.player.forEach((player) -> updateUserInfo(player));
+            Time.runTask(5f, () -> {
+                rules = state.rules;
+                if (rules.pvp && !(rules instanceof NoPauseRules)) {
+                    rules.pvp = false;
+                    hexRules = new NoPauseRules();
+                    JsonIO.copy(rules, hexRules);
+                    state.rules = hexRules;
+                } else if (rules.pvp) rules.pvp = false;
+            });
+        });
 
         Events.on(ProgressIncreaseEvent.class, event -> updateText(event.player));
 
@@ -596,20 +578,33 @@ public class HexedMod extends Plugin {
         return state.rules.tags.getBool("hexed") && !state.is(State.menu);
     }
 
-    private void createUserConfig(Player player) {
-        hexedCollection.updateOne(
+    private void updateUserInfo(Player player) {
+        hexedCollection.findOneAndUpdate(
             new BsonDocument(
                 "UUID",
                 new BsonString(player.uuid())
             ),
             userStatisticsSchema.create(
-                0, 
+                0,
                 player.name,
                 player.uuid()
             )
+        ).subscribe(
+            new ArrowSubscriber<Document>(
+                subscribe -> subscribe.request(1),
+                next -> {
+                    player.name(
+                        Strings.format(
+                            "[sky]@[lime]#[][] @",
+                            next.getInteger("wins"),
+                            player.getInfo().lastName
+                        )
+                    );
+                },
+                null,
+                null
+            )
         );
-
-        userStatisticsSchema.create(0, player.name, player.uuid());
     }
 
     public static void bundled(Player player, String key, Object... values) {
