@@ -121,6 +121,20 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.duneWall, Blocks.sporeWall, Blocks.duneWall, Blocks.sporeWall},
                 {Blocks.duneWall, Blocks.sandWall, Blocks.sporeWall, Blocks.sandWall},
                 {Blocks.sporeWall, Blocks.shaleWall, Blocks.sandWall, Blocks.sporeWall}
+        }),
+
+        nuclear(new Block[][] {
+                {Blocks.stone, Blocks.darksand, Blocks.moss, Blocks.shale},
+                {Blocks.craters, Blocks.stone, Blocks.taintedWater, Blocks.sand},
+                {Blocks.darksand, Blocks.sand, Blocks.craters, Blocks.sand},
+                {Blocks.slag, Blocks.moss, Blocks.cryofluid, Blocks.snow},
+                {Blocks.darksand, Blocks.hotrock, Blocks.darksand, Blocks.shale}
+        }, new Block[][] {
+                {Blocks.sandWall, Blocks.duneWall, Blocks.sandWall, Blocks.shaleWall},
+                {Blocks.shaleWall, Blocks.sandWall, Blocks.sandWall, Blocks.sandWall},
+                {Blocks.sandWall, Blocks.sandWall, Blocks.sandWall, Blocks.sandWall},
+                {Blocks.sandWall, Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall},
+                {Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall, Blocks.shaleWall}
         });
 
         final Block[][] floors;
@@ -169,7 +183,7 @@ public class HexedGenerator implements Cons<Tiles> {
                         ore = in.overlay;
                     }
                 }
-                if (floor == Blocks.tar || floor == Blocks.slag) ore = Blocks.air;
+                if (floor == Blocks.tar || floor == Blocks.slag || floor == Blocks.cryofluid) ore = Blocks.air;
                 tiles.set(x, y, new Tile(x, y, floor.id, ore.id, wall.id));
             }
         }

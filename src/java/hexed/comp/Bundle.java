@@ -48,7 +48,7 @@ public class Bundle{
 
     public static String getModeName(String key) {
         StringMap bundle = getOrLoad(defaultLocale());
-        return bundle != null && bundle.containsKey(key) ? bundle.get(key) : bundle.get("mode.def.name");
+        return bundle.containsKey(key) ? bundle.get(key) : bundle.get("mode.def.name");
     }
 
     public static String format(String key, Locale locale, Object... values) {
