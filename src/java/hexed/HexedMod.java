@@ -159,7 +159,8 @@ public class HexedMod extends Plugin {
                         endGame();
                         break;
                     }
-                    createUserConfig(player);
+
+                    updateUserInfo(player);
                     
                     hexedCollection
                         .find(
@@ -241,7 +242,7 @@ public class HexedMod extends Plugin {
         });
 
         Events.on(PlayerJoin.class, event -> {
-            createUserConfig(event.player);
+            updateUserInfo(event.player);
 
             if (!active() || event.player.team() == Team.derelict) return;
             if (teamTimers.containsKey(event.player.uuid())) {
