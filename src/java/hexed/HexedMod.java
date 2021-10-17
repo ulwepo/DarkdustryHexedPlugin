@@ -13,8 +13,10 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Objects;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
+import com.mongodb.client.model.Filters;
 import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoClients;
 import com.mongodb.reactivestreams.client.MongoCollection;
@@ -339,7 +341,7 @@ public class HexedMod extends Plugin {
             hexedCollection
                 .find()
                 .sort(
-                    new BsonDocument(
+                    new BasicDBObject(
                         "wins",
                         new BsonInt32(-1)
                     )
@@ -433,13 +435,13 @@ public class HexedMod extends Plugin {
 
         if (Groups.player.size() > 1) {
             hexedCollection.findOneAndUpdate(
-                new BsonDocument(
+                Filters.eq(
                     "uuid",
-                    new BsonString(players.get(0).uuid())
+                    players.get(0).uuid()
                 ),
-                new BsonDocument(
+                new BasicDBObject(
                     "$inc",
-                    new BsonDocument(
+                    new BasicDBObject(
                         "wins",
                         new BsonInt32(1)
                     )
@@ -588,7 +590,7 @@ public class HexedMod extends Plugin {
 
     private void updateUserInfo(Player player) {
         hexedCollection.findOneAndUpdate(
-            new BsonDocument(
+            new BasicDBObject(
                 "UUID",
                 new BsonString(player.uuid())
             ),
