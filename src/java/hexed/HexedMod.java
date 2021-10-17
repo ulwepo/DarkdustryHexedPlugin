@@ -11,6 +11,7 @@ import static mindustry.Vars.world;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.Objects;
 
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
@@ -347,13 +348,20 @@ public class HexedMod extends Plugin {
                 .subscribe(
                     new ArrowSubscriber<Document>(
                         subscribe -> subscribe.request(10),
-                        next -> players
+                        next -> {
+                            if (Objects.isNull(next)) {
+                                players.append("Нет игроков в топе, станьте первым в топе среди тысячи игроков!");
+                                return;
+                            }
+
+                            players
                                 .append(cycle[0]++)
                                 .append(". ")
-                                .append(player.name())
+                                .append(next.getString("name"))
                                 .append(": ")
-                                .append(next.getInteger("wins"))
-                                .append("\n"),
+                                .append(next.getInteger("wins", 0))
+                                .append("\n");
+                        },
                         completed -> player.sendMessage("Текущий топ игроков: " + players),
                         null
                     )
@@ -596,7 +604,7 @@ public class HexedMod extends Plugin {
                     player.name(
                         Strings.format(
                             "[sky]@[lime]#[][] @",
-                            next.getInteger("wins"),
+                            next.getInteger("wins", 0),
                             player.getInfo().lastName
                         )
                     );
