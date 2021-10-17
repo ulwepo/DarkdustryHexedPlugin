@@ -131,11 +131,11 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.slag, Blocks.moss, Blocks.cryofluid, Blocks.snow},
                 {Blocks.shale, Blocks.hotrock, Blocks.dacite, Blocks.darksand}
         }, new Block[][] {
-                {Blocks.stoneWall, Blocks.duneWall, Blocks.sporePine, Blocks.shaleWall},
+                {Blocks.stoneWall, Blocks.shaleWall, Blocks.sporePine, Blocks.duneWall},
                 {Blocks.stoneWall, Blocks.stoneWall, Blocks.sporeWall, Blocks.sandWall},
-                {Blocks.duneWall, Blocks.sandWall, Blocks.stoneWall, Blocks.sandWall},
+                {Blocks.shaleWall, Blocks.sandWall, Blocks.stoneWall, Blocks.sandWall},
                 {Blocks.darkMetal, Blocks.sporePine, Blocks.darkMetal, Blocks.snowWall},
-                {Blocks.duneWall, Blocks.stoneWall, Blocks.dirtWall, Blocks.duneWall}
+                {Blocks.shaleWall, Blocks.stoneWall, Blocks.dirtWall, Blocks.duneWall}
         });
 
         final Block[][] floors;

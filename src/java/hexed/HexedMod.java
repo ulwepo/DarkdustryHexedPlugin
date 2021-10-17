@@ -95,13 +95,12 @@ public class HexedMod extends Plugin {
 
     private final HashMap<String, Team> teamTimers = new HashMap<>();
 
-    //По сути база данных для рейтингов
-    private final ConfigurationManager config;
     private MongoCollection<Document> hexedCollection;
     private UserStatistics userStatisticsSchema;
 
     public HexedMod() throws IOException {
-        this.config  = new ConfigurationManager();
+        //По сути база данных для рейтингов
+        ConfigurationManager config = new ConfigurationManager();
         JSONObject jsonData = config.getJsonData();
 
         try {
@@ -349,7 +348,7 @@ public class HexedMod extends Plugin {
     @Override
     public void registerClientCommands(CommandHandler handler) {
 
-        handler.<Player>register("leaders", "Показать текущих топеров.", (args, player) -> {
+        handler.<Player>register("lb", "Показать текущих топеров.", (args, player) -> {
             StringBuilder players = new StringBuilder();
             final int[] cycle = {0};
 
@@ -363,18 +362,19 @@ public class HexedMod extends Plugin {
                 )
                 .limit(10)
                 .subscribe(
-                    new ArrowSubscriber<Document>(
-                        subscribe -> subscribe.request(10),
-                        next -> players
-                                .append(cycle[0]++)
-                                .append(". ")
-                                .append(player.name())
-                                .append(": ")
-                                .append(next.getInteger("wins"))
-                                .append("\n"),
-                        completed -> player.sendMessage("Текущий топ игроков: " + players),
-                        null
-                    )
+                        new ArrowSubscriber<>(
+                                subscribe -> subscribe.request(10),
+                                next -> players
+                                        .append("[accent]")
+                                        .append(cycle[0] + 1)
+                                        .append(". ")
+                                        .append(next.getString("name"))
+                                        .append("[accent]: [cyan]")
+                                        .append(next.getInteger("wins"))
+                                        .append("\n"),
+                                completed -> Call.infoMessage(player.con, Bundle.format("commands.lb.list", findLocale(player), players.toString())),
+                                null
+                        )
                 );
         });
 
