@@ -22,7 +22,6 @@ import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoClients;
 import com.mongodb.reactivestreams.client.MongoCollection;
 
-import org.bson.BsonDocument;
 import org.bson.BsonInt32;
 import org.bson.BsonString;
 import org.bson.Document;
@@ -150,7 +149,7 @@ public class HexedMod extends Plugin {
                     if (player.team() != Team.derelict && player.team().cores().isEmpty()) {
                         player.clearUnit();
                         killTiles(player.team());
-                        sendToChat("server.player-lost", player.name());
+                        Groups.player.each(p -> bundled(p, "server.player-lost", player.coloredName()));
                         Call.infoMessage(player.con, Bundle.format("server.you-lost", findLocale(player)));
                         player.team(Team.derelict);
                     }
@@ -204,7 +203,7 @@ public class HexedMod extends Plugin {
                     hex.updateController();
 
                     Seq<Player> players = data.getLeaderboard();
-                    if (players.size > 2 && players.count(p -> p.team() != Team.derelict) == 1 && data.getControlled(players.first()).size > 5) endGame();
+                    if (players.size > 2 && players.count(p -> p.team() != Team.derelict) == 1 && data.getControlled(players.first()).size > 1) endGame();
                 }
             }
         });
@@ -444,7 +443,7 @@ public class HexedMod extends Plugin {
                         new BsonInt32(1)
                     )
                 )
-            ).subscribe(new ArrowSubscriber<Document>());
+            ).subscribe(new ArrowSubscriber<>());
         }
 
         Time.runTask(60f * 15f, this::reload);
@@ -612,28 +611,24 @@ public class HexedMod extends Plugin {
                 )
             )),
             new FindOneAndUpdateOptions().upsert(true)
-        ).subscribe(new ArrowSubscriber<Document>(
-            subscribe -> subscribe.request(1),
-            next -> player.name(
-                    Strings.format(
-                    "[sky]@[lime]#[][] @",
-                    !Objects.isNull(next)
-                        ? next.getInteger("wins")
-                        : 0,
-                        player.getInfo().lastName
-                    )
+        ).subscribe(new ArrowSubscriber<>(
+                subscribe -> subscribe.request(1),
+                next -> player.name(
+                        Strings.format(
+                                "[sky]@[lime]#[][] @",
+                                !Objects.isNull(next)
+                                        ? next.getInteger("wins")
+                                        : 0,
+                                player.getInfo().lastName
+                        )
                 ),
-            null,
-            null
+                null,
+                null
         ));
     }
 
     public static void bundled(Player player, String key, Object... values) {
         player.sendMessage(Bundle.format(key, findLocale(player), values));
-    }
-
-    public static void sendToChat(String key, Object... values) {
-        Groups.player.each(player -> bundled(player, key, values));
     }
 
     private static Locale findLocale(Player player) {
