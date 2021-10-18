@@ -26,7 +26,7 @@ public class MongoSchema<R, N> extends MongoEvents {
         this.<OnSubscribe>addListener(OnSubscribe.class, (subscriber) -> subscriber.subscription.request(1));
     }
 
-    public Document create(Map<String, Object> data) {
+    public Map<String, Object> create(Map<String, Object> data) {
         data.forEach((key, value) -> {
             Iterator<MongoAccessor<?>> iterableSchema = schema.iterator();
             MongoAccessor<?> accessor = null;
@@ -57,13 +57,12 @@ public class MongoSchema<R, N> extends MongoEvents {
         ));
 
         insertMap.putAll(data);
-        Document insertDocument = new Document(insertMap);
 
-        return insertDocument;
+        return insertMap;
     }
 
-    public void insertDoc(Document insertDocument) {
-        Document checkedDocument = applySchema(insertDocument);
+    public void insertDoc(HashMap<String, Object> insertDocument) {
+        Document checkedDocument = new Document(applySchema(insertDocument));
 
         this.collection.insertOne(checkedDocument).subscribe(new ArrowSubscriber<>(
             subscribe -> this.fireEvent(OnSubscribe.class, subscribe),
@@ -73,31 +72,41 @@ public class MongoSchema<R, N> extends MongoEvents {
         ));
     }
 
-    public Document applySchema(Document document) throws IllegalArgumentException {
-        Document newDocument = new Document()
-            .append("_id", document.get("_id"))
-            .append("__v", document.get("__v"));
+    public Map<String, Object> applySchema(Map<String, Object> document) throws IllegalArgumentException {
+        HashMap<String, Object> newDocument = new HashMap<String, Object>();
+        newDocument.putAll(Map.of(
+                "_id",
+                document.get("_id"),
+                "__v",
+                document.get("__v")
+            ));
         this.schema.forEach((accessor) -> {
             String accessorKey = accessor.getKey();
             Object documentData = document.get(accessorKey);
             
             if (accessor.isValidData(documentData == null ? null : documentData.getClass())) {
-                newDocument.append(accessorKey, documentData);
+                newDocument.put(accessorKey, documentData);
                 return;
             }
 
             if (accessor instanceof NonRequired<?> nonrequired) {
-                if (nonrequired.hasDefault()) newDocument.append(accessorKey, nonrequired.getDefaultValue());
+                if (nonrequired.hasDefault()) newDocument.put(accessorKey, nonrequired.getDefaultValue());
                 return;
             }
 
-            throw new IllegalArgumentException("Невозможно пропарсить ключ \"" + accessorKey + "\", который является обязательным\n" + document.toJson());
+            throw new IllegalArgumentException("Невозможно пропарсить ключ \"" + accessorKey + "\", который является обязательным\n" + document.toString());
         });
 
         return newDocument;
     }
 
-    public boolean canApplySchema(Document document) {
+    public Document applySchema(Document document) {
+        return new Document(
+            applySchema((Map<String, Object>) document)
+        );
+    }
+
+    public boolean canApplySchema(Map<String, Object> document) {
         try {
             this.applySchema(document);
             return true;
@@ -106,11 +115,21 @@ public class MongoSchema<R, N> extends MongoEvents {
         }
     }
 
-    public Document tryApplySchema(Document document) {
+    public boolean canApplySchema(Document document) {
+        return canApplySchema((Map<String, Object>) document);
+    }
+
+    public Map<String, Object> tryApplySchema(Map<String, Object> document) {
         try {
             return this.applySchema(document);
         } catch (Exception e) {
             return null;
         }
+    }
+
+    public Document tryApplySchema(Document document) {
+        return new Document(
+            tryApplySchema((Map<String, Object>) document)
+        );
     }
 }

@@ -19,7 +19,7 @@ public class UserStatistics extends MongoSchema<String, Object> {
         );
     }
 
-    public Document create(Integer wins, String name, String UUID) {
+    public Map<String, Object> create(Integer wins, String name, String UUID) {
         return this.create(Map.of(
             "wins", wins,
             "name", name,

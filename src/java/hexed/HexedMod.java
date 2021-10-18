@@ -11,11 +11,13 @@ import static mindustry.Vars.world;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
-import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.FindOneAndUpdateOptions;
 import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoClients;
 import com.mongodb.reactivestreams.client.MongoCollection;
@@ -159,28 +161,6 @@ public class HexedMod extends Plugin {
                         endGame();
                         break;
                     }
-
-                    updateUserInfo(player);
-                    
-                    hexedCollection
-                        .find(
-                            new BsonDocument(
-                                "UUID",
-                                new BsonString(player.uuid())
-                            )
-                        ).subscribe(
-                            new ArrowSubscriber<>(
-                                subscribe -> subscribe.request(1),
-                                next -> {
-                                    Document playerStatistics = userStatisticsSchema.tryApplySchema(next);
-                                    int wins = playerStatistics.get("wins", 0);
-
-                                    player.name = Strings.format("[sky]@[lime]#[][] @", wins, player.getInfo().lastName);
-                                },
-                                null,
-                                null
-                            )
-                        );
                 }
 
                 state.serverPaused = false;
@@ -353,7 +333,7 @@ public class HexedMod extends Plugin {
 
         handler.<Player>register("lb", "Показать текущих топеров.", (args, player) -> {
             StringBuilder players = new StringBuilder();
-            final int[] cycle = {0};
+            final int[] cycle = {1};
 
             hexedCollection
                 .find()
@@ -365,19 +345,23 @@ public class HexedMod extends Plugin {
                 )
                 .limit(10)
                 .subscribe(
-                        new ArrowSubscriber<>(
-                                subscribe -> subscribe.request(10),
-                                next -> players
-                                        .append("[accent]")
-                                        .append(cycle[0] + 1)
-                                        .append(". ")
-                                        .append(next.getString("name"))
-                                        .append("[accent]: [cyan]")
-                                        .append(next.getInteger("wins"))
-                                        .append("\n"),
-                                completed -> Call.infoMessage(player.con, Bundle.format("commands.lb.list", findLocale(player), players.toString())),
-                                null
-                        )
+                    new ArrowSubscriber<>(
+                        subscribe -> subscribe.request(10),
+                        next -> {
+                            if (!Objects.isNull(next))
+                                players
+                                    .append("[accent]")
+                                    .append(cycle[0]++)
+                                    .append(". ")
+                                    .append(next.getString("name"))
+                                    .append("[accent]: [cyan]")
+                                    .append(next.getInteger("wins"))
+                                    .append("\n");
+                            else players.append(Bundle.format("commands.lb.none", findLocale(player)));
+                        },
+                        completed -> Call.infoMessage(player.con, Bundle.format("commands.lb.list", findLocale(player), players.toString())),
+                        null
+                    )
                 );
         });
 
@@ -438,17 +422,39 @@ public class HexedMod extends Plugin {
             boolean dominated = data.getControlled(players.first()).size == data.hexes().size;
 
             for (Player player : Groups.player) {
-                Call.infoMessage(player.con, Bundle.format("round-over", findLocale(player)) +
-                        (player == players.first() ? Bundle.format("you-won", findLocale(player), data.getControlled(players.first()).size) : "[yellow]" + players.first().name + Bundle.format("player-won", findLocale(player), data.getControlled(players.first()).size)) +
-                        (dominated ? "" : Bundle.format("final-score", findLocale(player), builder.toString())));
-            }
-        }
+                String endGameMessage = Bundle.format("round-over", findLocale(player));
+                
+                if (player == players.first())
+                    endGameMessage += Bundle.format(
+                        "you-won",
+                        findLocale(player),
+                        data.getControlled(
+                            players.first()
+                        ).size
+                    );
+                else endGameMessage += "[yellow]"
+                    + players.first().name
+                    + Bundle.format(
+                        "player-won",
+                        findLocale(player),
+                        data.getControlled(
+                            players.first()
+                        ).size
+                    );
+                if (!dominated)
+                    endGameMessage += Bundle.format(
+                        "final-score", 
+                        findLocale(player),
+                        builder.toString()
+                    );
 
-        if (Groups.player.size() > 1) {
+                Call.infoMessage(player.con, endGameMessage);
+            }
+
             hexedCollection.findOneAndUpdate(
-                Filters.eq(
-                    "uuid",
-                    players.get(0).uuid()
+                new BasicDBObject(
+                    "UUID",
+                    players.first().uuid()
                 ),
                 new BasicDBObject(
                     "$inc",
@@ -457,7 +463,7 @@ public class HexedMod extends Plugin {
                         new BsonInt32(1)
                     )
                 )
-            );
+            ).subscribe(new ArrowSubscriber<Document>());
         }
 
         Time.runTask(60f * 15f, this::reload);
@@ -600,19 +606,45 @@ public class HexedMod extends Plugin {
     }
 
     private void updateUserInfo(Player player) {
+        Map<String, Object> update = userStatisticsSchema.create(
+            0,
+            player.name,
+            player.uuid()
+        );
+
+        update.remove("_id");
+        update.remove("__v");
+        update.remove("name");
+        
         hexedCollection.findOneAndUpdate(
             new BasicDBObject(
                 "UUID",
                 new BsonString(player.uuid())
             ),
-            userStatisticsSchema.create(
-                0, 
-                player.name,
-                player.uuid()
-            )
-        );
-
-        userStatisticsSchema.create(0, player.name, player.uuid());
+            new BasicDBObject(Map.of(
+                "$setOnInsert",
+                update,
+                "$set",
+                new BasicDBObject(
+                    "name",
+                    player.name()
+                )
+            )),
+            new FindOneAndUpdateOptions().upsert(true)
+        ).subscribe(new ArrowSubscriber<Document>(
+            subscribe -> subscribe.request(1),
+            next -> player.name(
+                    Strings.format(
+                    "[sky]@[lime]#[][] @",
+                    !Objects.isNull(next)
+                        ? next.getInteger("wins")
+                        : 0,
+                        player.getInfo().lastName
+                    )
+                ),
+            null,
+            null
+        ));
     }
 
     public static void bundled(Player player, String key, Object... values) {
