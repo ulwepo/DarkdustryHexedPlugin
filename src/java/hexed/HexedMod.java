@@ -424,29 +424,10 @@ public class HexedMod extends Plugin {
             for (Player player : Groups.player) {
                 String endGameMessage = Bundle.format("round-over", findLocale(player));
                 
-                if (player == players.first())
-                    endGameMessage += Bundle.format(
-                        "you-won",
-                        findLocale(player),
-                        data.getControlled(
-                            players.first()
-                        ).size
-                    );
-                else endGameMessage += "[yellow]"
-                    + players.first().name
-                    + Bundle.format(
-                        "player-won",
-                        findLocale(player),
-                        data.getControlled(
-                            players.first()
-                        ).size
-                    );
-                if (!dominated)
-                    endGameMessage += Bundle.format(
-                        "final-score", 
-                        findLocale(player),
-                        builder.toString()
-                    );
+                if (player == players.first())endGameMessage += Bundle.format("you-won", findLocale(player), data.getControlled(players.first()).size);
+                else endGameMessage += Bundle.format("player-won", findLocale(player), players.first().coloredName(), data.getControlled(players.first()).size);
+
+                if (!dominated) endGameMessage += Bundle.format("final-score", findLocale(player), builder.toString());
 
                 Call.infoMessage(player.con, endGameMessage);
             }
