@@ -134,6 +134,7 @@ public class HexedMod extends Plugin {
         rules.enemyCoreBuildRadius = (Hex.diameter) * tilesize / 2f;
         rules.unitDamageMultiplier = 1.4f;
         rules.fire = false;
+        rules.reactorExplosions = true;
         rules.canGameOver = false;
         rules.coreCapture = false;
         rules.revealedBlocks.addAll(Blocks.duct, Blocks.ductRouter, Blocks.ductBridge, Blocks.thruster, Blocks.scrapWall, Blocks.scrapWallLarge, Blocks.scrapWallHuge, Blocks.scrapWallGigantic);
