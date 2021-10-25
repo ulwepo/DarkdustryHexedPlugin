@@ -5,10 +5,10 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.darkdustry.mindustry</groupId>
-  <artifactId>example-plugin</artifactId>
+  <artifactId>ExamplePlugin</artifactId>
   <version>1.0</version>
 
-  <name>examplePlugin</name>
+  <name>example-plugin</name>
   <url>https://darkdustry.ml</url>
 
   <properties>
