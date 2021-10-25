@@ -1,4 +1,4 @@
-package org.darkdustry;
+package org.darkdustry.mindustry;
 
 import arc.util.CommandHandler;
 import mindustry.mod.Plugin;
