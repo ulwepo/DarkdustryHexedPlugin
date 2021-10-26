@@ -12,8 +12,12 @@
   <url>https://darkdustry.ml</url>
 
   <properties>
+    <plugin.name>${project.artifactId}</plugin.name>
+    <plugin.description>It's example plugin</plugin.description>
+    <plugin.author>Darkdustry</plugin.author>
     <plugin.mainClass>org.darkdustry.mindustry.Main</plugin.mainClass>
-    <dependency.versions.mindustry>133</dependency.versions.mindustry>
+    <dependencies.versions.mindustry>133</dependencies.versions.mindustry>
+
     <plugin.prettier.goal>write</plugin.prettier.goal>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>17</maven.compiler.source>
@@ -32,7 +36,7 @@
 	    <groupId>com.github.Anuken.Mindustry</groupId>
 	    <artifactId>core</artifactId>
       <scope>provided</scope>
-	    <version>${dependency.versions.mindustry}</version>
+	    <version>${dependencies.versions.mindustry}</version>
     </dependency>
   </dependencies>
 
@@ -83,6 +87,34 @@
             <goals>
               <goal>${plugin.prettier.goal}</goal>
             </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <artifactId>exec-maven-plugin</artifactId>
+        <groupId>org.codehaus.mojo</groupId>
+        <version>1.6.0</version>
+        <executions>
+          <execution>
+            <?m2e execute onConfiguration?>
+            <id>BootStrap</id>
+            <phase>initialize</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>node</executable>
+              <arguments>
+                <argument>scripts/bootstrap.js</argument>
+                <argument>${plugin.name}</argument>
+                <argument>${plugin.description}</argument>
+                <argument>${plugin.author}</argument>
+                <argument>${plugin.mainClass}</argument>
+                <argument>${project.version}</argument>
+                <argument>${dependencies.versions.mindustry}</argument>
+              </arguments>
+            </configuration>
           </execution>
         </executions>
       </plugin>
