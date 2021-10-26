@@ -33,7 +33,8 @@ public class ConfigurationManager {
 		json = new Json(JsonWriter.OutputType.json);
 
 		if (!configurationFile.exists()) {
-			InputStream in = getClass().getResourceAsStream("/config/" + "settings.json");
+			InputStream in = getClass()
+				.getResourceAsStream("/config/" + "settings.json");
 
 			if (in == null) throw new FileNotFoundException(
 				"resources:///config/" + "settings.json"

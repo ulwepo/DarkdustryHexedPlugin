@@ -45,14 +45,16 @@ public class Bundle {
 
 	public static String get(String key, Locale locale) {
 		StringMap bundle = getOrLoad(locale);
-		return bundle != null && bundle.containsKey(key)
+		return (bundle != null && bundle.containsKey(key))
 			? bundle.get(key)
 			: "???" + key + "???";
 	}
 
 	public static String getModeName(String key) {
 		StringMap bundle = getOrLoad(defaultLocale());
-		return bundle.containsKey(key) ? bundle.get(key) : bundle.get("mode.def.name");
+		return bundle.containsKey(key)
+			? bundle.get(key)
+			: bundle.get("mode.def.name");
 	}
 
 	public static String format(String key, Locale locale, Object... values) {
@@ -60,7 +62,10 @@ public class Bundle {
 		MessageFormat format = formats.get(locale);
 		if (!Structs.contains(supportedLocales, locale)) {
 			format =
-				formats.get(defaultLocale(), () -> new MessageFormat(pattern, defaultLocale()));
+				formats.get(
+					defaultLocale(),
+					() -> new MessageFormat(pattern, defaultLocale())
+				);
 			format.applyPattern(pattern);
 		} else if (format == null) {
 			format = new MessageFormat(pattern, locale);
@@ -80,7 +85,7 @@ public class Bundle {
 		} else if (bundle == null && Structs.contains(supportedLocales, locale)) {
 			bundles.put(locale, bundle = load(locale));
 		}
-		return bundle != null ? bundle : bundles.get(defaultLocale());
+		return (bundle != null) ? bundle : bundles.get(defaultLocale());
 	}
 
 	private static StringMap load(Locale locale) {

@@ -148,10 +148,34 @@ public class HexedGenerator implements Cons<Tiles> {
 		winter(
 			new Block[][] {
 				{ Blocks.iceSnow, Blocks.snow, Blocks.snow, Blocks.darksand, Blocks.snow },
-				{ Blocks.ice, Blocks.water, Blocks.darksand, Blocks.iceSnow, Blocks.iceSnow },
-				{ Blocks.water, Blocks.water, Blocks.iceSnow, Blocks.water, Blocks.darksand },
-				{ Blocks.darksand, Blocks.water, Blocks.snow, Blocks.darksand, Blocks.darksand },
-				{ Blocks.snow, Blocks.darksand, Blocks.darksand, Blocks.snow, Blocks.iceSnow },
+				{
+					Blocks.ice,
+					Blocks.water,
+					Blocks.darksand,
+					Blocks.iceSnow,
+					Blocks.iceSnow,
+				},
+				{
+					Blocks.water,
+					Blocks.water,
+					Blocks.iceSnow,
+					Blocks.water,
+					Blocks.darksand,
+				},
+				{
+					Blocks.darksand,
+					Blocks.water,
+					Blocks.snow,
+					Blocks.darksand,
+					Blocks.darksand,
+				},
+				{
+					Blocks.snow,
+					Blocks.darksand,
+					Blocks.darksand,
+					Blocks.snow,
+					Blocks.iceSnow,
+				},
 			},
 			new Block[][] {
 				{
@@ -300,7 +324,12 @@ public class HexedGenerator implements Cons<Tiles> {
 			new Block[][] {
 				{ Blocks.moss, Blocks.sporeMoss, Blocks.sand, Blocks.moss },
 				{ Blocks.moss, Blocks.dacite, Blocks.taintedWater, Blocks.sporeMoss },
-				{ Blocks.darksandTaintedWater, Blocks.taintedWater, Blocks.moss, Blocks.hotrock },
+				{
+					Blocks.darksandTaintedWater,
+					Blocks.taintedWater,
+					Blocks.moss,
+					Blocks.hotrock,
+				},
 				{ Blocks.darksand, Blocks.sand, Blocks.darksandWater, Blocks.darksand },
 				{ Blocks.moss, Blocks.moss, Blocks.sporeMoss, Blocks.darksand },
 			},
@@ -425,7 +454,9 @@ public class HexedGenerator implements Cons<Tiles> {
 				360f / 3 / 2f - 90,
 				f -> {
 					Tmp.v1.trnsExact(f, Hex.spacing + 12);
-					if (Structs.inBounds(x + (int) Tmp.v1.x, y + (int) Tmp.v1.y, width, height)) {
+					if (
+						Structs.inBounds(x + (int) Tmp.v1.x, y + (int) Tmp.v1.y, width, height)
+					) {
 						Tmp.v1.trnsExact(f, Hex.spacing / 2f + 7);
 						Bresenham2.line(
 							x,
@@ -522,7 +553,10 @@ public class HexedGenerator implements Cons<Tiles> {
 
 		state.map =
 			new Map(
-				StringMap.of("name", Bundle.getModeName(Strings.format("mode.@.name", mode)))
+				StringMap.of(
+					"name",
+					Bundle.getModeName(Strings.format("mode.@.name", mode))
+				)
 			);
 		state.map.tags.put("author", "[gray]Skykatik");
 	}

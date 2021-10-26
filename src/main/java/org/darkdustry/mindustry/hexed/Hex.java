@@ -44,7 +44,7 @@ public class Hex {
 	}
 
 	public float getProgressPercent(Team team) {
-		return progress[team.id] / Main.itemRequirement * 100;
+		return (progress[team.id] / Main.itemRequirement * 100);
 	}
 
 	public boolean hasCore() {

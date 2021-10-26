@@ -10,7 +10,10 @@ public class UserStatistics extends MongoDataBridge<UserStatistics> {
 	public String name = "";
 	public int wins = 0;
 
-	public static void find(BasicDBObject filter, Consumer<UserStatistics> callback) {
+	public static void find(
+		BasicDBObject filter,
+		Consumer<UserStatistics> callback
+	) {
 		UserStatistics.find(UserStatistics.class, filter, callback);
 	}
 }

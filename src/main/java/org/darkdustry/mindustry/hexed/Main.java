@@ -102,7 +102,9 @@ public class Main extends Plugin {
 		JSONObject jsonData = config.getJsonData();
 
 		try {
-			ConnectionString connString = new ConnectionString(jsonData.getString("mongoURI"));
+			ConnectionString connString = new ConnectionString(
+				jsonData.getString("mongoURI")
+			);
 
 			MongoClientSettings settings = MongoClientSettings
 				.builder()
@@ -339,7 +341,9 @@ public class Main extends Plugin {
 				Seq<Player> arr = Seq.with(players);
 
 				if (active()) {
-					if (teamTimers.containsKey(player.uuid())) return teamTimers.get(player.uuid());
+					if (teamTimers.containsKey(player.uuid())) return teamTimers.get(
+						player.uuid()
+					);
 					for (Team team : Team.all) {
 						if (
 							team.id > 5 &&
@@ -560,7 +564,8 @@ public class Main extends Plugin {
 						Log.err("Неверное название режима. Будет выбран случайный режим.");
 					}
 				}
-				mode = custom == null ? Structs.random(HexedGenerator.Mode.values()) : custom;
+				mode =
+					custom == null ? Structs.random(HexedGenerator.Mode.values()) : custom;
 
 				data = new HexData();
 
@@ -580,7 +585,10 @@ public class Main extends Plugin {
 			"time",
 			"Узнать время до конца раунда.",
 			args ->
-				info("Время до конца раунда: &lc@ минут", (int) (roundTime - counter) / 60 / 60)
+				info(
+					"Время до конца раунда: &lc@ минут",
+					(int) (roundTime - counter) / 60 / 60
+				)
 		);
 
 		handler.register("end", "Принудительно закончить раунд.", args -> endGame());
@@ -607,7 +615,8 @@ public class Main extends Plugin {
 		}
 
 		if (!players.isEmpty()) {
-			boolean dominated = data.getControlled(players.first()).size == data.hexes().size;
+			boolean dominated =
+				data.getControlled(players.first()).size == data.hexes().size;
 
 			for (Player player : Groups.player) {
 				String endGameMessage = Bundle.format("round-over", findLocale(player));
@@ -724,7 +733,10 @@ public class Main extends Plugin {
 					Core.app.post(() -> data.data(p).chosen = false);
 					hex.findController();
 				} else {
-					Call.infoMessage(p.con, Bundle.format("server.no-empty-hex", findLocale(p)));
+					Call.infoMessage(
+						p.con,
+						Bundle.format("server.no-empty-hex", findLocale(p))
+					);
 					p.unit().kill();
 					p.team(Team.derelict);
 				}
@@ -812,7 +824,7 @@ public class Main extends Plugin {
 	}
 
 	public boolean active() {
-		return state.rules.tags.getBool("hexed") && !state.is(State.menu);
+		return (state.rules.tags.getBool("hexed") && !state.is(State.menu));
 	}
 
 	public static void bundled(Player player, String key, Object... values) {
@@ -822,8 +834,9 @@ public class Main extends Plugin {
 	private static Locale findLocale(Player player) {
 		Locale locale = Structs.find(
 			Bundle.supportedLocales,
-			l -> l.toString().equals(player.locale) || player.locale.startsWith(l.toString())
+			l ->
+				l.toString().equals(player.locale) || player.locale.startsWith(l.toString())
 		);
-		return locale != null ? locale : Bundle.defaultLocale();
+		return (locale != null) ? locale : Bundle.defaultLocale();
 	}
 }
