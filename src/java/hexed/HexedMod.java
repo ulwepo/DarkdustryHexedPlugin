@@ -51,7 +51,7 @@ import hexed.models.UserStatistics;
 import mindustry.content.Blocks;
 import mindustry.content.Items;
 import mindustry.core.GameState.State;
-import mindustry.core.NetServer.TeamAssigner;
+import mindustry.core.NetServer.*;
 import mindustry.game.EventType;
 import mindustry.game.EventType.BlockDestroyEvent;
 import mindustry.game.EventType.PlayerJoin;
@@ -278,6 +278,15 @@ public class HexedMod extends Plugin {
                 return Team.derelict;
             }
             return prev.assign(player, players);
+        };
+
+        ChatFormatter prevFormat = netServer.chatFormatter;
+        netServer.chatFormatter = (player, message) -> {
+            if (player == null) return message;
+            if (active()) {
+                return "[coral][[" + player.coloredName() + "[coral]]:[white] " + message;
+            }
+            return prevFormat.format(player, message);
         };
     }
 
