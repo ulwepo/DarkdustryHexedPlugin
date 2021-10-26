@@ -1,1 +1,1 @@
-{"name":"ExamplePlugin","displayName":"ExamplePlugin","description":"It's example plugin","author":"Darkdustry","main":"org.darkdustry.mindustry.Main","hidden":true,"java":true,"version":"1.0","minGameVersion":"133"}
+{"name":"HexedPlugin","displayName":"HexedPlugin","description":"A special gamemode","author":"Darkdustry","main":"org.darkdustry.mindustry.hexed.Main","hidden":true,"java":true,"version":"1.0","minGameVersion":"133"}

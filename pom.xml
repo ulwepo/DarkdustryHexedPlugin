@@ -5,17 +5,17 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.darkdustry.mindustry</groupId>
-  <artifactId>ExamplePlugin</artifactId>
+  <artifactId>HexedPlugin</artifactId>
   <version>1.0</version>
 
-  <name>example-plugin</name>
+  <name>hexed-plugin</name>
   <url>https://darkdustry.ml</url>
 
   <properties>
     <plugin.name>${project.artifactId}</plugin.name>
-    <plugin.description>It's example plugin</plugin.description>
+    <plugin.description>A special gamemode</plugin.description>
     <plugin.author>Darkdustry</plugin.author>
-    <plugin.mainClass>org.darkdustry.mindustry.Main</plugin.mainClass>
+    <plugin.mainClass>org.darkdustry.mindustry.hexed.Main</plugin.mainClass>
     <dependencies.versions.mindustry>133</dependencies.versions.mindustry>
 
     <plugin.prettier.goal>write</plugin.prettier.goal>
@@ -37,6 +37,23 @@
 	    <artifactId>core</artifactId>
       <scope>provided</scope>
 	    <version>${dependencies.versions.mindustry}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mongodb</groupId>
+      <artifactId>mongodb-driver-reactivestreams</artifactId>
+      <version>4.3.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+      <version>20210307</version>
+    </dependency>
+    <dependency>
+      <groupId>org.darkdustry</groupId>
+      <artifactId>tools</artifactId>
+      <version>1.0</version>
+      <scope>system</scope>
+      <systemPath>${project.basedir}/libs/tools-1.0.jar</systemPath>
     </dependency>
   </dependencies>
 
@@ -76,13 +93,13 @@
           <ignoreConfigFile>true</ignoreConfigFile>
           <ignoreEditorConfig>true</ignoreEditorConfig>
           <inputGlobs>
-            <inputGlob>src/main/java/**/*.java</inputGlob>
-            <inputGlob>src/test/java/**/*.java</inputGlob>
+            <inputGlob>**.java</inputGlob>
+            <inputGlob>**.java</inputGlob>
           </inputGlobs>
         </configuration>
         <executions>
           <execution>
-            <?m2e execute onConfiguration,onIncremental?>
+            <?m2e execute onConfiguration?>
             <phase>validate</phase>
             <goals>
               <goal>${plugin.prettier.goal}</goal>
