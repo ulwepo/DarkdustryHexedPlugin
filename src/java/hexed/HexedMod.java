@@ -146,7 +146,7 @@ public class HexedMod extends Plugin {
             if (active()) {
                 data.updateStats();
 
-                Groups.player.each(player -> {
+                for (Player player : Groups.player) {
                     if (player.team() != Team.derelict && player.team().cores().isEmpty()) {
                         player.clearUnit();
                         killTiles(player.team());
@@ -161,7 +161,7 @@ public class HexedMod extends Plugin {
                         endGame();
                         break;
                     }
-                });
+                }
 
                 state.serverPaused = false;
                 rules = state.rules;
@@ -175,7 +175,7 @@ public class HexedMod extends Plugin {
                 }
 
                 if (interval.get(timerBoard, leaderboardTime)) {
-                    Groups.player.each(player -> Call.infoToast(player.con, getLeaderboard(player), 12f));
+                    Groups.player.each(player -> Call.infoToast(player.con, getLeaderboard(player), 12.5f));
                 }
 
                 if (interval.get(timerUpdate, updateTime)) {
@@ -282,7 +282,8 @@ public class HexedMod extends Plugin {
         netServer.chatFormatter = (player, message) -> {
             if (player == null) return message;
             if (active()) {
-                return "[coral][[" + player.coloredName() + "[coral]]:[white] " + message;
+                int wins = 0; //TODO получение из бд
+                return "[coral][[[cyan]" + wins + " [sky]#[white] " + player.coloredName() + "[coral]]:[white] " + message;
             }
             return prevFormat.format(player, message);
         };
@@ -591,6 +592,7 @@ public class HexedMod extends Plugin {
         return state.rules.tags.getBool("hexed") && !state.is(State.menu);
     }
 
+    /*
     private void updateUserInfo(Player player) {
         Map<String, Object> update = userStatisticsSchema.create(
             0,
@@ -632,6 +634,7 @@ public class HexedMod extends Plugin {
                 null
         ));
     }
+    */
 
     public static void bundled(Player player, String key, Object... values) {
         player.sendMessage(Bundle.format(key, findLocale(player), values));
