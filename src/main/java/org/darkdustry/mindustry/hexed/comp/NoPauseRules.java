@@ -5,7 +5,7 @@ import mindustry.game.Rules;
 
 public class NoPauseRules extends Rules {
 
-	public Gamemode mode() {
-		return Gamemode.pvp;
-	}
+    public Gamemode mode() {
+        return Gamemode.pvp;
+    }
 }

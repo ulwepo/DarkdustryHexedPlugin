@@ -87,10 +87,10 @@
         <version>0.14</version>
         <configuration>
           <prettierJavaVersion>1.3.0</prettierJavaVersion>
-          <tabWidth>1</tabWidth>
-          <useTabs>true</useTabs>
+          <useTabs>false</useTabs>
+          <tabWidth>4</tabWidth>
           <ignoreConfigFile>true</ignoreConfigFile>
-          <ignoreEditorConfig>true</ignoreEditorConfig>
+          <ignoreEditorConfig>false</ignoreEditorConfig>
           <inputGlobs>
             <inputGlob>**.java</inputGlob>
             <inputGlob>**.java</inputGlob>

@@ -6,14 +6,14 @@ import org.darkdustry.MongoDataBridge;
 
 public class UserStatistics extends MongoDataBridge<UserStatistics> {
 
-	public String UUID;
-	public String name = "";
-	public int wins = 0;
+    public String UUID;
+    public String name = "";
+    public int wins = 0;
 
-	public static void find(
-		BasicDBObject filter,
-		Consumer<UserStatistics> callback
-	) {
-		UserStatistics.find(UserStatistics.class, filter, callback);
-	}
+    public static void find(
+        BasicDBObject filter,
+        Consumer<UserStatistics> callback
+    ) {
+        UserStatistics.find(UserStatistics.class, filter, callback);
+    }
 }
