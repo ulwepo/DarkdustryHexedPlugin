@@ -1,15 +1,15 @@
 package hexed;
 
-import arc.math.geom.*;
-import arc.util.*;
-import mindustry.game.*;
-import mindustry.game.Teams.*;
-import mindustry.gen.*;
-import mindustry.type.*;
-import mindustry.world.*;
-import mindustry.world.blocks.storage.*;
+import arc.math.geom.Intersector;
+import arc.util.Nullable;
+import arc.util.Timekeeper;
+import mindustry.game.Team;
+import mindustry.game.Teams.TeamData;
+import mindustry.type.ItemStack;
+import mindustry.world.Tile;
+import mindustry.world.blocks.storage.CoreBlock;
 
-import java.util.*;
+import java.util.Arrays;
 
 import static mindustry.Vars.*;
 
@@ -55,11 +55,6 @@ public class Hex {
         }
 
         Arrays.fill(progress, 0);
-        Groups.unit.intersect(wx - rad, wy - rad, rad*2, rad*2).each(e -> {
-            if (contains(e.x, e.y)) {
-                progress[e.team.id] += e.health / 10f;
-            }
-        });
 
         for (int cx = x - radius; cx < x + radius; cx++) {
             for (int cy = y - radius; cy < y + radius; cy++) {

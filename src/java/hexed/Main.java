@@ -39,12 +39,10 @@ public class Main {
                 )
             )
             .limit(10)
-            .subscribe(new ArrowSubscriber<Document>(
-                subscribe -> subscribe.request(10),
-                players::add,
-                completed -> {
-                    System.out.println(players.toArray()[0]);
-                }, null)
+            .subscribe(new ArrowSubscriber<>(
+                    subscribe -> subscribe.request(10),
+                    players::add,
+                    completed -> System.out.println(players.toArray()[0]), null)
             );
     }
 }

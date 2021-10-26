@@ -1,13 +1,18 @@
 package hexed;
 
-import arc.*;
-import arc.math.geom.*;
-import arc.struct.*;
-import arc.util.*;
+import arc.Events;
+import arc.math.geom.Point2;
+import arc.struct.IntMap;
+import arc.struct.IntSeq;
+import arc.struct.Seq;
+import arc.util.Nullable;
+import arc.util.Timekeeper;
 import mindustry.Vars;
-import mindustry.game.*;
-import mindustry.gen.*;
 import mindustry.content.Blocks;
+import mindustry.game.Team;
+import mindustry.gen.Call;
+import mindustry.gen.Groups;
+import mindustry.gen.Player;
 
 public class HexData {
     /** All hexes on the map. No order. */
@@ -32,7 +37,7 @@ public class HexData {
         }
 
         for (Player player : Groups.player) {
-            if(player.dead()) continue;
+            if (player.dead()) continue;
 
             HexTeam team = data(player);
             Hex newHex = hexes.min(h -> player.dst2(h.wx, h.wy));

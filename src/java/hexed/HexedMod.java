@@ -1,19 +1,10 @@
 package hexed;
 
-import static arc.util.Log.err;
-import static arc.util.Log.info;
-import static mindustry.Vars.logic;
-import static mindustry.Vars.netServer;
-import static mindustry.Vars.state;
-import static mindustry.Vars.tilesize;
-import static mindustry.Vars.world;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-
+import arc.Core;
+import arc.Events;
+import arc.math.Mathf;
+import arc.struct.Seq;
+import arc.util.*;
 import com.mongodb.BasicDBObject;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
@@ -21,24 +12,6 @@ import com.mongodb.client.model.FindOneAndUpdateOptions;
 import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoClients;
 import com.mongodb.reactivestreams.client.MongoCollection;
-
-import org.bson.BsonInt32;
-import org.bson.BsonString;
-import org.bson.Document;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import arc.Core;
-import arc.Events;
-import arc.math.Mathf;
-import arc.struct.Seq;
-import arc.util.CommandHandler;
-import arc.util.Interval;
-import arc.util.Log;
-import arc.util.Strings;
-import arc.util.Structs;
-import arc.util.Time;
-import arc.util.Timer;
 import hexed.HexData.HexCaptureEvent;
 import hexed.HexData.HexMoveEvent;
 import hexed.HexData.HexTeam;
@@ -51,18 +24,14 @@ import hexed.models.UserStatistics;
 import mindustry.content.Blocks;
 import mindustry.content.Items;
 import mindustry.core.GameState.State;
-import mindustry.core.NetServer.*;
-import mindustry.game.EventType;
+import mindustry.core.NetServer.ChatFormatter;
+import mindustry.core.NetServer.TeamAssigner;
+import mindustry.game.*;
 import mindustry.game.EventType.BlockDestroyEvent;
 import mindustry.game.EventType.PlayerJoin;
 import mindustry.game.EventType.PlayerLeave;
 import mindustry.game.EventType.Trigger;
-import mindustry.game.Rules;
-import mindustry.game.Schematic;
 import mindustry.game.Schematic.Stile;
-import mindustry.game.Schematics;
-import mindustry.game.Team;
-import mindustry.game.Teams;
 import mindustry.gen.Call;
 import mindustry.gen.Groups;
 import mindustry.gen.Player;
@@ -71,6 +40,22 @@ import mindustry.mod.Plugin;
 import mindustry.type.ItemStack;
 import mindustry.world.Tile;
 import mindustry.world.blocks.storage.CoreBlock;
+import org.bson.BsonInt32;
+import org.bson.BsonString;
+import org.bson.Document;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static arc.util.Log.err;
+import static arc.util.Log.info;
+import static mindustry.Vars.*;
 
 public class HexedMod extends Plugin {
 
@@ -217,7 +202,7 @@ public class HexedMod extends Plugin {
                     if (count > 0) return;
                     killTiles(event.player.team());
                     teamTimers.remove(event.player.uuid());
-                }, 75f);
+                }, 60f);
             }
         });
 
@@ -282,8 +267,40 @@ public class HexedMod extends Plugin {
         netServer.chatFormatter = (player, message) -> {
             if (player == null) return message;
             if (active()) {
-                int wins = 0; //TODO получение из бд
-                return "[coral][[[cyan]" + wins + " [sky]#[white] " + player.coloredName() + "[coral]]:[white] " + message;
+                AtomicInteger wins = new AtomicInteger();
+                Map<String, Object> update = userStatisticsSchema.create(
+                        0,
+                        player.name,
+                        player.uuid()
+                );
+
+                update.remove("_id");
+                update.remove("__v");
+                update.remove("name");
+
+                hexedCollection.findOneAndUpdate(
+                        new BasicDBObject(
+                                "UUID",
+                                new BsonString(player.uuid())
+                        ),
+                        new BasicDBObject(Map.of(
+                                "$setOnInsert",
+                                update,
+                                "$set",
+                                new BasicDBObject(
+                                        "name",
+                                        player.name()
+                                )
+                        )),
+                        new FindOneAndUpdateOptions().upsert(true)
+                ).subscribe(new ArrowSubscriber<>(
+                        subscribe -> subscribe.request(1),
+                        next -> wins.set(next.getInteger("wins")),
+                        null,
+                        null
+                ));
+
+                return "[coral][[[cyan]" + wins.intValue() + " [sky]#[white] " + player.coloredName() + "[coral]]:[white] " + message;
             }
             return prevFormat.format(player, message);
         };
@@ -591,50 +608,6 @@ public class HexedMod extends Plugin {
     public boolean active() {
         return state.rules.tags.getBool("hexed") && !state.is(State.menu);
     }
-
-    /*
-    private void updateUserInfo(Player player) {
-        Map<String, Object> update = userStatisticsSchema.create(
-            0,
-            player.name,
-            player.uuid()
-        );
-
-        update.remove("_id");
-        update.remove("__v");
-        update.remove("name");
-        
-        hexedCollection.findOneAndUpdate(
-            new BasicDBObject(
-                "UUID",
-                new BsonString(player.uuid())
-            ),
-            new BasicDBObject(Map.of(
-                "$setOnInsert",
-                update,
-                "$set",
-                new BasicDBObject(
-                    "name",
-                    player.name()
-                )
-            )),
-            new FindOneAndUpdateOptions().upsert(true)
-        ).subscribe(new ArrowSubscriber<>(
-                subscribe -> subscribe.request(1),
-                next -> player.name(
-                        Strings.format(
-                                "[sky]@[lime]#[][] @",
-                                !Objects.isNull(next)
-                                        ? next.getInteger("wins")
-                                        : 0,
-                                player.getInfo().lastName
-                        )
-                ),
-                null,
-                null
-        ));
-    }
-    */
 
     public static void bundled(Player player, String key, Object... values) {
         player.sendMessage(Bundle.format(key, findLocale(player), values));

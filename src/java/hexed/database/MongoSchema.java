@@ -73,13 +73,12 @@ public class MongoSchema<R, N> extends MongoEvents {
     }
 
     public Map<String, Object> applySchema(Map<String, Object> document) throws IllegalArgumentException {
-        HashMap<String, Object> newDocument = new HashMap<String, Object>();
-        newDocument.putAll(Map.of(
+        HashMap<String, Object> newDocument = new HashMap<>(Map.of(
                 "_id",
                 document.get("_id"),
                 "__v",
                 document.get("__v")
-            ));
+        ));
         this.schema.forEach((accessor) -> {
             String accessorKey = accessor.getKey();
             Object documentData = document.get(accessorKey);
@@ -94,7 +93,7 @@ public class MongoSchema<R, N> extends MongoEvents {
                 return;
             }
 
-            throw new IllegalArgumentException("Невозможно пропарсить ключ \"" + accessorKey + "\", который является обязательным\n" + document.toString());
+            throw new IllegalArgumentException("Невозможно пропарсить ключ \"" + accessorKey + "\", который является обязательным\n" + document);
         });
 
         return newDocument;
