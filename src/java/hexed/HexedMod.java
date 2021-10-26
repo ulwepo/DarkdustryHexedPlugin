@@ -118,8 +118,8 @@ public class HexedMod extends Plugin {
                 .getDatabase(jsonData.getString("dbName"))
                 .getCollection(jsonData.getString("dbCollection"));
             userStatisticsSchema = new UserStatistics(hexedCollection);
-        } catch (JSONException error) {
-            err(error);
+        } catch (JSONException e) {
+            err(e);
         }
     }
 
@@ -146,7 +146,7 @@ public class HexedMod extends Plugin {
             if (active()) {
                 data.updateStats();
 
-                for (Player player : Groups.player) {
+                Groups.player.each(player -> {
                     if (player.team() != Team.derelict && player.team().cores().isEmpty()) {
                         player.clearUnit();
                         killTiles(player.team());
@@ -161,7 +161,7 @@ public class HexedMod extends Plugin {
                         endGame();
                         break;
                     }
-                }
+                });
 
                 state.serverPaused = false;
                 rules = state.rules;
@@ -222,8 +222,6 @@ public class HexedMod extends Plugin {
         });
 
         Events.on(PlayerJoin.class, event -> {
-            updateUserInfo(event.player);
-
             if (!active() || event.player.team() == Team.derelict) return;
             if (teamTimers.containsKey(event.player.uuid())) {
                 teamTimers.remove(event.player.uuid());
@@ -339,8 +337,7 @@ public class HexedMod extends Plugin {
 
     @Override
     public void registerClientCommands(CommandHandler handler) {
-
-        handler.<Player>register("lb", "Показать текущих топеров.", (args, player) -> {
+        handler.<Player>register("lb", "Показать текущих лучших игроков сервера.", (args, player) -> {
             StringBuilder players = new StringBuilder();
             final int[] cycle = {1};
 
@@ -485,11 +482,10 @@ public class HexedMod extends Plugin {
 
     void reload() {
         Seq<Player> players = new Seq<>();
-        for (Player p : Groups.player) {
-            if (p.isLocal()) continue;
+        Groups.player.each(p -> {
             players.add(p);
             p.clearUnit();
-        }
+        });
 
         logic.reset();
 
