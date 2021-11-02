@@ -95,6 +95,7 @@ public class Main extends Plugin {
                 .applyConnectionString(connString)
                 .retryWrites(true)
                 .build();
+
             MongoClient mongodb = MongoClients.create(settings);
             MongoCollection<Document> hexedCollection = mongodb
                     .getDatabase(jsonData.getString("dbName"))
@@ -108,21 +109,7 @@ public class Main extends Plugin {
     @Override
     public void init() {
         rules.tags.put("hexed", "true");
-        rules.loadout =
-            ItemStack.list(
-                Items.copper,
-                300,
-                Items.lead,
-                300,
-                Items.graphite,
-                150,
-                Items.metaglass,
-                100,
-                Items.silicon,
-                200,
-                Items.titanium,
-                25
-            );
+        rules.loadout = ItemStack.list(Items.copper, 300, Items.lead, 300, Items.graphite, 150, Items.metaglass, 100, Items.silicon, 200, Items.titanium, 25);
         rules.buildCostMultiplier = 1f;
         rules.buildSpeedMultiplier = 2f;
         rules.blockHealthMultiplier = 1.5f;
@@ -422,8 +409,7 @@ public class Main extends Plugin {
             }
         );
 
-        handler.register("time", "Узнать время до конца раунда.", args -> info("Время до конца раунда: &lc@ минут", (int) (roundTime - counter) / 60 / 60)
-        );
+        handler.register("time", "Узнать время до конца раунда.", args -> info("Время до конца раунда: &lc@ минут", (int) (roundTime - counter) / 60 / 60));
 
         handler.register("end", "Принудительно закончить раунд.", args -> endGame());
     }
