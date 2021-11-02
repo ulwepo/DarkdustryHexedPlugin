@@ -15,6 +15,7 @@ import mindustry.gen.Groups;
 import mindustry.gen.Player;
 
 public class HexData {
+
     /** All hexes on the map. No order. */
     private final Seq<Hex> hexes = new Seq<>();
     /** Maps world pos -> hex */
@@ -48,8 +49,8 @@ public class HexData {
                 Events.fire(new HexMoveEvent(player));
             }
             float currPercent = newHex.getProgressPercent(player.team());
-            int lp = (int)(team.progressPercent);
-            int np = (int)(currPercent);
+            int lp = (int) (team.progressPercent);
+            int np = (int) (currPercent);
             team.progressPercent = currPercent;
             if (np != lp) {
                 Events.fire(new ProgressIncreaseEvent(player, currPercent));
@@ -64,7 +65,7 @@ public class HexData {
             }
         }
 
-        for (Hex hex : hexes){
+        for (Hex hex : hexes) {
             if (hex.controller != null) {
                 if (!control.containsKey(hex.controller.id)) {
                     control.put(hex.controller.id, new Seq<>());
@@ -118,7 +119,7 @@ public class HexData {
     }
 
     public HexTeam data(Team team) {
-        if(teamData[team.id] == null) teamData[team.id] = new HexTeam();
+        if (teamData[team.id] == null) teamData[team.id] = new HexTeam();
         return teamData[team.id];
     }
 
@@ -127,26 +128,39 @@ public class HexData {
     }
 
     public static class HexTeam {
+
         public boolean dying;
         public boolean chosen;
-        public @Nullable Hex location;
+
+        @Nullable
+        public Hex location;
+
         public float progressPercent;
         public boolean lastCaptured;
-        public Timekeeper lastMessage = new Timekeeper(HexedMod.messageTime);
+        public Timekeeper lastMessage = new Timekeeper(Main.messageTime);
     }
 
     public static class HexCaptureEvent {
+
         public final Player player;
         public final Hex hex;
 
         public HexCaptureEvent(Player player, Hex hex) {
             this.player = player;
             this.hex = hex;
-            Call.constructFinish(Vars.world.tile(hex.x, hex.y), Blocks.coreShard, player.unit(), (byte)0, player.team(), false);
+            Call.constructFinish(
+                Vars.world.tile(hex.x, hex.y),
+                Blocks.coreShard,
+                player.unit(),
+                (byte) 0,
+                player.team(),
+                false
+            );
         }
     }
 
     public static class HexMoveEvent {
+
         public final Player player;
 
         public HexMoveEvent(Player player) {
@@ -155,6 +169,7 @@ public class HexData {
     }
 
     public static class ProgressIncreaseEvent {
+
         public final Player player;
         public final float percent;
 

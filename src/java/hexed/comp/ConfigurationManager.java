@@ -4,12 +4,12 @@ import arc.files.Fi;
 import arc.util.serialization.Json;
 import arc.util.serialization.JsonValue;
 import arc.util.serialization.JsonWriter;
-import org.json.JSONObject;
-
 import java.io.*;
 import java.nio.file.FileSystemException;
+import org.json.JSONObject;
 
 public class ConfigurationManager {
+
     private Fi jsonFile;
     private Json json;
 
@@ -33,11 +33,16 @@ public class ConfigurationManager {
         json = new Json(JsonWriter.OutputType.json);
 
         if (!configurationFile.exists()) {
-            InputStream in = getClass().getResourceAsStream("/config/" + "settings.json");
+            InputStream in = getClass()
+                .getResourceAsStream("/config/" + "settings.json");
 
-            if (in == null) throw new FileNotFoundException("resources:///config/" + "settings.json");
+            if (in == null) throw new FileNotFoundException(
+                "resources:///config/" + "settings.json"
+            );
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+            BufferedReader reader = new BufferedReader(
+                new InputStreamReader(in)
+            );
 
             String line;
             while ((line = reader.readLine()) != null) {
@@ -50,7 +55,9 @@ public class ConfigurationManager {
         InputStream in = getClass().getResourceAsStream("/plugin.json");
         StringBuilder pluginJson = new StringBuilder();
 
-        if (in == null) throw new FileNotFoundException("resources:///plugin.json");
+        if (in == null) throw new FileNotFoundException(
+            "resources:///plugin.json"
+        );
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
         String line;
@@ -59,10 +66,5 @@ public class ConfigurationManager {
         }
 
         return new JSONObject(pluginJson.toString()).getString("name");
-    }
-
-    public void setJsonValue(JSONObject jsonData, String name, int value) {
-        jsonData.remove(name);
-        jsonData.put(name, value);
     }
 }

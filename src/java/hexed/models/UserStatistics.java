@@ -1,29 +1,19 @@
 package hexed.models;
 
-import java.util.Map;
+import com.mongodb.BasicDBObject;
+import java.util.function.Consumer;
+import hexed.database.MongoDataBridge;
 
-import com.mongodb.reactivestreams.client.MongoCollection;
+public class UserStatistics extends MongoDataBridge<UserStatistics> {
 
-import org.bson.Document;
+    public String UUID;
+    public String name = "";
+    public int wins = 0;
 
-import hexed.database.MongoSchema;
-import hexed.database.Required;
-
-public class UserStatistics extends MongoSchema<String, Object> {
-    public UserStatistics(MongoCollection<Document> collection) {
-        super(
-            collection,
-            new Required<>("wins", Integer.class),
-            new Required<>("name", String.class),
-            new Required<>("UUID", String.class)
-        );
-    }
-
-    public Map<String, Object> create(Integer wins, String name, String UUID) {
-        return this.create(Map.of(
-            "wins", wins,
-            "name", name,
-            "UUID", UUID
-        ));
+    public static void find(
+        BasicDBObject filter,
+        Consumer<UserStatistics> callback
+    ) {
+        UserStatistics.find(UserStatistics.class, filter, callback);
     }
 }
