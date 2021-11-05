@@ -258,47 +258,47 @@ public class Main extends Plugin {
 
         TeamAssigner prev = netServer.assigner;
         netServer.assigner = (player, players) -> {
-                Seq<Player> arr = Seq.with(players);
+            Seq<Player> arr = Seq.with(players);
 
-                if (active()) {
-                    if (teamTimers.containsKey(player.uuid())) return teamTimers.get(player.uuid());
-                    for (Team team : Team.all) {
-                        if (team.id > 5 && !team.active() && !arr.contains(p -> p.team() == team) && !data.data(team).dying && !data.data(team).chosen && !teamTimers.containsValue(team)) {
-                            data.data(team).chosen = true;
-                            return team;
-                        }
+            if (active()) {
+                if (teamTimers.containsKey(player.uuid())) return teamTimers.get(player.uuid());
+                for (Team team : Team.all) {
+                    if (team.id > 5 && !team.active() && !arr.contains(p -> p.team() == team) && !data.data(team).dying && !data.data(team).chosen && !teamTimers.containsValue(team)) {
+                        data.data(team).chosen = true;
+                        return team;
                     }
-                    Call.infoMessage(player.con, Bundle.format("server.no-empty-hex", findLocale(player)));
-                    return Team.derelict;
                 }
-                return prev.assign(player, players);
-            };
+                Call.infoMessage(player.con, Bundle.format("server.no-empty-hex", findLocale(player)));
+                return Team.derelict;
+            }
+            return prev.assign(player, players);
+        };
 
         ChatFormatter prevFormat = netServer.chatFormatter;
         netServer.chatFormatter = (player, message) -> {
-                if (player == null) return message;
-                if (active()) {
-                    int[] wins = {0};
+            if (player == null) return message;
+            if (active()) {
+                int[] wins = {0};
 
-                    UserStatistics.find(new BasicDBObject(Map.of("UUID", player.uuid())), userStatistic -> {
-                        userStatistic.name = player.name;
-                        userStatistic.save();
+                UserStatistics.find(new BasicDBObject(Map.of("UUID", player.uuid())), userStatistic -> {
+                    userStatistic.name = player.name;
+                    userStatistic.save();
 
-                        wins[0] = userStatistic.wins;
-                    });
+                    wins[0] = userStatistic.wins;
+                });
 
-                    return ("[coral][[[cyan]" + wins[0] + " [sky]#[white] " + player.coloredName() + "[coral]]:[white] " + message);
-                }
+                return ("[coral][[[cyan]" + wins[0] + " [sky]#[white] " + player.coloredName() + "[coral]]:[white] " + message);
+            }
 
-                return prevFormat.format(player, message);
-            };
+            return prevFormat.format(player, message);
+        };
     }
 
     @Override
     public void registerClientCommands(CommandHandler handler) {
         handler.<Player>register("lb", "Показать текущих лучших игроков сервера.", (args, player) -> {
             StringBuilder players = new StringBuilder();
-            final int[] cycle = { 1 };
+            final int[] cycle = {1};
 
             UserStatistics.getSourceCollection().find().sort(new BasicDBObject("wins", new BsonInt32(-1))).limit(10).subscribe(
                     new Subscriber<>() {
