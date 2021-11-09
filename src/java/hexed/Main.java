@@ -3,8 +3,13 @@ package hexed;
 import arc.Core;
 import arc.Events;
 import arc.math.Mathf;
+import arc.struct.ObjectMap;
 import arc.struct.Seq;
-import arc.util.*;
+import arc.util.Interval;
+import arc.util.Timer;
+import arc.util.Time;
+import arc.util.CommandHandler;
+import arc.util.Structs;
 import com.mongodb.BasicDBObject;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
@@ -46,9 +51,7 @@ import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 
 import static arc.util.Log.err;
@@ -79,16 +82,14 @@ public class Main extends Plugin {
     private double counter = 0f;
     private int lastMin;
 
-    private final HashMap<String, Team> teamTimers = new HashMap<>();
+    private final ObjectMap<String, Team> teamTimers = new ObjectMap<>();
 
     public Main() throws IOException {
         ConfigurationManager config = new ConfigurationManager();
         JSONObject jsonData = config.getJsonData();
 
         try {
-            ConnectionString connString = new ConnectionString(
-                jsonData.getString("mongoURI")
-            );
+            ConnectionString connString = new ConnectionString(jsonData.getString("mongoURI"));
 
             MongoClientSettings settings = MongoClientSettings
                 .builder()
@@ -146,7 +147,7 @@ public class Main extends Plugin {
                 for (Player player : Groups.player) {
                     if (player.team() != Team.derelict && player.team().cores().isEmpty()) {
                         player.clearUnit();
-                        killTiles(player.team());
+                        killTeam(player.team());
                         Groups.player.each(p -> bundled(p, "server.player-lost", player.coloredName()));
                         Call.infoMessage(player.con, Bundle.format("server.you-lost", findLocale(player)));
                         player.team(Team.derelict);
@@ -211,7 +212,7 @@ public class Main extends Plugin {
                 Timer.schedule(() -> {
                     int count = Groups.player.count(p -> p.team() == event.player.team());
                     if (count > 0) return;
-                    killTiles(event.player.team());
+                    killTeam(event.player.team());
                     teamTimers.remove(event.player.uuid());
                 }, 60f);
             }
@@ -256,14 +257,13 @@ public class Main extends Plugin {
 
         Events.on(HexMoveEvent.class, event -> updateText(event.player));
 
-        TeamAssigner prev = netServer.assigner;
+        TeamAssigner prevAssigner = netServer.assigner;
         netServer.assigner = (player, players) -> {
             Seq<Player> arr = Seq.with(players);
-
             if (active()) {
                 if (teamTimers.containsKey(player.uuid())) return teamTimers.get(player.uuid());
                 for (Team team : Team.all) {
-                    if (team.id > 5 && !team.active() && !arr.contains(p -> p.team() == team) && !data.data(team).dying && !data.data(team).chosen && !teamTimers.containsValue(team)) {
+                    if (team.id > 5 && !team.active() && !arr.contains(p -> p.team() == team) && !data.data(team).dying && !data.data(team).chosen && !teamTimers.containsValue(team, true)) {
                         data.data(team).chosen = true;
                         return team;
                     }
@@ -271,7 +271,7 @@ public class Main extends Plugin {
                 Call.infoMessage(player.con, Bundle.format("server.no-empty-hex", findLocale(player)));
                 return Team.derelict;
             }
-            return prev.assign(player, players);
+            return prevAssigner.assign(player, players);
         };
 
         ChatFormatter prevFormat = netServer.chatFormatter;
@@ -280,10 +280,9 @@ public class Main extends Plugin {
             if (active()) {
                 int[] wins = {0};
 
-                UserStatistics.find(new BasicDBObject(Map.of("UUID", player.uuid())), userStatistic -> {
+                UserStatistics.find(new BasicDBObject("UUID", player.uuid()), userStatistic -> {
                     userStatistic.name = player.name;
                     userStatistic.save();
-
                     wins[0] = userStatistic.wins;
                 });
 
@@ -298,7 +297,7 @@ public class Main extends Plugin {
     public void registerClientCommands(CommandHandler handler) {
         handler.<Player>register("lb", "Показать текущих лучших игроков сервера.", (args, player) -> {
             StringBuilder players = new StringBuilder();
-            final int[] cycle = {1};
+            int[] cycle = {1};
 
             UserStatistics.getSourceCollection().find().sort(new BasicDBObject("wins", new BsonInt32(-1))).limit(10).subscribe(new Subscriber<>() {
                 @Override
@@ -314,7 +313,7 @@ public class Main extends Plugin {
 
                 @Override
                 public void onError(Throwable t) {
-                    if (!Objects.isNull(t)) Log.err(t);
+                    if (!Objects.isNull(t)) err(t);
                 }
 
                 @Override
@@ -329,7 +328,7 @@ public class Main extends Plugin {
                 bundled(player, "commands.spectator.already");
                 return;
             }
-            killTiles(player.team());
+            killTeam(player.team());
             player.clearUnit();
             player.team(Team.derelict);
             bundled(player, "commands.spectator.success");
@@ -371,7 +370,7 @@ public class Main extends Plugin {
 
         handler.register("hexed", "[mode/list]", "Запустить сервер в режиме Хексов.", args -> {
             if (args.length > 0 && args[0].equalsIgnoreCase("list")) {
-                Log.info("Доступные режимы:");
+                info("Доступные режимы:");
                 for (HexedGenerator.Mode value : HexedGenerator.Mode.values()) {
                     info("- @", value);
                 }
@@ -379,7 +378,7 @@ public class Main extends Plugin {
             }
 
             if (!state.is(State.menu)) {
-                Log.err("Сначала останови сервер!");
+                err("Сначала необходимо остановить сервер.");
                 return;
             }
 
@@ -388,7 +387,7 @@ public class Main extends Plugin {
                 try {
                     custom = HexedGenerator.Mode.valueOf(args[0]);
                 } catch (Exception e) {
-                    Log.err("Неверное название режима. Будет выбран случайный режим.");
+                    err("Неверное название режима. Будет выбран случайный режим.");
                 }
             }
 
@@ -441,6 +440,7 @@ public class Main extends Plugin {
             UserStatistics.find(
                 new BasicDBObject("UUID", players.first().uuid()),
                 userStatistic -> {
+                    userStatistic.name = players.first().name;
                     userStatistic.wins += 1;
                     userStatistic.save();
                 }
@@ -545,7 +545,7 @@ public class Main extends Plugin {
         return builder.toString();
     }
 
-    public void killTiles(Team team) {
+    public void killTeam(Team team) {
         data.data(team).dying = true;
         Time.runTask(8f, () -> data.data(team).dying = false);
         for (int x = 0; x < world.width(); x++) {
