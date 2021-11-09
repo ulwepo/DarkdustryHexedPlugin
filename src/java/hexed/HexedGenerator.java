@@ -56,17 +56,17 @@ public class HexedGenerator implements Cons<Tiles> {
         }),
 
         oilFlats(new Block[][] {
-                {Blocks.sand, Blocks.darksand, Blocks.sand, Blocks.shale},
-                {Blocks.shale, Blocks.sand, Blocks.sand, Blocks.sand},
-                {Blocks.darksand, Blocks.sand, Blocks.sand, Blocks.sand},
-                {Blocks.tar, Blocks.sand, Blocks.tar, Blocks.darksand},
-                {Blocks.darksand, Blocks.shale, Blocks.darksand, Blocks.shale}
+                {Blocks.sand, Blocks.darksand, Blocks.sand, Blocks.shale, Blocks.sand},
+                {Blocks.shale, Blocks.sand, Blocks.tar, Blocks.sand, Blocks.darksand},
+                {Blocks.darksand, Blocks.sand, Blocks.sand, Blocks.sand, Blocks.darksand},
+                {Blocks.tar, Blocks.sand, Blocks.tar, Blocks.darksand, Blocks.sand},
+                {Blocks.darksand, Blocks.shale, Blocks.darksand, Blocks.shale, Blocks.sand}
         }, new Block[][] {
-                {Blocks.sandWall, Blocks.duneWall, Blocks.sandWall, Blocks.shaleWall},
-                {Blocks.shaleWall, Blocks.sandWall, Blocks.sandWall, Blocks.sandWall},
-                {Blocks.sandWall, Blocks.sandWall, Blocks.sandWall, Blocks.sandWall},
-                {Blocks.sandWall, Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall},
-                {Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall, Blocks.shaleWall}
+                {Blocks.sandWall, Blocks.duneWall, Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall},
+                {Blocks.shaleWall, Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall, Blocks.duneWall},
+                {Blocks.duneWall, Blocks.sandWall, Blocks.sandWall, Blocks.sandWall, Blocks.duneWall},
+                {Blocks.sandWall, Blocks.sandWall, Blocks.shaleWall, Blocks.duneWall, Blocks.sandWall},
+                {Blocks.duneWall, Blocks.shaleWall, Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall}
         }),
 
         winter(new Block[][] {
@@ -190,7 +190,7 @@ public class HexedGenerator implements Cons<Tiles> {
                         ore = in.overlay;
                     }
                 }
-                if (floor == Blocks.tar || floor == Blocks.slag || floor == Blocks.cryofluid) ore = Blocks.air;
+                if (floor == Blocks.tar || floor == Blocks.slag || floor == Blocks.cryofluid || floor.cacheLayer == CacheLayer.water) ore = Blocks.air;
                 tiles.set(x, y, new Tile(x, y, floor.id, ore.id, wall.id));
             }
         }
@@ -199,21 +199,19 @@ public class HexedGenerator implements Cons<Tiles> {
             int x = Point2.x(hex.get(i));
             int y = Point2.y(hex.get(i));
             Geometry.circle(x, y, width, height, Hex.diameter, (cx, cy) -> {
-                    if (Intersector.isInsideHexagon(x, y, Hex.diameter, cx, cy)) {
-                        Tile tile = tiles.getn(cx, cy);
-                        tile.setBlock(Blocks.air);
-                    }
+                if (Intersector.isInsideHexagon(x, y, Hex.diameter, cx, cy)) {
+                    Tile tile = tiles.getn(cx, cy);
+                    tile.setBlock(Blocks.air);
                 }
-            );
+            });
 
             Angles.circle(3, 360f / 3 / 2f - 90, f -> {
-                    Tmp.v1.trnsExact(f, Hex.spacing + 12);
-                    if (Structs.inBounds(x + (int) Tmp.v1.x, y + (int) Tmp.v1.y, width, height)) {
-                        Tmp.v1.trnsExact(f, Hex.spacing / 2f + 7);
-                        Bresenham2.line(x, y, x + (int) Tmp.v1.x, y + (int) Tmp.v1.y, (cx, cy) -> Geometry.circle(cx, cy, width, height, 3, (c2x, c2y) -> tiles.getn(c2x, c2y).setBlock(Blocks.air)));
-                    }
+                Tmp.v1.trnsExact(f, Hex.spacing + 12);
+                if (Structs.inBounds(x + (int) Tmp.v1.x, y + (int) Tmp.v1.y, width, height)) {
+                    Tmp.v1.trnsExact(f, Hex.spacing / 2f + 7);
+                    Bresenham2.line(x, y, x + (int) Tmp.v1.x, y + (int) Tmp.v1.y, (cx, cy) -> Geometry.circle(cx, cy, width, height, 3, (c2x, c2y) -> tiles.getn(c2x, c2y).setBlock(Blocks.air)));
                 }
-            );
+            });
         }
 
         for (int x = 0; x < width; x++) {
@@ -282,8 +280,7 @@ public class HexedGenerator implements Cons<Tiles> {
             int offsetY = y - 2;
             for (int x5 = offsetX; x5 < offsetX + 5; x5++) {
                 for (int y5 = offsetY; y5 < offsetY + 5; y5++) {
-                    Tile t = tiles.get(x5, y5);
-                    t.setFloor(Blocks.metalFloor5.asFloor());
+                    tiles.get(x5, y5).setFloor(Blocks.metalFloor5.asFloor());
                 }
             }
         }

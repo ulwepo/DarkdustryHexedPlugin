@@ -235,7 +235,7 @@ public class Main extends Plugin {
                 hex.findController();
             } else {
                 Call.infoMessage(event.player.con, Bundle.format("server.no-empty-hex", findLocale(event.player)));
-                event.player.unit().kill();
+                event.player.clearUnit();
                 event.player.team(Team.derelict);
             }
             data.data(event.player).lastMessage.reset();
@@ -368,7 +368,7 @@ public class Main extends Plugin {
         handler.removeCommand("host");
         handler.removeCommand("gameover");
 
-        handler.register("hexed", "[mode/list]", "Запустить сервер в режиме Хексов.", args -> {
+        handler.register("hexed", "[mode/list]", "Запустить сервер в режиме HexPvp.", args -> {
             if (args.length > 0 && args[0].equalsIgnoreCase("list")) {
                 info("Доступные режимы:");
                 for (HexedGenerator.Mode value : HexedGenerator.Mode.values()) {
@@ -416,10 +416,10 @@ public class Main extends Plugin {
         state.teams.active.each(team -> team.core().items().clear());
         restarting = true;
         Seq<Player> players = data.getLeaderboard();
-        StringBuilder builder = new StringBuilder();
+        StringBuilder scores = new StringBuilder();
         for (int i = 0; i < players.size && i < 4; i++) {
             if (data.getControlled(players.get(i)).size > 1) {
-                builder.append("[yellow]").append(i + 1).append(".[accent] ").append(players.get(i).name).append("[lightgray] (x").append(data.getControlled(players.get(i)).size).append(")[]\n");
+                scores.append("[yellow]").append(i + 1).append(".[accent] ").append(players.get(i).name).append("[lightgray] (x").append(data.getControlled(players.get(i)).size).append(")[]\n");
             }
         }
 
@@ -427,24 +427,21 @@ public class Main extends Plugin {
             boolean dominated = data.getControlled(players.first()).size == data.hexes().size;
 
             for (Player player : Groups.player) {
-                String endGameMessage = Bundle.format("round-over", findLocale(player));
+                StringBuilder endGameMessage = new StringBuilder(Bundle.format("round-over", findLocale(player)));
 
-                if (player == players.first()) endGameMessage += Bundle.format("you-won", findLocale(player), data.getControlled(players.first()).size);
-                else endGameMessage += Bundle.format("player-won", findLocale(player), players.first().coloredName(), data.getControlled(players.first()).size);
+                if (player == players.first()) endGameMessage.append(Bundle.format("you-won", findLocale(player), data.getControlled(players.first()).size));
+                else endGameMessage.append(Bundle.format("player-won", findLocale(player), players.first().coloredName(), data.getControlled(players.first()).size));
 
-                if (!dominated) endGameMessage += Bundle.format("final-score", findLocale(player), builder.toString());
+                if (!dominated) endGameMessage.append(Bundle.format("final-score", findLocale(player), scores.toString()));
 
-                Call.infoMessage(player.con, endGameMessage);
+                Call.infoMessage(player.con, endGameMessage.toString());
             }
 
-            UserStatistics.find(
-                new BasicDBObject("UUID", players.first().uuid()),
-                userStatistic -> {
-                    userStatistic.name = players.first().name;
-                    userStatistic.wins += 1;
-                    userStatistic.save();
-                }
-            );
+            UserStatistics.find(new BasicDBObject("UUID", players.first().uuid()), userStatistic -> {
+                userStatistic.name = players.first().name;
+                userStatistic.wins += 1;
+                userStatistic.save();
+            });
         }
 
         Time.runTask(60f * 15f, this::reload);
@@ -516,7 +513,7 @@ public class Main extends Plugin {
                     hex.findController();
                 } else {
                     Call.infoMessage(p.con, Bundle.format("server.no-empty-hex", findLocale(p)));
-                    p.unit().kill();
+                    p.clearUnit();
                     p.team(Team.derelict);
                 }
                 data.data(p).lastMessage.reset();
