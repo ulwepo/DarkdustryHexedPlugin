@@ -109,13 +109,13 @@ public class Main extends Plugin {
     @Override
     public void init() {
         rules.tags.put("hexed", "true");
-        rules.loadout = ItemStack.list(Items.copper, 300, Items.lead, 300, Items.graphite, 150, Items.metaglass, 100, Items.silicon, 200, Items.titanium, 25);
-        rules.buildCostMultiplier = 1f;
+        rules.loadout = ItemStack.list(Items.copper, 350, Items.lead, 250, Items.graphite, 150, Items.metaglass, 100, Items.silicon, 250, Items.titanium, 30);
+        rules.buildCostMultiplier = 0.8f;
         rules.buildSpeedMultiplier = 2f;
         rules.blockHealthMultiplier = 1.5f;
         rules.unitBuildSpeedMultiplier = 1.25f;
-        rules.enemyCoreBuildRadius = (Hex.diameter) * tilesize / 2f;
-        rules.unitDamageMultiplier = 1.4f;
+        rules.enemyCoreBuildRadius = Hex.diameter * tilesize / 2f;
+        rules.unitDamageMultiplier = 1.25f;
         rules.fire = false;
         rules.reactorExplosions = true;
         rules.canGameOver = false;
@@ -300,31 +300,29 @@ public class Main extends Plugin {
             StringBuilder players = new StringBuilder();
             final int[] cycle = {1};
 
-            UserStatistics.getSourceCollection().find().sort(new BasicDBObject("wins", new BsonInt32(-1))).limit(10).subscribe(
-                    new Subscriber<>() {
-                        @Override
-                        public void onSubscribe(Subscription s) {
-                            s.request(10);
-                        }
+            UserStatistics.getSourceCollection().find().sort(new BasicDBObject("wins", new BsonInt32(-1))).limit(10).subscribe(new Subscriber<>() {
+                @Override
+                public void onSubscribe(Subscription s) {
+                    s.request(10);
+                }
 
-                        @Override
-                        public void onNext(Document t) {
-                            if (!Objects.isNull(t)) players.append("[accent]").append(cycle[0]++).append(". ").append(t.getString("name")).append("[accent]: [cyan]").append(t.getInteger("wins")).append("\n");
-                            else players.append(Bundle.format("commands.lb.none", findLocale(player)));
-                        }
+                @Override
+                public void onNext(Document t) {
+                    if (!Objects.isNull(t)) players.append("[accent]").append(cycle[0]++).append(". ").append(t.getString("name")).append("[accent]: [cyan]").append(t.getInteger("wins")).append("\n");
+                    else players.append(Bundle.format("commands.lb.none", findLocale(player)));
+                }
 
-                        @Override
-                        public void onError(Throwable t) {
-                                    if (!Objects.isNull(t)) Log.err(t);
-                                }
+                @Override
+                public void onError(Throwable t) {
+                    if (!Objects.isNull(t)) Log.err(t);
+                }
 
-                        @Override
-                        public void onComplete() {
-                            Call.infoMessage(player.con, Bundle.format("commands.lb.list", findLocale(player), players.toString()));
-                        }
-                    });
-            }
-        );
+                @Override
+                public void onComplete() {
+                    Call.infoMessage(player.con, Bundle.format("commands.lb.list", findLocale(player), players.toString()));
+                }
+            });
+        });
 
         handler.<Player>register("spectator", "Режим наблюдателя. Уничтожает твою базу", (args, player) -> {
             if (player.team() == Team.derelict) {
@@ -332,7 +330,7 @@ public class Main extends Plugin {
                 return;
             }
             killTiles(player.team());
-            player.unit().kill();
+            player.clearUnit();
             player.team(Team.derelict);
             bundled(player, "commands.spectator.success");
         });
@@ -372,42 +370,41 @@ public class Main extends Plugin {
         handler.removeCommand("gameover");
 
         handler.register("hexed", "[mode/list]", "Запустить сервер в режиме Хексов.", args -> {
-                if (args.length > 0 && args[0].equalsIgnoreCase("list")) {
-                    Log.info("Доступные режимы:");
-                    for (HexedGenerator.Mode value : HexedGenerator.Mode.values()) {
-                        info("- @", value);
-                    }
-                    return;
+            if (args.length > 0 && args[0].equalsIgnoreCase("list")) {
+                Log.info("Доступные режимы:");
+                for (HexedGenerator.Mode value : HexedGenerator.Mode.values()) {
+                    info("- @", value);
                 }
-
-                if (!state.is(State.menu)) {
-                    Log.err("Сначала останови сервер!");
-                    return;
-                }
-
-                HexedGenerator.Mode custom = null;
-                if (args.length > 0) {
-                    try {
-                        custom = HexedGenerator.Mode.valueOf(args[0]);
-                    } catch (Exception e) {
-                        Log.err("Неверное название режима. Будет выбран случайный режим.");
-                    }
-                }
-
-                mode = custom == null ? Structs.random(HexedGenerator.Mode.values()) : custom;
-                data = new HexData();
-
-                logic.reset();
-                info("Генерирую локацию по сценарию @...", mode);
-                HexedGenerator generator = new HexedGenerator();
-                world.loadGenerator(Hex.size, Hex.size, generator);
-                data.initHexes(generator.getHex());
-                info("Локация сгенерирована.");
-                state.rules = rules.copy();
-                logic.play();
-                netServer.openServer();
+                return;
             }
-        );
+
+            if (!state.is(State.menu)) {
+                Log.err("Сначала останови сервер!");
+                return;
+            }
+
+            HexedGenerator.Mode custom = null;
+            if (args.length > 0) {
+                try {
+                    custom = HexedGenerator.Mode.valueOf(args[0]);
+                } catch (Exception e) {
+                    Log.err("Неверное название режима. Будет выбран случайный режим.");
+                }
+            }
+
+            mode = custom == null ? Structs.random(HexedGenerator.Mode.values()) : custom;
+            data = new HexData();
+
+            logic.reset();
+            info("Генерирую локацию по сценарию @...", mode);
+            HexedGenerator generator = new HexedGenerator();
+            world.loadGenerator(Hex.size, Hex.size, generator);
+            data.initHexes(generator.getHex());
+            info("Локация сгенерирована.");
+            state.rules = rules.copy();
+            logic.play();
+            netServer.openServer();
+        });
 
         handler.register("time", "Узнать время до конца раунда.", args -> info("Время до конца раунда: &lc@ минут", (int) (roundTime - counter) / 60 / 60));
 
@@ -539,7 +536,7 @@ public class Main extends Plugin {
         int count = 0;
         for (Player player : data.getLeaderboard()) {
             builder.append("[yellow]")
-                .append(++count)
+                .append(count++)
                 .append(".[white] ")
                 .append(player.coloredName())
                 .append(Bundle.format("leaderboard.hexes", findLocale(p), data.getControlled(player).size));
@@ -551,22 +548,20 @@ public class Main extends Plugin {
     public void killTiles(Team team) {
         data.data(team).dying = true;
         Time.runTask(8f, () -> data.data(team).dying = false);
-        Groups.unit.each(u -> u.team == team, unit -> Time.run(Mathf.random(360), unit::kill));
         for (int x = 0; x < world.width(); x++) {
             for (int y = 0; y < world.height(); y++) {
                 Tile tile = world.tile(x, y);
-                if (tile.build != null && tile.team() == team) {
-                    Time.run(Mathf.random(60f * 6), () -> {
-                        if (tile.block() != Blocks.air) tile.removeNet();
-                    });
+                if (tile.build != null && tile.block() != Blocks.air && tile.team() == team) {
+                    Time.run(Mathf.random(60f * 6), tile::removeNet);
                 }
             }
         }
+        Groups.unit.each(u -> u.team == team, unit -> Time.run(Mathf.random(360), unit::kill));
     }
 
     public void loadout(Player player, int x, int y) {
         Stile coreTile = start.tiles.find(s -> s.block instanceof CoreBlock);
-        if (coreTile == null) throw new IllegalArgumentException("Schematic has no core tile. Exiting.");
+        if (coreTile == null) throw new IllegalArgumentException("Загружена схема без ядра. Выключаю сервер...");
         int ox = x - coreTile.x, oy = y - coreTile.y;
         start.tiles.each(st -> {
             Tile tile = world.tile(st.x + ox, st.y + oy);
@@ -575,9 +570,8 @@ public class Main extends Plugin {
             if (tile.block() != Blocks.air) tile.removeNet();
             tile.setNet(st.block, player.team(), st.rotation);
 
-            if (st.config != null) {
-                tile.build.configureAny(st.config);
-            }
+            if (st.config != null) tile.build.configureAny(st.config);
+
             if (tile.block() instanceof CoreBlock) {
                 for (ItemStack stack : state.rules.loadout) {
                     Call.setItem(tile.build, stack.item, stack.amount);
