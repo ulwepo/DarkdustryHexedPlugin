@@ -1,13 +1,17 @@
 package hexed.comp;
 
 import arc.files.Fi;
-import arc.struct.*;
-import arc.util.*;
-import java.text.MessageFormat;
-import java.util.*;
-import mindustry.Vars;
+import arc.struct.ObjectMap;
+import arc.struct.StringMap;
+import arc.util.Strings;
+import arc.util.Structs;
 import hexed.Main;
+import mindustry.Vars;
 import mindustry.gen.Iconc;
+
+import java.text.MessageFormat;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 public class Bundle {
 
@@ -22,13 +26,9 @@ public class Bundle {
     }
 
     static {
-        Fi[] files = Vars.mods
-            .list()
-            .find(mod -> mod.main instanceof Main)
-            .root.child("bundles")
-            .list();
+        Fi[] files = Vars.mods.list().find(mod -> mod.main instanceof Main).root.child("bundles").list();
         supportedLocales = new Locale[files.length + 1];
-        supportedLocales[supportedLocales.length - 1] = new Locale("router"); // router
+        supportedLocales[supportedLocales.length - 1] = new Locale("router");
 
         for (int i = 0; i < files.length; i++) {
             String code = files[i].nameWithoutExtension();
@@ -46,27 +46,14 @@ public class Bundle {
 
     public static String get(String key, Locale locale) {
         StringMap bundle = getOrLoad(locale);
-        return (bundle != null && bundle.containsKey(key))
-            ? bundle.get(key)
-            : "???" + key + "???";
-    }
-
-    public static String getModeName(String key) {
-        StringMap bundle = getOrLoad(defaultLocale());
-        return bundle.containsKey(key)
-            ? bundle.get(key)
-            : bundle.get("mode.def.name");
+        return (bundle != null && bundle.containsKey(key)) ? bundle.get(key) : "???" + key + "???";
     }
 
     public static String format(String key, Locale locale, Object... values) {
         String pattern = get(key, locale);
         MessageFormat format = formats.get(locale);
         if (!Structs.contains(supportedLocales, locale)) {
-            format =
-                formats.get(
-                    defaultLocale(),
-                    () -> new MessageFormat(pattern, defaultLocale())
-                );
+            format = formats.get(defaultLocale(), () -> new MessageFormat(pattern, defaultLocale()));
             format.applyPattern(pattern);
         } else if (format == null) {
             format = new MessageFormat(pattern, locale);
@@ -79,13 +66,11 @@ public class Bundle {
 
     private static StringMap getOrLoad(Locale locale) {
         StringMap bundle = bundles.get(locale);
-        if (bundle == null && locale.getDisplayName().equals("router")) { // router
+        if (bundle == null && locale.getDisplayName().equals("router")) {
             StringMap router = new StringMap();
             getOrLoad(defaultLocale()).each((k, v) -> router.put(k, Strings.stripColors(v).replaceAll("[\\d\\D]", Character.toString(Iconc.blockRouter))));
             bundles.put(locale, bundle = router);
-        } else if (
-            bundle == null && Structs.contains(supportedLocales, locale)
-        ) {
+        } else if (bundle == null && Structs.contains(supportedLocales, locale)) {
             bundles.put(locale, bundle = load(locale));
         }
         return (bundle != null) ? bundle : bundles.get(defaultLocale());
@@ -93,10 +78,7 @@ public class Bundle {
 
     private static StringMap load(Locale locale) {
         StringMap properties = new StringMap();
-        ResourceBundle bundle = ResourceBundle.getBundle(
-            "bundles.bundle",
-            locale
-        );
+        ResourceBundle bundle = ResourceBundle.getBundle("bundles.bundle", locale);
         for (String s : bundle.keySet()) {
             properties.put(s, bundle.getString(s));
         }

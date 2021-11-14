@@ -79,7 +79,6 @@ public class HexData {
         hexes.each(Hex::updateController);
     }
 
-    /** Allocates a new array of players sorted by score, descending. */
     public Seq<Player> getLeaderboard() {
         Seq<Player> players = new Seq<>();
         Groups.player.copy(players);
@@ -128,12 +127,10 @@ public class HexData {
     }
 
     public static class HexTeam {
-
         public boolean dying;
         public boolean chosen;
 
-        @Nullable
-        public Hex location;
+        public @Nullable Hex location;
 
         public float progressPercent;
         public boolean lastCaptured;
@@ -141,26 +138,17 @@ public class HexData {
     }
 
     public static class HexCaptureEvent {
-
         public final Player player;
         public final Hex hex;
 
         public HexCaptureEvent(Player player, Hex hex) {
             this.player = player;
             this.hex = hex;
-            Call.constructFinish(
-                Vars.world.tile(hex.x, hex.y),
-                Blocks.coreShard,
-                player.unit(),
-                (byte) 0,
-                player.team(),
-                false
-            );
+            Call.constructFinish(Vars.world.tile(hex.x, hex.y), Blocks.coreShard, player.unit(), (byte) 0, player.team(), false);
         }
     }
 
     public static class HexMoveEvent {
-
         public final Player player;
 
         public HexMoveEvent(Player player) {
@@ -169,7 +157,6 @@ public class HexData {
     }
 
     public static class ProgressIncreaseEvent {
-
         public final Player player;
         public final float percent;
 

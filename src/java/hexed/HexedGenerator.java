@@ -15,7 +15,6 @@ import arc.struct.IntSeq;
 import arc.struct.Seq;
 import arc.struct.StringMap;
 import arc.util.Reflect;
-import arc.util.Strings;
 import arc.util.Structs;
 import arc.util.Tmp;
 import arc.util.noise.Simplex;
@@ -30,13 +29,12 @@ import mindustry.maps.filters.ScatterFilter;
 import mindustry.world.Block;
 import mindustry.world.Tile;
 import mindustry.world.Tiles;
-import hexed.comp.Bundle;
 
 public class HexedGenerator implements Cons<Tiles> {
 
     public int width = Hex.size, height = Hex.size;
 
-    enum Mode {
+    public enum Mode {
         // elevation --->
         // temperature
         // |
@@ -153,15 +151,10 @@ public class HexedGenerator implements Cons<Tiles> {
         Seq<GenerateFilter> ores = new Seq<>();
         maps.addDefaultOres(ores);
         ores.each(o -> ((OreFilter) o).threshold -= 0.05f);
-        ores.insert(
-            0,
-            new OreFilter() {
-                {
-                    ore = Blocks.oreScrap;
-                    scl += 2 / 2.1F;
-                }
-            }
-        );
+        ores.insert(0, new OreFilter() {{
+            ore = Blocks.oreScrap;
+            scl += 2 / 2.1F;
+        }});
         ores.each(GenerateFilter::randomize);
         GenerateInput in = new GenerateInput();
         IntSeq hex = getHex();
@@ -190,7 +183,7 @@ public class HexedGenerator implements Cons<Tiles> {
                         ore = in.overlay;
                     }
                 }
-                if (floor == Blocks.tar || floor == Blocks.slag || floor == Blocks.cryofluid || floor.cacheLayer == CacheLayer.water) ore = Blocks.air;
+                if (floor.cacheLayer == CacheLayer.cryofluid || floor.cacheLayer == CacheLayer.tar || floor.cacheLayer == CacheLayer.slag || floor.cacheLayer == CacheLayer.water) ore = Blocks.air;
                 tiles.set(x, y, new Tile(x, y, floor.id, ore.id, wall.id));
             }
         }
@@ -285,7 +278,7 @@ public class HexedGenerator implements Cons<Tiles> {
             }
         }
 
-        state.map = new Map(StringMap.of("name", Bundle.getModeName(Strings.format("mode.@.name", mode))));
+        state.map = new Map(StringMap.of("name", getModeName(mode)));
         state.map.tags.put("author", "[gray]Skykatik");
     }
 
@@ -300,5 +293,17 @@ public class HexedGenerator implements Cons<Tiles> {
             }
         }
         return array;
+    }
+
+    private String getModeName(Mode mapMode) {
+        return switch (mapMode) {
+            case def -> "\uE861 [gold]Hexed Arena";
+            case oilFlats -> "\uF826 [accent]Oil Flats";
+            case winter -> "\uF825 [cyan]Winter";
+            case rived -> "\uF828 [accent]Rivers";
+            case lavaLand -> "\uF827 [orange]Lavaland";
+            case spore -> "\uF82B [purple]Spores";
+            case nuclear -> "\uF7A9 [scarlet]Radioactive";
+        };
     }
 }

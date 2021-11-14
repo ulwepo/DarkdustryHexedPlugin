@@ -48,10 +48,7 @@ public class Hex {
     }
 
     public boolean hasCore() {
-        return (
-            world.tile(x, y).team() != Team.derelict &&
-            world.tile(x, y).block() instanceof CoreBlock
-        );
+        return (world.tile(x, y).team() != Team.derelict && world.tile(x, y).block() instanceof CoreBlock);
     }
 
     public @Nullable Team findController() {
@@ -64,26 +61,16 @@ public class Hex {
         for (int cx = x - radius; cx < x + radius; cx++) {
             for (int cy = y - radius; cy < y + radius; cy++) {
                 Tile tile = world.tile(cx, cy);
-                if (
-                    tile != null &&
-                    tile.synthetic() &&
-                    contains(tile) &&
-                    tile.block().requirements != null
-                ) {
+                if (tile != null && tile.synthetic() && contains(tile) && tile.block().requirements != null) {
                     for (ItemStack stack : tile.block().requirements) {
-                        progress[tile.team().id] +=
-                            stack.amount * stack.item.cost;
+                        progress[tile.team().id] += stack.amount * stack.item.cost;
                     }
                 }
             }
         }
 
         TeamData data = state.teams.getActive().max(t -> progress[t.team.id]);
-        if (
-            data != null &&
-            data.team != Team.derelict &&
-            progress[data.team.id] >= Main.itemRequirement
-        ) {
+        if (data != null && data.team != Team.derelict && progress[data.team.id] >= Main.itemRequirement) {
             return data.team;
         }
         return null;

@@ -439,7 +439,7 @@ public class Main extends Plugin {
 
             UserStatistics.find(new BasicDBObject("UUID", players.first().uuid()), userStatistic -> {
                 userStatistic.name = players.first().name;
-                userStatistic.wins += 1;
+                userStatistic.wins++;
                 userStatistic.save();
             });
         }
@@ -532,11 +532,7 @@ public class Main extends Plugin {
         StringBuilder builder = new StringBuilder(Bundle.format("leaderboard.header", findLocale(p), lastMin));
         int count = 0;
         for (Player player : data.getLeaderboard()) {
-            builder.append("[yellow]")
-                .append(count++)
-                .append(".[white] ")
-                .append(player.coloredName())
-                .append(Bundle.format("leaderboard.hexes", findLocale(p), data.getControlled(player).size));
+            builder.append("[yellow]").append(count++).append(".[white] ").append(player.coloredName()).append(Bundle.format("leaderboard.hexes", findLocale(p), data.getControlled(player).size));
             if (count > 4) break;
         }
         return builder.toString();
@@ -565,6 +561,8 @@ public class Main extends Plugin {
             if (tile == null) return;
 
             if (tile.block() != Blocks.air) tile.removeNet();
+            if (tile.floor().isLiquid) tile.setFloorNet(Blocks.darkPanel3);
+
             tile.setNet(st.block, player.team(), st.rotation);
 
             if (st.config != null) tile.build.configureAny(st.config);
