@@ -45,7 +45,6 @@ import mindustry.world.Tile;
 import mindustry.world.blocks.storage.CoreBlock;
 import org.bson.BsonInt32;
 import org.bson.Document;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
@@ -66,7 +65,7 @@ public class Main extends Plugin {
     private static final int roundTime = 60 * 60 * 90;
     private static final int leaderboardTime = 60 * 60 * 2;
     private static final int updateTime = 60 * 2;
-    private static final int winCondition = 25;
+    private static final int winCondition = 20;
     private static final int timerBoard = 0, timerUpdate = 1, timerWinCheck = 2;
 
     protected static HexedGenerator.Mode mode;
@@ -88,23 +87,17 @@ public class Main extends Plugin {
         ConfigurationManager config = new ConfigurationManager();
         JSONObject jsonData = config.getJsonData();
 
-        try {
-            ConnectionString connString = new ConnectionString(jsonData.getString("mongoURI"));
+        ConnectionString connString = new ConnectionString(jsonData.getString("mongoURI"));
 
-            MongoClientSettings settings = MongoClientSettings
+        MongoClientSettings settings = MongoClientSettings
                 .builder()
                 .applyConnectionString(connString)
                 .retryWrites(true)
                 .build();
 
-            MongoClient mongodb = MongoClients.create(settings);
-            MongoCollection<Document> hexedCollection = mongodb
-                    .getDatabase(jsonData.getString("dbName"))
-                    .getCollection(jsonData.getString("dbCollection"));
-            UserStatistics.setSourceCollection(hexedCollection);
-        } catch (JSONException e) {
-            err(e);
-        }
+        MongoClient mongodb = MongoClients.create(settings);
+        MongoCollection<Document> hexedCollection = mongodb.getDatabase(jsonData.getString("dbName")).getCollection(jsonData.getString("dbCollection"));
+        UserStatistics.setSourceCollection(hexedCollection);
     }
 
     @Override
@@ -199,9 +192,6 @@ public class Main extends Plugin {
                  if (hex != null) {
                      hex.spawnTime.reset();
                      hex.updateController();
-
-                     Seq<Player> players = data.getLeaderboard();
-                     if (players.size > 2 && players.count(p -> p.team() != Team.derelict) == 1 && data.getControlled(players.first()).size > 1) endGame();
                  }
             }
         });
@@ -219,26 +209,27 @@ public class Main extends Plugin {
         });
 
         Events.on(PlayerJoin.class, event -> {
-            if (!active() || event.player.team() == Team.derelict) return;
-            if (teamTimers.containsKey(event.player.uuid())) {
-                teamTimers.remove(event.player.uuid());
-                return;
-            }
+            if (active() && event.player.team() != Team.derelict) {
+                if (teamTimers.containsKey(event.player.uuid())) {
+                    teamTimers.remove(event.player.uuid());
+                    return;
+                }
 
-            Seq<Hex> copy = data.hexes().copy();
-            copy.shuffle();
-            Hex hex = copy.find(h -> h.controller == null && h.spawnTime.get());
+                Seq<Hex> copy = data.hexes().copy();
+                copy.shuffle();
+                Hex hex = copy.find(h -> h.controller == null && h.spawnTime.get());
 
-            if (hex != null) {
-                loadout(event.player, hex.x, hex.y);
-                Core.app.post(() -> data.data(event.player).chosen = false);
-                hex.findController();
-            } else {
-                Call.infoMessage(event.player.con, Bundle.format("server.no-empty-hex", findLocale(event.player)));
-                event.player.clearUnit();
-                event.player.team(Team.derelict);
+                if (hex != null) {
+                    loadout(event.player, hex.x, hex.y);
+                    Core.app.post(() -> data.data(event.player).chosen = false);
+                    hex.findController();
+                } else {
+                    Call.infoMessage(event.player.con, Bundle.format("server.no-empty-hex", findLocale(event.player)));
+                    event.player.clearUnit();
+                    event.player.team(Team.derelict);
+                }
+                data.data(event.player).lastMessage.reset();
             }
-            data.data(event.player).lastMessage.reset();
         });
 
         Events.on(EventType.WorldLoadEvent.class, event -> Time.runTask(5f, () -> {
@@ -271,6 +262,7 @@ public class Main extends Plugin {
                 Call.infoMessage(player.con, Bundle.format("server.no-empty-hex", findLocale(player)));
                 return Team.derelict;
             }
+
             return prevAssigner.assign(player, players);
         };
 

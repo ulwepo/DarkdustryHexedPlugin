@@ -1,5 +1,6 @@
 package hexed.database;
 
+import arc.util.Log;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
 import com.mongodb.client.model.ReturnDocument;
@@ -44,8 +45,7 @@ public abstract class MongoDataBridge<T extends MongoDataBridge<T>> {
                     s.request(1L);
                 }
 
-                public void onNext(Document t) {
-                }
+                public void onNext(Document t) {}
 
                 public void onComplete() {
                     callback.accept(null);
@@ -55,18 +55,14 @@ public abstract class MongoDataBridge<T extends MongoDataBridge<T>> {
                     if (!Objects.isNull(t)) {
                         callback.accept(t);
                     }
-
                 }
             });
         }
     }
 
     public void save() {
-        this.save((error) -> {
-            if (!Objects.isNull(error)) {
-                error.printStackTrace();
-            }
-
+        save(e -> {
+            if (e != null) Log.err(e);
         });
     }
 
@@ -79,15 +75,14 @@ public abstract class MongoDataBridge<T extends MongoDataBridge<T>> {
             final T dataClass = clazz.getConstructor().newInstance();
             final Set<Field> fields = Set.of(clazz.getFields());
             Document defaultObject = new Document();
-            fields.forEach((field) -> {
+            fields.forEach(field -> {
                 if (!specialKeys.contains(field.getName())) {
                     try {
                         defaultObject.append(field.getName(), field.get(dataClass));
-                    } catch (IllegalAccessException | IllegalArgumentException var4) {
-                        var4.printStackTrace();
+                    } catch (IllegalAccessException | IllegalArgumentException e) {
+                        Log.err(e);
                     }
                 }
-
             });
             filter.forEach(defaultObject::append);
             collection.findOneAndUpdate(filter, new BasicDBObject("$setOnInsert", defaultObject), (new FindOneAndUpdateOptions()).upsert(true).returnDocument(ReturnDocument.AFTER)).subscribe(new Subscriber<>() {
@@ -96,11 +91,11 @@ public abstract class MongoDataBridge<T extends MongoDataBridge<T>> {
                 }
 
                 public void onNext(Document document) {
-                    fields.forEach((field) -> {
+                    fields.forEach(field -> {
                         try {
                             field.set(dataClass, document.getOrDefault(field.getName(), field.get(dataClass)));
-                        } catch (IllegalAccessException | IllegalArgumentException var4) {
-                            var4.printStackTrace();
+                        } catch (IllegalAccessException | IllegalArgumentException e) {
+                            Log.err(e);
                         }
 
                     });
@@ -108,20 +103,17 @@ public abstract class MongoDataBridge<T extends MongoDataBridge<T>> {
                     callback.accept(dataClass);
                 }
 
-                public void onComplete() {
-                }
+                public void onComplete() {}
 
                 public void onError(Throwable t) {
                     if (!Objects.isNull(t)) {
-                        t.printStackTrace();
+                        Log.err(t);
                     }
-
                 }
             });
-        } catch (Exception var6) {
-            var6.printStackTrace();
+        } catch (Exception e) {
+            Log.err(e);
         }
-
     }
 
     private Map<String, Object> getDeclaredPublicFields() {
@@ -132,8 +124,7 @@ public abstract class MongoDataBridge<T extends MongoDataBridge<T>> {
             if (Modifier.isPublic(field.getModifiers())) {
                 try {
                     values.put(field.getName(), field.get(this));
-                } catch (Exception ignored) {
-                }
+                } catch (Exception ignored) {}
             }
         }
 
