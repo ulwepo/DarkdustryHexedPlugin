@@ -551,10 +551,12 @@ public class Main extends Plugin {
         start.tiles.each(st -> {
             Tile tile = world.tile(st.x + ox, st.y + oy);
             if (tile == null) return;
-
-            if (tile.block() != Blocks.air) tile.removeNet();
-
             tile.setNet(st.block, player.team(), st.rotation);
+            tile.getLinkedTiles(t -> {
+                if (t.floor().isLiquid) {
+                    t.setFloorNet(Blocks.darkPanel3.asFloor());
+                }
+            });
 
             if (st.config != null) tile.build.configureAny(st.config);
 
