@@ -553,7 +553,6 @@ public class Main extends Plugin {
             if (tile == null) return;
 
             if (tile.block() != Blocks.air) tile.removeNet();
-            if (tile.floor().isLiquid) tile.setFloorNet(Blocks.darkPanel3);
 
             tile.setNet(st.block, player.team(), st.rotation);
 
