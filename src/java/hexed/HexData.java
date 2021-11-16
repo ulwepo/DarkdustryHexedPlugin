@@ -155,7 +155,6 @@ public class HexData {
         public HexMoveEvent(Player player, Hex hex) {
             this.player = player;
             this.hex = hex;
-            Call.constructFinish(Vars.world.tile(hex.x, hex.y), Blocks.coreShard, player.unit(), (byte) 0, player.team(), false);
         }
     }
 
