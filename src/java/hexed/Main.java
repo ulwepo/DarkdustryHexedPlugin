@@ -114,22 +114,8 @@ public class Main extends Plugin {
         rules.reactorExplosions = true;
         rules.canGameOver = false;
         rules.coreCapture = false;
-        rules.revealedBlocks.addAll(
-            Blocks.duct,
-            Blocks.ductRouter,
-            Blocks.ductBridge,
-            Blocks.thruster,
-            Blocks.scrapWall,
-            Blocks.scrapWallLarge,
-            Blocks.scrapWallHuge,
-            Blocks.scrapWallGigantic
-        );
-        rules.bannedBlocks.addAll(
-            Blocks.ripple,
-            Blocks.microProcessor,
-            Blocks.logicProcessor,
-            Blocks.hyperProcessor
-        );
+        rules.revealedBlocks.addAll(Blocks.duct, Blocks.ductRouter, Blocks.ductBridge, Blocks.thruster, Blocks.scrapWall, Blocks.scrapWallLarge, Blocks.scrapWallHuge, Blocks.scrapWallGigantic);
+        rules.bannedBlocks.add(Blocks.ripple);
 
         start = Schematics.readBase64("bXNjaAF4nE2SX3LbIBDGFyQh/sh2fINcQCfK5IHItPWMIjSS3DRvuUqu0Jnew71OX5JdPs80wuYDdvmxu0CBjhXVU3xOFH6kX+l0v25x2Sic0jos53k754mIzBif0rjS/uH6fv3z9+36W/rHHYUhz3Na+pc4jnT8MunHuHxPZIc8/UyveaF2HeK2pYXCmtnWz3FKI1VxGah9KpZXOn4x3QDmOU0n3mUv05ijjLohL6mfLsOYLiv5Ob/wkVM+cQbxvPTf4rBlZhEl/pMqP9Lc+KshDcSQFm2pTC3EUfk8JEA6UHaYHcRRYaxkUHFXY7EwFZgKTAWmEmbNEiAdFm+wO9Lqf3DcGMTcEnphajA1mBpMLcyW/TrSsm8vKC1My4vsVpE07bhrGjZqz3wryVbsrCXsUogSvWVpMNvLvEZwtQRnEJc4VBDeElgaK5UwZRxk/PGvmDt47bC1BNaAZ1A5I5UzkhzplpOoJUxDQcLk3S3t1K2+LZXracXTsYiLK+sHSdvidi3qVPxELMTBVmpvcZ+3K3Z4HA55OQlApDwOB5gDzAHmAHOAOVykw0U6SVHkAJc7EY9X4lFeD7QH2gPtgfZAe7w7jzg90B7vzuMELyd8Ao5MVAI=");
 
@@ -141,7 +127,7 @@ public class Main extends Plugin {
                     if (player.team() != Team.derelict && player.team().cores().isEmpty()) {
                         player.clearUnit();
                         killTeam(player.team());
-                        Groups.player.each(p -> bundled(p, "server.player-lost", player.coloredName()));
+                        bundledAll("server.player-lost", player.coloredName());
                         Call.infoMessage(player.con, Bundle.format("server.you-lost", findLocale(player)));
                         player.team(Team.derelict);
                     }
@@ -233,13 +219,15 @@ public class Main extends Plugin {
         });
 
         Events.on(EventType.WorldLoadEvent.class, event -> Time.runTask(5f, () -> {
-            rules = state.rules;
-            if (rules.pvp && !(rules instanceof NoPauseRules)) {
-                rules.pvp = false;
-                hexRules = new NoPauseRules();
-                JsonIO.copy(rules, hexRules);
-                state.rules = hexRules;
-            } else if (rules.pvp) rules.pvp = false;
+            if (active()) {
+                rules = state.rules;
+                if (rules.pvp && !(rules instanceof NoPauseRules)) {
+                    rules.pvp = false;
+                    hexRules = new NoPauseRules();
+                    JsonIO.copy(rules, hexRules);
+                    state.rules = hexRules;
+                } else if (rules.pvp) rules.pvp = false;
+            }
         }));
 
         Events.on(ProgressIncreaseEvent.class, event -> updateText(event.player));
@@ -268,8 +256,7 @@ public class Main extends Plugin {
 
         ChatFormatter prevFormat = netServer.chatFormatter;
         netServer.chatFormatter = (player, message) -> {
-            if (player == null) return message;
-            if (active()) {
+            if (active() && player != null) {
                 int[] wins = {0};
 
                 UserStatistics.find(new BasicDBObject("UUID", player.uuid()), userStatistic -> {
@@ -568,11 +555,15 @@ public class Main extends Plugin {
     }
 
     public boolean active() {
-        return (state.rules.tags.getBool("hexed") && !state.is(State.menu));
+        return state.rules.tags.getBool("hexed") && !state.is(State.menu);
     }
 
     public static void bundled(Player player, String key, Object... values) {
         player.sendMessage(Bundle.format(key, findLocale(player), values));
+    }
+
+    public static void bundledAll(String key, Object... values) {
+        Groups.player.each(p -> bundled(p, key, values));
     }
 
     private static Locale findLocale(Player player) {

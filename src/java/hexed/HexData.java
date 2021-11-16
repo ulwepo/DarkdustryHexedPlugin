@@ -46,7 +46,7 @@ public class HexData {
                 team.location = newHex;
                 team.progressPercent = newHex.getProgressPercent(player.team());
                 team.lastCaptured = newHex.controller == player.team();
-                Events.fire(new HexMoveEvent(player));
+                Events.fire(new HexMoveEvent(player, newHex));
             }
             float currPercent = newHex.getProgressPercent(player.team());
             int lp = (int) (team.progressPercent);
@@ -150,9 +150,12 @@ public class HexData {
 
     public static class HexMoveEvent {
         public final Player player;
+        public final Hex hex;
 
-        public HexMoveEvent(Player player) {
+        public HexMoveEvent(Player player, Hex hex) {
             this.player = player;
+            this.hex = hex;
+            Call.constructFinish(Vars.world.tile(hex.x, hex.y), Blocks.coreShard, player.unit(), (byte) 0, player.team(), false);
         }
     }
 
