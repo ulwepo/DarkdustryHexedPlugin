@@ -3,7 +3,7 @@
   "displayName": "Hexed",
   "description": "A special gamemode",
   "author": "Skat",
-  "main": "hexed.HexedMod",
+  "main": "hexed.Main",
   "hidden": false,
   "java": true,
   "version": "1.2",
