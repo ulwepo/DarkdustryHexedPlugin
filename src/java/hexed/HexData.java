@@ -7,10 +7,7 @@ import arc.struct.IntSeq;
 import arc.struct.Seq;
 import arc.util.Nullable;
 import arc.util.Timekeeper;
-import mindustry.Vars;
-import mindustry.content.Blocks;
 import mindustry.game.Team;
-import mindustry.gen.Call;
 import mindustry.gen.Groups;
 import mindustry.gen.Player;
 
@@ -41,7 +38,7 @@ public class HexData {
             if (player.dead()) continue;
 
             HexTeam team = data(player);
-            Hex newHex = hexes.min(h -> player.dst2(h.wx, h.wy));
+            Hex newHex = hexes.min(hex -> player.dst2(hex.wx, hex.wy));
             if (team.location != newHex) {
                 team.location = newHex;
                 team.progressPercent = newHex.getProgressPercent(player.team());
@@ -144,7 +141,6 @@ public class HexData {
         public HexCaptureEvent(Player player, Hex hex) {
             this.player = player;
             this.hex = hex;
-            Call.constructFinish(Vars.world.tile(hex.x, hex.y), Blocks.coreShard, player.unit(), (byte) 0, player.team(), false);
         }
     }
 

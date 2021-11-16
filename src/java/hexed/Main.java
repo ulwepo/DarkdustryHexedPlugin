@@ -59,7 +59,8 @@ import static mindustry.Vars.*;
 
 public class Main extends Plugin {
 
-    public static final float spawnDelay = 60 * 4;
+    public static final float spawnDelay = 60 * 4f;
+    public static final float baseKillDelay = 60f;
     public static final int itemRequirement = 3000;
     public static final int messageTime = 1;
     private static final int roundTime = 60 * 60 * 90;
@@ -81,14 +82,13 @@ public class Main extends Plugin {
     private double counter = 0f;
     private int lastMin;
 
-    private final ObjectMap<String, Team> teamTimers = new ObjectMap<>();
+    private final ObjectMap<String, Team> leftPlayers = new ObjectMap<>();
 
     public Main() throws IOException {
         ConfigurationManager config = new ConfigurationManager();
         JSONObject jsonData = config.getJsonData();
 
         ConnectionString connString = new ConnectionString(jsonData.getString("mongoURI"));
-
         MongoClientSettings settings = MongoClientSettings
                 .builder()
                 .applyConnectionString(connString)
@@ -184,20 +184,21 @@ public class Main extends Plugin {
 
         Events.on(PlayerLeave.class, event -> {
             if (active() && event.player.team() != Team.derelict) {
-                teamTimers.put(event.player.uuid(), event.player.team());
+                leftPlayers.put(event.player.uuid(), event.player.team());
                 Timer.schedule(() -> {
-                    int count = Groups.player.count(p -> p.team() == event.player.team());
-                    if (count > 0) return;
-                    killTeam(event.player.team());
-                    teamTimers.remove(event.player.uuid());
-                }, 60f);
+                    Player player = Groups.player.find(p -> p.team() == event.player.team() && p.uuid().equals(event.player.uuid()));
+                    if (player == null) {
+                        killTeam(event.player.team());
+                        leftPlayers.remove(event.player.uuid());
+                    }
+                }, baseKillDelay);
             }
         });
 
         Events.on(PlayerJoin.class, event -> {
             if (active() && event.player.team() != Team.derelict) {
-                if (teamTimers.containsKey(event.player.uuid())) {
-                    teamTimers.remove(event.player.uuid());
+                if (leftPlayers.containsKey(event.player.uuid())) {
+                    leftPlayers.remove(event.player.uuid());
                     return;
                 }
 
@@ -232,17 +233,20 @@ public class Main extends Plugin {
 
         Events.on(ProgressIncreaseEvent.class, event -> updateText(event.player));
 
-        Events.on(HexCaptureEvent.class, event -> updateText(event.player));
-
         Events.on(HexMoveEvent.class, event -> updateText(event.player));
+
+        Events.on(HexCaptureEvent.class, event -> {
+            updateText(event.player);
+            if (!event.hex.hasCore()) Call.constructFinish(world.tile(event.hex.x, event.hex.y), Blocks.coreShard, event.player.unit(), (byte) 0, event.player.team(), false);
+        });
 
         TeamAssigner prevAssigner = netServer.assigner;
         netServer.assigner = (player, players) -> {
             Seq<Player> arr = Seq.with(players);
             if (active()) {
-                if (teamTimers.containsKey(player.uuid())) return teamTimers.get(player.uuid());
+                if (leftPlayers.containsKey(player.uuid())) return leftPlayers.get(player.uuid());
                 for (Team team : Team.all) {
-                    if (team.id > 5 && !team.active() && !arr.contains(p -> p.team() == team) && !data.data(team).dying && !data.data(team).chosen && !teamTimers.containsValue(team, true)) {
+                    if (team.id > 5 && !team.active() && !arr.contains(p -> p.team() == team) && !data.data(team).dying && !data.data(team).chosen && !leftPlayers.containsValue(team, true)) {
                         data.data(team).chosen = true;
                         return team;
                     }
