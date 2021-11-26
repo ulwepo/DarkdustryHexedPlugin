@@ -1,9 +1,5 @@
 package hexed;
 
-import static mindustry.Vars.maps;
-import static mindustry.Vars.state;
-import static hexed.Main.mode;
-
 import arc.func.Cons;
 import arc.math.Angles;
 import arc.math.Mathf;
@@ -29,6 +25,10 @@ import mindustry.maps.filters.ScatterFilter;
 import mindustry.world.Block;
 import mindustry.world.Tile;
 import mindustry.world.Tiles;
+
+import static hexed.Main.mode;
+import static mindustry.Vars.maps;
+import static mindustry.Vars.state;
 
 public class HexedGenerator implements Cons<Tiles> {
 

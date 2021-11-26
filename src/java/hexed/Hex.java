@@ -1,16 +1,17 @@
 package hexed;
 
-import static mindustry.Vars.*;
-
 import arc.math.geom.Intersector;
 import arc.util.Nullable;
 import arc.util.Timekeeper;
-import java.util.Arrays;
 import mindustry.game.Team;
 import mindustry.game.Teams.TeamData;
 import mindustry.type.ItemStack;
 import mindustry.world.Tile;
 import mindustry.world.blocks.storage.CoreBlock;
+
+import java.util.Arrays;
+
+import static mindustry.Vars.*;
 
 public class Hex {
 
@@ -26,8 +27,7 @@ public class Hex {
     public final float wx, wy;
     public final float rad = radius * tilesize;
 
-    @Nullable
-    public Team controller;
+    public @Nullable Team controller;
 
     public Timekeeper spawnTime = new Timekeeper(Main.spawnDelay);
 
