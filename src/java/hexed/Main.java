@@ -5,11 +5,7 @@ import arc.Events;
 import arc.math.Mathf;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
-import arc.util.Interval;
-import arc.util.Timer;
-import arc.util.Time;
-import arc.util.CommandHandler;
-import arc.util.Structs;
+import arc.util.*;
 import com.mongodb.BasicDBObject;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
@@ -21,7 +17,6 @@ import hexed.HexData.HexMoveEvent;
 import hexed.HexData.HexTeam;
 import hexed.HexData.ProgressIncreaseEvent;
 import hexed.comp.Bundle;
-import hexed.comp.ConfigurationManager;
 import hexed.comp.NoPauseRules;
 import hexed.models.UserStatistics;
 import mindustry.content.Blocks;
@@ -45,11 +40,9 @@ import mindustry.world.Tile;
 import mindustry.world.blocks.storage.CoreBlock;
 import org.bson.BsonInt32;
 import org.bson.Document;
-import org.json.JSONObject;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
-import java.io.IOException;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -60,16 +53,16 @@ import static mindustry.Vars.*;
 public class Main extends Plugin {
 
     public static final float spawnDelay = 60 * 4f;
-    public static final float baseKillDelay = 60f;
     public static final int itemRequirement = 3000;
     public static final int messageTime = 1;
+    private static final float baseKillDelay = 60f;
     private static final int roundTime = 60 * 60 * 90;
     private static final int leaderboardTime = 60 * 60 * 2;
     private static final int updateTime = 60 * 2;
     private static final int winCondition = 20;
     private static final int timerBoard = 0, timerUpdate = 1, timerWinCheck = 2;
 
-    protected static HexedGenerator.Mode mode;
+    public static HexedGenerator.Mode mode;
 
     private Rules rules = new Rules();
     private NoPauseRules hexRules;
@@ -79,16 +72,17 @@ public class Main extends Plugin {
     private boolean restarting = false;
 
     private Schematic start;
-    private double counter = 0f;
+    private float counter = 0f;
     private int lastMin;
 
     private final ObjectMap<String, Team> leftPlayers = new ObjectMap<>();
 
-    public Main() throws IOException {
-        ConfigurationManager config = new ConfigurationManager();
-        JSONObject jsonData = config.getJsonData();
+    public Main() {
+        String mongoURL = "mongodb://darkdustry:XCore2000@127.0.0.1:27017/?authSource=darkdustry";
+        String dbCollection = "hexed";
+        String dbName = "darkdustry";
 
-        ConnectionString connString = new ConnectionString(jsonData.getString("mongoURI"));
+        ConnectionString connString = new ConnectionString(mongoURL);
         MongoClientSettings settings = MongoClientSettings
                 .builder()
                 .applyConnectionString(connString)
@@ -96,7 +90,7 @@ public class Main extends Plugin {
                 .build();
 
         MongoClient mongodb = MongoClients.create(settings);
-        MongoCollection<Document> hexedCollection = mongodb.getDatabase(jsonData.getString("dbName")).getCollection(jsonData.getString("dbCollection"));
+        MongoCollection<Document> hexedCollection = mongodb.getDatabase(dbName).getCollection(dbCollection);
         UserStatistics.setSourceCollection(hexedCollection);
     }
 
@@ -161,7 +155,7 @@ public class Main extends Plugin {
 
                 if (interval.get(timerWinCheck, 60 * 2)) {
                     Seq<Player> players = data.getLeaderboard();
-                    if (!players.isEmpty() && data.getControlled(players.first()).size >= winCondition && players.size > 1 && data.getControlled(players.get(1)).size <= 1) {
+                    if (players.any() && data.getControlled(players.first()).size >= winCondition && players.size > 1 && data.getControlled(players.get(1)).size <= 1) {
                         endGame();
                     }
                 }
@@ -269,7 +263,7 @@ public class Main extends Plugin {
                     wins[0] = userStatistic.wins;
                 });
 
-                return ("[coral][[[cyan]" + wins[0] + " [sky]#[white] " + player.coloredName() + "[coral]]:[white] " + message);
+                return ("[coral][[[cyan]" + wins[0] + " [sky]#[white] " + player.coloredName() + "[coral]]: [white]" + message);
             }
 
             return prevFormat.format(player, message);
@@ -278,7 +272,7 @@ public class Main extends Plugin {
 
     @Override
     public void registerClientCommands(CommandHandler handler) {
-        handler.<Player>register("lb", "Показать текущих лучших игроков сервера.", (args, player) -> {
+        handler.<Player>register("lb", "Показать лучших игроков сервера.", (args, player) -> {
             StringBuilder players = new StringBuilder();
             int[] cycle = {1};
 
@@ -306,7 +300,7 @@ public class Main extends Plugin {
             });
         });
 
-        handler.<Player>register("spectator", "Режим наблюдателя. Уничтожает твою базу", (args, player) -> {
+        handler.<Player>register("spectator", "Режим наблюдателя. Уничтожает твою базу.", (args, player) -> {
             if (player.team() == Team.derelict) {
                 bundled(player, "commands.spectator.already");
                 return;

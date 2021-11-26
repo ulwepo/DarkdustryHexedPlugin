@@ -22,7 +22,7 @@ public class DataChanges {
         HashMap<String, DataChanges> changes = new HashMap<>();
         keys.addAll(first.keySet());
         keys.addAll(second.keySet());
-        keys.forEach((key) -> {
+        keys.forEach(key -> {
             Object firstValue = first.containsKey(key) ? first.get(key) : undefined;
             Object secondValue = second.containsKey(key) ? second.get(key) : undefined;
             if (firstValue != secondValue) {

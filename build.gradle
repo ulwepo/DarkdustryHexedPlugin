@@ -15,14 +15,11 @@ repositories {
 }
 
 ext {
-    artifactBaseName = 'HexedPlugin'
-
     versionMindustry = 'v134.1'
 }
 
 dependencies {
-    implementation 'org.json:json:20210307'
-    implementation 'org.mongodb:mongodb-driver-reactivestreams:4.3.2'
+    implementation 'org.mongodb:mongodb-driver-reactivestreams:4.4.0'
     implementation 'org.slf4j:slf4j-log4j12:2.0.0-alpha4'
     compileOnly "com.github.Anuken.Arc:arc-core:$versionMindustry"
     compileOnly "com.github.Anuken.Mindustry:core:$versionMindustry"
@@ -35,7 +32,7 @@ tasks.withType(JavaCompile) {
 }
 
 jar {
-    archiveBaseName.set artifactBaseName
+    archiveBaseName.set 'HexedPlugin'
     from {
         configurations.runtimeClasspath.collect{it.isDirectory() ? it : zipTree(it) }
     }
