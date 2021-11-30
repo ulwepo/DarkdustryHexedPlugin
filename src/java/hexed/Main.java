@@ -104,10 +104,11 @@ public class Main extends Plugin {
         rules.unitBuildSpeedMultiplier = 1.25f;
         rules.enemyCoreBuildRadius = Hex.diameter * tilesize / 2f;
         rules.unitDamageMultiplier = 1.25f;
-        rules.fire = false;
         rules.reactorExplosions = true;
+        rules.unitCapVariable = true;
         rules.canGameOver = false;
         rules.coreCapture = false;
+        rules.fire = false;
         rules.revealedBlocks.addAll(Blocks.duct, Blocks.ductRouter, Blocks.ductBridge, Blocks.thruster, Blocks.scrapWall, Blocks.scrapWallLarge, Blocks.scrapWallHuge, Blocks.scrapWallGigantic);
         rules.bannedBlocks.add(Blocks.ripple);
 
