@@ -507,9 +507,10 @@ public class Main extends Plugin {
 
     public String getLeaderboard(Player p) {
         StringBuilder builder = new StringBuilder(Bundle.format("leaderboard.header", findLocale(p), lastMin));
-        int count = 0;
+        int count = 1;
         for (Player player : data.getLeaderboard()) {
-            builder.append("[yellow]").append(count++).append(".[white] ").append(player.coloredName()).append(Bundle.format("leaderboard.hexes", findLocale(p), data.getControlled(player).size));
+            builder.append("[yellow]").append(count).append(".[white] ").append(player.coloredName()).append(Bundle.format("leaderboard.hexes", findLocale(p), data.getControlled(player).size));
+            count++;
             if (count > 4) break;
         }
         return builder.toString();
