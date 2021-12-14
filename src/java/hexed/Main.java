@@ -123,8 +123,8 @@ public class Main extends Plugin {
                     if (player.team() != Team.derelict && player.team().cores().isEmpty()) {
                         player.clearUnit();
                         killTeam(player.team());
-                        bundledAll("server.player-lost", player.coloredName());
-                        Call.infoMessage(player.con, Bundle.format("server.you-lost", findLocale(player)));
+                        bundledAll("events.player-lost", player.coloredName());
+                        Call.infoMessage(player.con, Bundle.format("events.you-lost", findLocale(player)));
                         player.team(Team.derelict);
                     }
 
@@ -207,7 +207,7 @@ public class Main extends Plugin {
                     Core.app.post(() -> data.data(event.player).chosen = false);
                     hex.findController();
                 } else {
-                    Call.infoMessage(event.player.con, Bundle.format("server.no-empty-hex", findLocale(event.player)));
+                    Call.infoMessage(event.player.con, Bundle.format("events.no-empty-hex", findLocale(event.player)));
                     event.player.clearUnit();
                     event.player.team(Team.derelict);
                 }
@@ -247,7 +247,7 @@ public class Main extends Plugin {
                         return team;
                     }
                 }
-                Call.infoMessage(player.con, Bundle.format("server.no-empty-hex", findLocale(player)));
+                Call.infoMessage(player.con, Bundle.format("events.no-empty-hex", findLocale(player)));
                 return Team.derelict;
             }
 
@@ -302,7 +302,7 @@ public class Main extends Plugin {
             });
         });
 
-        handler.<Player>register("spectator", "Режим наблюдателя. Уничтожает твою базу.", (args, player) -> {
+        handler.<Player>register("spectator", "commands.spectator.description", (args, player) -> {
             if (player.team() == Team.derelict) {
                 bundled(player, "commands.spectator.already");
                 return;
@@ -313,7 +313,7 @@ public class Main extends Plugin {
             bundled(player, "commands.spectator.success");
         });
 
-        handler.<Player>register("captured", "Узнать количество захваченных хексов.", (args, player) -> {
+        handler.<Player>register("captured", "commands.captured.description", (args, player) -> {
             if (player.team() == Team.derelict) {
                 bundled(player, "commands.captured.spectator");
                 return;
@@ -321,9 +321,9 @@ public class Main extends Plugin {
             bundled(player, "commands.captured.hexes", data.getControlled(player).size);
         });
 
-        handler.<Player>register("leaderboard", "Показать таблицу лидеров.", (args, player) -> player.sendMessage(getLeaderboard(player)));
+        handler.<Player>register("leaderboard", "commands.leaderboard.description", (args, player) -> player.sendMessage(getLeaderboard(player)));
 
-        handler.<Player>register("hexstatus", "Узнать статус хекса на своем местоположении.", (args, player) -> {
+        handler.<Player>register("hexstatus", "commands.hexstatus.description", (args, player) -> {
             Hex hex = data.data(player).location;
             if (hex != null) {
                 hex.updateController();
@@ -429,7 +429,7 @@ public class Main extends Plugin {
     public void updateText(Player player) {
         HexTeam team = data.data(player);
 
-        StringBuilder message = new StringBuilder(Bundle.format("hex", findLocale(player)) + team.location.id + "\n");
+        StringBuilder message = new StringBuilder(Bundle.format("hex", findLocale(player))).append(team.location.id).append("\n");
 
         if (!team.lastMessage.get()) return;
 
@@ -491,7 +491,7 @@ public class Main extends Plugin {
                     Core.app.post(() -> data.data(p).chosen = false);
                     hex.findController();
                 } else {
-                    Call.infoMessage(p.con, Bundle.format("server.no-empty-hex", findLocale(p)));
+                    Call.infoMessage(p.con, Bundle.format("events.no-empty-hex", findLocale(p)));
                     p.clearUnit();
                     p.team(Team.derelict);
                 }
@@ -525,16 +525,16 @@ public class Main extends Plugin {
             for (int y = 0; y < world.height(); y++) {
                 Tile tile = world.tile(x, y);
                 if (tile.build != null && tile.block() != Blocks.air && tile.team() == team) {
-                    Time.run(Mathf.random(60f * 6), tile::removeNet);
+                    Time.run(Mathf.random(360f), tile::removeNet);
                 }
             }
         }
-        Groups.unit.each(u -> u.team == team, unit -> Time.run(Mathf.random(360), unit::kill));
+        Groups.unit.each(u -> u.team == team, unit -> Time.run(Mathf.random(360f), unit::kill));
     }
 
     public void loadout(Player player, int x, int y) {
         Stile coreTile = start.tiles.find(s -> s.block instanceof CoreBlock);
-        if (coreTile == null) throw new IllegalArgumentException("Загружена схема без ядра. Выключаю сервер...");
+        if (coreTile == null) throw new IllegalArgumentException("Загруженная схема не имеет ядра. Выключаю сервер...");
         int ox = x - coreTile.x, oy = y - coreTile.y;
         start.tiles.each(st -> {
             Tile tile = world.tile(st.x + ox, st.y + oy);
@@ -570,6 +570,6 @@ public class Main extends Plugin {
 
     private static Locale findLocale(Player player) {
         Locale locale = Structs.find(Bundle.supportedLocales, l -> l.toString().equals(player.locale) || player.locale.startsWith(l.toString()));
-        return (locale != null) ? locale : Bundle.defaultLocale();
+        return locale != null ? locale : Bundle.defaultLocale();
     }
 }
