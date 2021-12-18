@@ -78,7 +78,7 @@ public class Main extends Plugin {
     private final ObjectMap<String, Team> leftPlayers = new ObjectMap<>();
 
     public Main() {
-        String mongoURL = "mongodb://darkdustry:XCore2000@127.0.0.1:27017/?authSource=darkdustry";
+        String mongoURL = "mongodb://manager:QULIoZBckRlLkZXn@127.0.0.1:27017/?authSource=darkdustry";
         String dbCollection = "hexed";
         String dbName = "darkdustry";
 
