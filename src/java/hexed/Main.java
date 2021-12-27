@@ -12,23 +12,16 @@ import com.mongodb.MongoClientSettings;
 import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoClients;
 import com.mongodb.reactivestreams.client.MongoCollection;
-import hexed.HexData.HexCaptureEvent;
-import hexed.HexData.HexMoveEvent;
-import hexed.HexData.HexTeam;
-import hexed.HexData.ProgressIncreaseEvent;
+import hexed.HexData.*;
 import hexed.comp.Bundle;
 import hexed.comp.NoPauseRules;
 import hexed.models.UserStatistics;
 import mindustry.content.Blocks;
 import mindustry.content.Items;
 import mindustry.core.GameState.State;
-import mindustry.core.NetServer.ChatFormatter;
-import mindustry.core.NetServer.TeamAssigner;
 import mindustry.game.*;
-import mindustry.game.EventType.BlockDestroyEvent;
-import mindustry.game.EventType.PlayerJoin;
-import mindustry.game.EventType.PlayerLeave;
-import mindustry.game.EventType.Trigger;
+import mindustry.game.EventType.*;
+import mindustry.game.Teams.TeamData;
 import mindustry.game.Schematic.Stile;
 import mindustry.gen.Call;
 import mindustry.gen.Groups;
@@ -44,7 +37,6 @@ import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
 import java.util.Locale;
-import java.util.Objects;
 
 import static arc.util.Log.err;
 import static arc.util.Log.info;
@@ -54,7 +46,6 @@ public class Main extends Plugin {
 
     public static final float spawnDelay = 60 * 4f;
     public static final int itemRequirement = 3000;
-    public static final int messageTime = 1;
     private static final float baseKillDelay = 60f;
     private static final int roundTime = 60 * 60 * 90;
     private static final int leaderboardTime = 60 * 60 * 2;
@@ -104,87 +95,89 @@ public class Main extends Plugin {
         rules.unitBuildSpeedMultiplier = 1.25f;
         rules.enemyCoreBuildRadius = Hex.diameter * tilesize / 2f;
         rules.unitDamageMultiplier = 1.25f;
+        rules.unitCap = 48;
         rules.reactorExplosions = true;
-        rules.unitCapVariable = true;
         rules.canGameOver = false;
         rules.coreCapture = false;
         rules.fire = false;
         rules.revealedBlocks.addAll(Blocks.duct, Blocks.ductRouter, Blocks.ductBridge, Blocks.thruster, Blocks.scrapWall, Blocks.scrapWallLarge, Blocks.scrapWallHuge, Blocks.scrapWallGigantic);
-        rules.bannedBlocks.add(Blocks.ripple);
+        rules.bannedBlocks.addAll(Blocks.ripple);
         rules.modeName = "Hexed";
 
         start = Schematics.readBase64("bXNjaAF4nE2SX3LbIBDGFyQh/sh2fINcQCfK5IHItPWMIjSS3DRvuUqu0Jnew71OX5JdPs80wuYDdvmxu0CBjhXVU3xOFH6kX+l0v25x2Sic0jos53k754mIzBif0rjS/uH6fv3z9+36W/rHHYUhz3Na+pc4jnT8MunHuHxPZIc8/UyveaF2HeK2pYXCmtnWz3FKI1VxGah9KpZXOn4x3QDmOU0n3mUv05ijjLohL6mfLsOYLiv5Ob/wkVM+cQbxvPTf4rBlZhEl/pMqP9Lc+KshDcSQFm2pTC3EUfk8JEA6UHaYHcRRYaxkUHFXY7EwFZgKTAWmEmbNEiAdFm+wO9Lqf3DcGMTcEnphajA1mBpMLcyW/TrSsm8vKC1My4vsVpE07bhrGjZqz3wryVbsrCXsUogSvWVpMNvLvEZwtQRnEJc4VBDeElgaK5UwZRxk/PGvmDt47bC1BNaAZ1A5I5UzkhzplpOoJUxDQcLk3S3t1K2+LZXracXTsYiLK+sHSdvidi3qVPxELMTBVmpvcZ+3K3Z4HA55OQlApDwOB5gDzAHmAHOAOVykw0U6SVHkAJc7EY9X4lFeD7QH2gPtgfZAe7w7jzg90B7vzuMELyd8Ao5MVAI=");
 
         Events.run(Trigger.update, () -> {
-            if (active()) {
-                data.updateStats();
+            data.update();
 
-                for (Player player : Groups.player) {
-                    if (player.team() != Team.derelict && player.team().cores().isEmpty()) {
-                        player.clearUnit();
-                        killTeam(player.team());
-                        bundledAll("events.player-lost", player.coloredName());
-                        Call.infoMessage(player.con, Bundle.format("events.you-lost", findLocale(player)));
-                        player.team(Team.derelict);
-                    }
-
-                    if (player.team() == Team.derelict) {
-                        player.clearUnit();
-                    } else if (data.getControlled(player).size == data.hexes().size) {
-                        endGame();
-                        break;
-                    }
+            for (Player player : Groups.player) {
+                if (player.team() != Team.derelict && player.team().cores().isEmpty()) {
+                    player.clearUnit();
+                    killTeam(player.team());
+                    bundledAll("events.player-lost", player.coloredName());
+                    Call.infoMessage(player.con, Bundle.format("events.you-lost", findLocale(player)));
+                    player.team(Team.derelict);
                 }
 
-                state.serverPaused = false;
-                rules = state.rules;
-                if (rules.pvp && rules instanceof NoPauseRules) {
-                    rules.pvp = false;
+                if (player.team() == Team.derelict) {
+                    player.clearUnit();
+                } else if (data.getControlled(player).size == data.hexes().size) {
+                    endGame();
+                    break;
                 }
+            }
 
-                int minsToGo = (int) (roundTime - counter) / 60 / 60;
-                if (minsToGo != lastMin) {
-                    lastMin = minsToGo;
+            state.serverPaused = false;
+            rules = state.rules;
+            if (rules.pvp && rules instanceof NoPauseRules) {
+                rules.pvp = false;
+            }
+
+            int minsToGo = (int) (roundTime - counter) / 60 / 60;
+            if (minsToGo != lastMin) {
+                lastMin = minsToGo;
+            }
+
+            if (interval.get(timerBoard, leaderboardTime)) {
+                Groups.player.each(player -> Call.infoToast(player.con, getLeaderboard(player), 12.5f));
+            }
+
+            if (interval.get(timerUpdate, updateTime)) {
+                data.updateControl();
+            }
+
+            if (interval.get(timerWinCheck, 60 * 2)) {
+                Seq<Player> players = data.getLeaderboard();
+                if (players.any() && data.getControlled(players.first()).size >= winCondition && players.size > 1 && data.getControlled(players.get(1)).size <= 1) {
+                    endGame();
                 }
+            }
 
-                if (interval.get(timerBoard, leaderboardTime)) {
-                    Groups.player.each(player -> Call.infoToast(player.con, getLeaderboard(player), 12.5f));
-                }
+            counter += Time.delta;
 
-                if (interval.get(timerUpdate, updateTime)) {
-                    data.updateControl();
-                }
+            if (counter > roundTime) endGame();
+        });
 
-                if (interval.get(timerWinCheck, 60 * 2)) {
-                    Seq<Player> players = data.getLeaderboard();
-                    if (players.any() && data.getControlled(players.first()).size >= winCondition && players.size > 1 && data.getControlled(players.get(1)).size <= 1) {
-                        endGame();
-                    }
-                }
-
-                counter += Time.delta;
-
-                if (counter > roundTime) endGame();
-            } else counter = 0;
+        Events.on(BlockBuildEndEvent.class, event -> {
+            Hex hex = data.getClosestHex(event.tile);
+            hex.updateController();
         });
 
         Events.on(BlockDestroyEvent.class, event -> {
-            if (active() && event.tile.block() instanceof CoreBlock) {
-                Hex hex = data.getHex(event.tile.pos());
-                 if (hex != null) {
-                     hex.spawnTime.reset();
-                     hex.updateController();
-                 }
+            Hex hex = data.getClosestHex(event.tile);
+            hex.updateController();
+            if (event.tile.block() instanceof CoreBlock) {
+                hex.spawnTime.reset();
             }
         });
 
         Events.on(PlayerLeave.class, event -> {
-            if (active() && event.player.team() != Team.derelict) {
+            if (event.player.team() != Team.derelict) {
                 leftPlayers.put(event.player.uuid(), event.player.team());
                 Timer.schedule(() -> {
                     Player player = Groups.player.find(p -> p.team() == event.player.team() && p.uuid().equals(event.player.uuid()));
                     if (player == null) {
                         killTeam(event.player.team());
+                        data.data(event.player.team()).chosen = false;
                         leftPlayers.remove(event.player.uuid());
                     }
                 }, baseKillDelay);
@@ -192,7 +185,7 @@ public class Main extends Plugin {
         });
 
         Events.on(PlayerJoin.class, event -> {
-            if (active() && event.player.team() != Team.derelict) {
+            if (event.player.team() != Team.derelict) {
                 if (leftPlayers.containsKey(event.player.uuid())) {
                     leftPlayers.remove(event.player.uuid());
                     return;
@@ -211,20 +204,17 @@ public class Main extends Plugin {
                     event.player.clearUnit();
                     event.player.team(Team.derelict);
                 }
-                data.data(event.player).lastMessage.reset();
             }
         });
 
         Events.on(EventType.WorldLoadEvent.class, event -> Time.runTask(5f, () -> {
-            if (active()) {
-                rules = state.rules;
-                if (rules.pvp && !(rules instanceof NoPauseRules)) {
-                    rules.pvp = false;
-                    hexRules = new NoPauseRules();
-                    JsonIO.copy(rules, hexRules);
-                    state.rules = hexRules;
-                } else if (rules.pvp) rules.pvp = false;
-            }
+            rules = state.rules;
+            if (rules.pvp && !(rules instanceof NoPauseRules)) {
+                rules.pvp = false;
+                hexRules = new NoPauseRules();
+                JsonIO.copy(rules, hexRules);
+                state.rules = hexRules;
+            } else if (rules.pvp) rules.pvp = false;
         }));
 
         Events.on(ProgressIncreaseEvent.class, event -> updateText(event.player));
@@ -232,31 +222,28 @@ public class Main extends Plugin {
         Events.on(HexMoveEvent.class, event -> updateText(event.player));
 
         Events.on(HexCaptureEvent.class, event -> {
-            updateText(event.player);
-            if (!event.hex.hasCore()) Call.constructFinish(world.tile(event.hex.x, event.hex.y), Blocks.coreShard, event.player.unit(), (byte) 0, event.player.team(), false);
+            Groups.player.each(this::updateText);
+            world.tile(event.hex.x, event.hex.y).setNet(Blocks.coreShard, event.newTeam, 0);
         });
 
-        TeamAssigner prevAssigner = netServer.assigner;
+        Events.on(HexLoseEvent.class, event -> Groups.player.each(this::updateText));
+
         netServer.assigner = (player, players) -> {
-            Seq<Player> arr = Seq.with(players);
-            if (active()) {
-                if (leftPlayers.containsKey(player.uuid())) return leftPlayers.get(player.uuid());
-                for (Team team : Team.all) {
-                    if (team.id > 5 && !team.active() && !arr.contains(p -> p.team() == team) && !data.data(team).dying && !data.data(team).chosen && !leftPlayers.containsValue(team, true)) {
-                        data.data(team).chosen = true;
-                        return team;
-                    }
+            if (leftPlayers.containsKey(player.uuid())) return leftPlayers.get(player.uuid());
+
+            for (Team team : Team.all) {
+                if (team.id > 5 && !team.active() && !Seq.with(players).contains(p -> p.team() == team) && !data.data(team).dying && !data.data(team).chosen && !leftPlayers.containsValue(team, true)) {
+                    data.data(team).chosen = true;
+                    return team;
                 }
-                Call.infoMessage(player.con, Bundle.format("events.no-empty-hex", findLocale(player)));
-                return Team.derelict;
             }
 
-            return prevAssigner.assign(player, players);
+            Call.infoMessage(player.con, Bundle.format("events.no-empty-hex", findLocale(player)));
+            return Team.derelict;
         };
 
-        ChatFormatter prevFormat = netServer.chatFormatter;
         netServer.chatFormatter = (player, message) -> {
-            if (active() && player != null) {
+            if (player != null) {
                 int[] wins = {0};
 
                 UserStatistics.find(new BasicDBObject("UUID", player.uuid()), userStatistic -> {
@@ -268,7 +255,7 @@ public class Main extends Plugin {
                 return ("[coral][[[cyan]" + wins[0] + " [sky]#[white] " + player.coloredName() + "[coral]]: [white]" + message);
             }
 
-            return prevFormat.format(player, message);
+            return message;
         };
     }
 
@@ -285,14 +272,14 @@ public class Main extends Plugin {
                 }
 
                 @Override
-                public void onNext(Document t) {
-                    if (!Objects.isNull(t)) players.append("[accent]").append(cycle[0]++).append(". ").append(t.getString("name")).append("[accent]: [cyan]").append(t.getInteger("wins")).append("\n");
+                public void onNext(Document d) {
+                    if (d != null) players.append("[accent]").append(cycle[0]++).append(". ").append(d.getString("name")).append("[accent]: [cyan]").append(d.getInteger("wins")).append("\n");
                     else players.append(Bundle.format("commands.lb.none", findLocale(player)));
                 }
 
                 @Override
                 public void onError(Throwable t) {
-                    if (!Objects.isNull(t)) err(t);
+                    err(t);
                 }
 
                 @Override
@@ -328,11 +315,10 @@ public class Main extends Plugin {
             if (hex != null) {
                 hex.updateController();
                 StringBuilder status = new StringBuilder();
-                status.append(Bundle.format("commands.hexstatus.hex", findLocale(player))).append(hex.id).append("[]\n");
-                status.append(Bundle.format("commands.hexstatus.owner", findLocale(player))).append(hex.controller != null && data.getPlayer(hex.controller) != null ? data.getPlayer(hex.controller).coloredName() : Bundle.format("commands.hexstatus.owner.none", findLocale(player))).append("\n");
-                for (Teams.TeamData data : state.teams.getActive()) {
-                    if (hex.getProgressPercent(data.team) > 0 && hex.getProgressPercent(data.team) <= 100) {
-                        status.append("[white]|> [accent]").append(this.data.getPlayer(data.team).coloredName()).append("[lightgray]: [accent]").append(Bundle.format("commands.hexstatus.captured", findLocale(player), (int) hex.getProgressPercent(data.team))).append("\n");
+                status.append(Bundle.format("commands.hexstatus.hex", findLocale(player))).append(hex.id).append("[]\n").append(Bundle.format("commands.hexstatus.owner", findLocale(player))).append(hex.controller != null && data.getPlayer(hex.controller) != null ? data.getPlayer(hex.controller).coloredName() : Bundle.format("commands.hexstatus.owner.none", findLocale(player))).append("\n");
+                for (TeamData teamData : state.teams.getActive()) {
+                    if (hex.getProgressPercent(teamData.team) > 0 && hex.getProgressPercent(teamData.team) <= 100) {
+                        status.append("[white]|> [accent]").append(data.getPlayer(teamData.team).coloredName()).append("[lightgray]: [accent]").append(Bundle.format("commands.hexstatus.captured", findLocale(player), (int) hex.getProgressPercent(teamData.team))).append("\n");
                     }
                 }
                 player.sendMessage(status.toString());
@@ -431,8 +417,6 @@ public class Main extends Plugin {
 
         StringBuilder message = new StringBuilder(Bundle.format("hex", findLocale(player))).append(team.location.id).append("\n");
 
-        if (!team.lastMessage.get()) return;
-
         if (team.location.controller == null) {
             if (team.progressPercent > 0) {
                 message.append(Bundle.format("capture-progress", findLocale(player))).append((int) (team.progressPercent)).append("%");
@@ -495,7 +479,6 @@ public class Main extends Plugin {
                     p.clearUnit();
                     p.team(Team.derelict);
                 }
-                data.data(p).lastMessage.reset();
             }
 
             netServer.sendWorldData(p);
@@ -554,10 +537,6 @@ public class Main extends Plugin {
                 }
             }
         });
-    }
-
-    public boolean active() {
-        return state.rules.tags.getBool("hexed") && !state.is(State.menu);
     }
 
     public static void bundled(Player player, String key, Object... values) {

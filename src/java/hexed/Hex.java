@@ -1,5 +1,6 @@
 package hexed;
 
+import arc.Events;
 import arc.math.geom.Intersector;
 import arc.util.Nullable;
 import arc.util.Timekeeper;
@@ -8,6 +9,9 @@ import mindustry.game.Teams.TeamData;
 import mindustry.type.ItemStack;
 import mindustry.world.Tile;
 import mindustry.world.blocks.storage.CoreBlock;
+
+import hexed.HexData.HexCaptureEvent;
+import hexed.HexData.HexLoseEvent;
 
 import java.util.Arrays;
 
@@ -40,7 +44,15 @@ public class Hex {
     }
 
     public void updateController() {
-        controller = findController();
+        Team newController = findController();
+        if (newController != controller) {
+            if (newController != null) {
+                Events.fire(new HexCaptureEvent(this, newController, controller));
+            } else {
+                Events.fire(new HexLoseEvent(this, controller));
+            }
+            controller = newController;
+        }
     }
 
     public float getProgressPercent(Team team) {
