@@ -223,7 +223,7 @@ public class Main extends Plugin {
 
         Events.on(HexCaptureEvent.class, event -> {
             Groups.player.each(this::updateText);
-            world.tile(event.hex.x, event.hex.y).setNet(Blocks.coreShard, event.newTeam, 0);
+            if (!event.hex.hasCore()) world.tile(event.hex.x, event.hex.y).setNet(Blocks.coreShard, event.newTeam, 0);
         });
 
         Events.on(HexLoseEvent.class, event -> Groups.player.each(this::updateText));
