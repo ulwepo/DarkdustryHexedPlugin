@@ -2,11 +2,11 @@ package hexed;
 
 import arc.Events;
 import arc.math.geom.Point2;
-import arc.math.geom.Position;
 import arc.struct.IntMap;
 import arc.struct.IntSeq;
 import arc.struct.Seq;
 import arc.util.Nullable;
+import arc.util.Timekeeper;
 import mindustry.game.Team;
 import mindustry.gen.Groups;
 import mindustry.gen.Player;
@@ -24,13 +24,12 @@ public class HexData {
     /** Data of specific teams. */
     private final HexTeam[] teamData = new HexTeam[256];
 
-    public void update() {
+    public void updateStats() {
         teamMap.clear();
-
         for (Player player : Groups.player) {
+            if (player == null) continue;
             teamMap.put(player.team().id, player);
         }
-
         for (Seq<Hex> arr : control.values()) {
             arr.clear();
         }
@@ -39,10 +38,11 @@ public class HexData {
             if (player.dead()) continue;
 
             HexTeam team = data(player);
-            Hex newHex = getClosestHex(player);
+            Hex newHex = hexes.min(hex -> player.dst2(hex.wx, hex.wy));
             if (team.location != newHex) {
                 team.location = newHex;
                 team.progressPercent = newHex.getProgressPercent(player.team());
+                team.lastCaptured = newHex.controller == player.team();
                 Events.fire(new HexMoveEvent(player, newHex));
             }
             float currPercent = newHex.getProgressPercent(player.team());
@@ -52,11 +52,22 @@ public class HexData {
             if (np != lp) {
                 Events.fire(new ProgressIncreaseEvent(player, currPercent));
             }
+
+            boolean captured = newHex.controller == player.team();
+            if (team.lastCaptured != captured) {
+                team.lastCaptured = captured;
+                if (captured && !newHex.hasCore()) {
+                    Events.fire(new HexCaptureEvent(player, newHex));
+                }
+            }
         }
 
         for (Hex hex : hexes) {
             if (hex.controller != null) {
-                control.get(hex.controller.id, Seq::new).add(hex);
+                if (!control.containsKey(hex.controller.id)) {
+                    control.put(hex.controller.id, new Seq<>());
+                }
+                control.get(hex.controller.id).add(hex);
             }
         }
     }
@@ -81,7 +92,10 @@ public class HexData {
     }
 
     public Seq<Hex> getControlled(Team team) {
-        return control.get(team.id, Seq::new);
+        if (!control.containsKey(team.id)) {
+            control.put(team.id, new Seq<>());
+        }
+        return control.get(team.id);
     }
 
     public void initHexes(IntSeq ints) {
@@ -96,8 +110,8 @@ public class HexData {
         return hexes;
     }
 
-    public Hex getClosestHex(Position position) {
-        return hexes.min(hex -> position.dst2(hex.wx, hex.wy));
+    public @Nullable Hex getHex(int position) {
+        return hexPos.get(position);
     }
 
     public HexTeam data(Team team) {
@@ -116,27 +130,17 @@ public class HexData {
         public @Nullable Hex location;
 
         public float progressPercent;
+        public boolean lastCaptured;
+        public Timekeeper lastMessage = new Timekeeper(Main.messageTime);
     }
 
     public static class HexCaptureEvent {
+        public final Player player;
         public final Hex hex;
-        public final Team newTeam;
-        public final Team prevTeam;
 
-        public HexCaptureEvent(Hex hex, Team newTeam, Team prevTeam) {
+        public HexCaptureEvent(Player player, Hex hex) {
+            this.player = player;
             this.hex = hex;
-            this.newTeam = newTeam;
-            this.prevTeam = prevTeam;
-        }
-    }
-
-    public static class HexLoseEvent {
-        public final Hex hex;
-        public final Team prevTeam;
-
-        public HexLoseEvent(Hex hex, Team prevTeam) {
-            this.hex = hex;
-            this.prevTeam = prevTeam;
         }
     }
 
