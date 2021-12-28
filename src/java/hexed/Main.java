@@ -173,8 +173,8 @@ public class Main extends Plugin {
 
         Events.on(PlayerJoin.class, event -> {
             if (event.player.team() != Team.derelict) {
-                if (leftPlayers.containsKey(player.uuid())) {
-                    leftPlayers.remove(player.uuid());
+                if (leftPlayers.containsKey(event.player.uuid())) {
+                    leftPlayers.remove(event.player.uuid());
                     return;
                 }
 
