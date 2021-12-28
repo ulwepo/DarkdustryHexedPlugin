@@ -6,7 +6,6 @@ import arc.struct.IntMap;
 import arc.struct.IntSeq;
 import arc.struct.Seq;
 import arc.util.Nullable;
-import arc.util.Timekeeper;
 import mindustry.game.Team;
 import mindustry.gen.Groups;
 import mindustry.gen.Player;
@@ -27,7 +26,6 @@ public class HexData {
     public void updateStats() {
         teamMap.clear();
         for (Player player : Groups.player) {
-            if (player == null) continue;
             teamMap.put(player.team().id, player);
         }
         for (Seq<Hex> arr : control.values()) {
@@ -64,10 +62,7 @@ public class HexData {
 
         for (Hex hex : hexes) {
             if (hex.controller != null) {
-                if (!control.containsKey(hex.controller.id)) {
-                    control.put(hex.controller.id, new Seq<>());
-                }
-                control.get(hex.controller.id).add(hex);
+                control.get(hex.controller.id, Seq::new).add(hex);
             }
         }
     }
@@ -92,10 +87,7 @@ public class HexData {
     }
 
     public Seq<Hex> getControlled(Team team) {
-        if (!control.containsKey(team.id)) {
-            control.put(team.id, new Seq<>());
-        }
-        return control.get(team.id);
+        return control.get(team.id, Seq::new);
     }
 
     public void initHexes(IntSeq ints) {
@@ -131,7 +123,6 @@ public class HexData {
 
         public float progressPercent;
         public boolean lastCaptured;
-        public Timekeeper lastMessage = new Timekeeper(Main.messageTime);
     }
 
     public static class HexCaptureEvent {

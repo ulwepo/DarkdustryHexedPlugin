@@ -7,7 +7,9 @@ import arc.util.Strings;
 import arc.util.Structs;
 import hexed.Main;
 import mindustry.Vars;
+import mindustry.gen.Groups;
 import mindustry.gen.Iconc;
+import mindustry.gen.Player;
 
 import java.text.MessageFormat;
 import java.util.Locale;
@@ -83,5 +85,22 @@ public class Bundle {
             properties.put(s, bundle.getString(s));
         }
         return properties;
+    }
+
+    public static void bundled(Player player, String key, Object... values) {
+        player.sendMessage(format(key, findLocale(player), values));
+    }
+
+    public static void bundledAll(String key, Object... values) {
+        Groups.player.each(p -> bundled(p, key, values));
+    }
+
+    public static Locale findLocale(Player player) {
+        return findLocale(player.locale);
+    }
+
+    public static Locale findLocale(String language) {
+        Locale locale = Structs.find(supportedLocales, l -> l.toString().equals(language) || language.startsWith(l.toString()));
+        return locale != null ? locale : defaultLocale();
     }
 }
