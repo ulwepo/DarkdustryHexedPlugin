@@ -91,7 +91,7 @@ public class Bundle {
         player.sendMessage(format(key, findLocale(player), values));
     }
 
-    public static void bundledAll(String key, Object... values) {
+    public static void sendToChat(String key, Object... values) {
         Groups.player.each(p -> bundled(p, key, values));
     }
 

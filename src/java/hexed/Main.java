@@ -120,7 +120,7 @@ public class Main extends Plugin {
                 if (player.team() != Team.derelict && player.team().cores().isEmpty()) {
                     player.clearUnit();
                     killTeam(player.team());
-                    bundledAll("events.player-lost", player.coloredName());
+                    sendToChat("events.player-lost", player.coloredName());
                     Call.infoMessage(player.con, Bundle.format("events.you-lost", findLocale(player)));
                     player.team(Team.derelict);
                 }
@@ -173,8 +173,8 @@ public class Main extends Plugin {
 
         Events.on(PlayerJoin.class, event -> {
             if (event.player.team() != Team.derelict) {
-                if (leftPlayers.containsKey(event.player.uuid())) {
-                    leftPlayers.remove(event.player.uuid());
+                if (leftPlayers.containsKey(player.uuid())) {
+                    leftPlayers.remove(player.uuid());
                     return;
                 }
 
@@ -217,13 +217,17 @@ public class Main extends Plugin {
         });
 
         netServer.assigner = (player, players) -> {
-            if (leftPlayers.containsKey(player.uuid())) return leftPlayers.get(player.uuid());
+            if (leftPlayers.containsKey(player.uuid())) {
+                return leftPlayers.get(player.uuid());
+            }
+
             for (Team team : Team.all) {
                 if (team.id > 5 && !team.active() && !Seq.with(players).contains(p -> p.team() == team) && !data.data(team).dying && !data.data(team).chosen && !leftPlayers.containsValue(team, true)) {
                     data.data(team).chosen = true;
                     return team;
                 }
             }
+
             Call.infoMessage(player.con, Bundle.format("events.no-empty-hex", findLocale(player)));
             return Team.derelict;
         };
@@ -374,7 +378,7 @@ public class Main extends Plugin {
             }
         }
 
-        if (!players.isEmpty()) {
+        if (players.any()) {
             boolean dominated = data.getControlled(players.first()).size == data.hexes().size;
 
             for (Player player : Groups.player) {
@@ -476,11 +480,11 @@ public class Main extends Plugin {
 
     public String getLeaderboard(Player p) {
         StringBuilder builder = new StringBuilder(Bundle.format("leaderboard.header", findLocale(p), lastMin));
-        int count = 1;
+        int index = 1;
         for (Player player : data.getLeaderboard()) {
-            builder.append("[yellow]").append(count).append(".[white] ").append(player.coloredName()).append(Bundle.format("leaderboard.hexes", findLocale(p), data.getControlled(player).size));
-            count++;
-            if (count > 4) break;
+            builder.append("[yellow]").append(index).append(".[white] ").append(player.coloredName()).append(Bundle.format("leaderboard.hexes", findLocale(p), data.getControlled(player).size));
+            index++;
+            if (index > 4) break;
         }
         return builder.toString();
     }
@@ -488,12 +492,9 @@ public class Main extends Plugin {
     public void killTeam(Team team) {
         data.data(team).dying = true;
         Time.runTask(8f, () -> data.data(team).dying = false);
-        for (int x = 0; x < world.width(); x++) {
-            for (int y = 0; y < world.height(); y++) {
-                Tile tile = world.tile(x, y);
-                if (tile.build != null && tile.block() != Blocks.air && tile.team() == team) {
-                    Time.run(Mathf.random(360f), tile::removeNet);
-                }
+        for (Tile tile : world.tiles) {
+            if (tile.build != null && tile.block() != Blocks.air && tile.team() == team) {
+                Time.run(Mathf.random(360f), tile::removeNet);
             }
         }
         Groups.unit.each(u -> u.team == team, unit -> Time.run(Mathf.random(360f), unit::kill));
@@ -508,7 +509,7 @@ public class Main extends Plugin {
             if (tile == null) return;
             tile.setNet(st.block, player.team(), st.rotation);
             tile.getLinkedTiles(t -> {
-                if (t.floor().isLiquid) {
+                if (t.floor().isDeep()) {
                     t.setFloorNet(Blocks.darkPanel3.asFloor());
                 }
             });
