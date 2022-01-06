@@ -78,7 +78,7 @@ public class Hex {
     }
 
     public void destroy() {
-        Call.effect(Fx.nuclearsmoke, x, y, 0, Color.white);
+        Call.effect(Fx.nuclearcloud, x, y, 0, Color.white);
         world.tiles.eachTile(tile -> {
             if (tile.build != null && tile.block() != Blocks.air && contains(tile)) {
                 Call.setTeam(tile.build, Team.derelict);
