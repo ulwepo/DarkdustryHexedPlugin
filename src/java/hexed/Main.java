@@ -111,7 +111,7 @@ public class Main extends Plugin {
             data.updateStats();
 
             for (Player player : Groups.player) {
-                if (player.team() != Team.derelict && player.team().cores().isEmpty()) {
+                if (player.team() != Team.derelict && player.team().data().noCores()) {
                     player.clearUnit();
                     killTeam(player.team());
                     sendToChat("events.player-lost", player.coloredName());

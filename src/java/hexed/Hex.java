@@ -81,13 +81,10 @@ public class Hex {
         Call.effect(Fx.nuclearcloud, x, y, 0, Color.white);
         world.tiles.eachTile(tile -> {
             if (tile.build != null && tile.block() != Blocks.air && contains(tile)) {
-                Call.setTeam(tile.build, Team.derelict);
-                if (Mathf.chance(0.25f)) {
-                    Time.run(Mathf.random(12f), tile.build::kill);
-                }
+                Time.run(Mathf.random(6f), tile.build::kill);
             }
         });
-        Time.runTask(6f, this::findController);
+        Time.runTask(60f, this::findController);
     }
 
     public boolean contains(float x, float y) {
