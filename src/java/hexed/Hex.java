@@ -84,7 +84,7 @@ public class Hex {
         Call.effect(Fx.rocketSmokeLarge, x, y, 0, Color.white);
         world.tiles.eachTile(tile -> {
             if (tile.build != null && tile.block() != Blocks.air && contains(tile)) {
-                Time.run(Mathf.random(360f), tile::removeNet);
+                tile.removeNet();
             }
         });
     }
