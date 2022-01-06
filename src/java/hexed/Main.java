@@ -95,8 +95,7 @@ public class Main extends Plugin {
         rules.unitBuildSpeedMultiplier = 1.25f;
         rules.enemyCoreBuildRadius = Hex.diameter * tilesize / 2f;
         rules.unitDamageMultiplier = 1.25f;
-        rules.unitCap = 32;
-        rules.unitCapVariable = false;
+        rules.unitCapVariable = true;
         rules.reactorExplosions = true;
         rules.canGameOver = false;
         rules.coreCapture = false;
