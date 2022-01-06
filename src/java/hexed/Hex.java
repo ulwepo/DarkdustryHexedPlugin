@@ -3,7 +3,6 @@ package hexed;
 import arc.graphics.Color;
 import arc.math.Mathf;
 import arc.math.geom.Intersector;
-import arc.util.Time;
 import arc.util.Timekeeper;
 import mindustry.content.Blocks;
 import mindustry.content.Fx;
