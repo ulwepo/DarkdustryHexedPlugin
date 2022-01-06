@@ -1,7 +1,9 @@
 package hexed;
 
 import arc.graphics.Color;
+import arc.math.Mathf;
 import arc.math.geom.Intersector;
+import arc.util.Time;
 import arc.util.Timekeeper;
 import mindustry.content.Blocks;
 import mindustry.content.Fx;
@@ -82,9 +84,10 @@ public class Hex {
         Call.effect(Fx.nuclearsmoke, x, y, 0, Color.white);
         world.tiles.eachTile(tile -> {
             if (tile.build != null && tile.block() != Blocks.air && contains(tile)) {
-                tile.build.kill();
+                Time.runTask(Mathf.random(3f), tile.build::kill);
             }
         });
+        Time.runTask(6f, this::findController);
     }
 
     public boolean contains(float x, float y) {

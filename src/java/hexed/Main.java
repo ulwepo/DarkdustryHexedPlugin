@@ -168,7 +168,6 @@ public class Main extends Plugin {
                  if (hex != null) {
                      hex.spawnTime.reset();
                      hex.destroy();
-                     hex.updateController();
                  }
             }
         });
