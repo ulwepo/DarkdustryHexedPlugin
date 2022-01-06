@@ -167,15 +167,14 @@ public class Main extends Plugin {
                 Hex hex = data.getHex(event.tile.pos());
                  if (hex != null) {
                      hex.spawnTime.reset();
+                     hex.destroy();
                      hex.updateController();
                  }
             }
         });
 
         Events.on(EventType.BlockBuildEndEvent.class, event -> {
-            if (event.breaking) {
-                return;
-            }
+            if (event.breaking) return;
 
             Hex hex = data.hexes().find(h -> h.contains(event.tile));
             if (hex != null) {
