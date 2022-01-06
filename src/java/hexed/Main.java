@@ -501,7 +501,7 @@ public class Main extends Plugin {
     public void killTeam(Team team) {
         data.data(team).dying = true;
         Time.runTask(8f, () -> data.data(team).dying = false);
-        world.tile.eachTile(tile -> {
+        world.tiles.eachTile(tile -> {
             if (tile.build != null && tile.block() != Blocks.air && tile.team() == team) {
                 Time.run(Mathf.random(360f), tile::removeNet);
             }
