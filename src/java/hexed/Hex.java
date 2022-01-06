@@ -1,9 +1,10 @@
 package hexed;
 
+import arc.graphics.Color;
 import arc.math.geom.Intersector;
-import arc.util.Nullable;
 import arc.util.Timekeeper;
 import mindustry.content.Blocks;
+import mindustry.content.Fx;
 import mindustry.game.Team;
 import mindustry.game.Teams.TeamData;
 import mindustry.type.ItemStack;
@@ -28,7 +29,7 @@ public class Hex {
     public final float wx, wy;
     public final float rad = radius * tilesize;
 
-    public @Nullable Team controller;
+    public Team controller;
 
     public Timekeeper spawnTime = new Timekeeper(Main.spawnDelay);
 
@@ -52,10 +53,8 @@ public class Hex {
         return (world.tile(x, y).team() != Team.derelict && world.tile(x, y).block() instanceof CoreBlock);
     }
 
-    public @Nullable Team findController() {
-        if (hasCore()) {
-            return world.tile(x, y).team();
-        }
+    public Team findController() {
+        if (hasCore()) return world.tile(x, y).team();
 
         Arrays.fill(progress, 0);
 
@@ -76,6 +75,15 @@ public class Hex {
             return data.team;
         }
         return null;
+    }
+
+    public void destroy() {
+        Call.effect(Fx.rocketSmokeLarge, x, y, 0, Color.white);
+        world.tiles.eachTile(tile -> {
+            if (tile.build != null && tile.block() != Blocks.air && contains(tile)) {
+                Time.run(Mathf.random(360f), tile::removeNet);
+            }
+        });
     }
 
     public boolean contains(float x, float y) {
