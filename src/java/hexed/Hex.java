@@ -3,6 +3,7 @@ package hexed;
 import arc.math.geom.Intersector;
 import arc.util.Nullable;
 import arc.util.Timekeeper;
+import mindustry.content.Blocks;
 import mindustry.game.Team;
 import mindustry.game.Teams.TeamData;
 import mindustry.type.ItemStack;
@@ -71,6 +72,7 @@ public class Hex {
 
         TeamData data = state.teams.getActive().max(t -> progress[t.team.id]);
         if (data != null && data.team != Team.derelict && progress[data.team.id] >= Main.itemRequirement) {
+            world.tile(x, y).setNet(Blocks.coreShard, data.team, 0);
             return data.team;
         }
         return null;

@@ -23,6 +23,7 @@ import hexed.models.UserStatistics;
 import mindustry.content.Blocks;
 import mindustry.content.Items;
 import mindustry.core.GameState.State;
+import mindustry.game.*;
 import mindustry.game.EventType.BlockDestroyEvent;
 import mindustry.game.EventType.PlayerJoin;
 import mindustry.game.EventType.PlayerLeave;
@@ -171,6 +172,17 @@ public class Main extends Plugin {
             }
         });
 
+        Events.on(EventType.BlockBuildEndEvent.class, event -> {
+            if (event.breaking) {
+                return;
+            }
+
+            Hex hex = data.hexes().find(h -> h.contains(event.tile));
+            if (hex != null) {
+                hex.updateController();
+            }
+        });
+
         Events.on(PlayerJoin.class, event -> {
             if (event.player.team() != Team.derelict) {
                 if (leftPlayers.containsKey(event.player.uuid())) {
@@ -211,10 +223,7 @@ public class Main extends Plugin {
 
         Events.on(HexMoveEvent.class, event -> updateText(event.player));
 
-        Events.on(HexCaptureEvent.class, event -> {
-            updateText(event.player);
-            if (!event.hex.hasCore()) world.tile(event.hex.x, event.hex.y).setNet(Blocks.coreShard, event.player.team(), 0);
-        });
+        Events.on(HexCaptureEvent.class, event -> updateText(event.player));
 
         netServer.assigner = (player, players) -> {
             if (leftPlayers.containsKey(player.uuid())) {
