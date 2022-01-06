@@ -501,11 +501,11 @@ public class Main extends Plugin {
     public void killTeam(Team team) {
         data.data(team).dying = true;
         Time.runTask(8f, () -> data.data(team).dying = false);
-        for (Tile tile : world.tiles) {
+        world.tile.eachTile(tile -> {
             if (tile.build != null && tile.block() != Blocks.air && tile.team() == team) {
                 Time.run(Mathf.random(360f), tile::removeNet);
             }
-        }
+        });
         Groups.unit.each(u -> u.team == team, unit -> Time.run(Mathf.random(360f), unit::kill));
     }
 
