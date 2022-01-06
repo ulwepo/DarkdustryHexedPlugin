@@ -1,14 +1,13 @@
 package hexed;
 
 import arc.graphics.Color;
-import arc.math.Mathf;
 import arc.math.geom.Intersector;
 import arc.util.Timekeeper;
 import mindustry.content.Blocks;
 import mindustry.content.Fx;
-import mindustry.gen.Call;
 import mindustry.game.Team;
 import mindustry.game.Teams.TeamData;
+import mindustry.gen.Call;
 import mindustry.type.ItemStack;
 import mindustry.world.Tile;
 import mindustry.world.blocks.storage.CoreBlock;
@@ -80,10 +79,10 @@ public class Hex {
     }
 
     public void destroy() {
-        Call.effect(Fx.rocketSmokeLarge, x, y, 0, Color.white);
+        Call.effect(Fx.nuclearsmoke, x, y, 0, Color.white);
         world.tiles.eachTile(tile -> {
             if (tile.build != null && tile.block() != Blocks.air && contains(tile)) {
-                tile.removeNet();
+                tile.build.kill();
             }
         });
     }
