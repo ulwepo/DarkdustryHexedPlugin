@@ -28,11 +28,7 @@ import mindustry.game.EventType.BlockDestroyEvent;
 import mindustry.game.EventType.PlayerJoin;
 import mindustry.game.EventType.PlayerLeave;
 import mindustry.game.EventType.Trigger;
-import mindustry.game.Rules;
-import mindustry.game.Schematic;
 import mindustry.game.Schematic.Stile;
-import mindustry.game.Schematics;
-import mindustry.game.Team;
 import mindustry.game.Teams.TeamData;
 import mindustry.gen.Call;
 import mindustry.gen.Groups;
@@ -66,15 +62,12 @@ public class Main extends Plugin {
 
     private final Rules rules = new NoPauseRules();
     private final Interval interval = new Interval(5);
-
+    private final ObjectMap<String, Team> leftPlayers = new ObjectMap<>();
     private HexData data;
     private boolean restarting = false;
-
     private Schematic start;
     private float counter = 0f;
     private int lastMin;
-
-    private final ObjectMap<String, Team> leftPlayers = new ObjectMap<>();
 
     public Main() {
         String mongoURL = "mongodb://manager:QULIoZBckRlLkZXn@127.0.0.1:27017/?authSource=darkdustry";
@@ -165,10 +158,10 @@ public class Main extends Plugin {
         Events.on(BlockDestroyEvent.class, event -> {
             if (event.tile.block() instanceof CoreBlock) {
                 Hex hex = data.getHex(event.tile.pos());
-                 if (hex != null) {
-                     hex.spawnTime.reset();
-                     hex.destroy();
-                 }
+                if (hex != null) {
+                    hex.spawnTime.reset();
+                    hex.destroy();
+                }
             }
         });
 
@@ -270,7 +263,8 @@ public class Main extends Plugin {
 
                 @Override
                 public void onNext(Document document) {
-                    if (document != null) players.append("[accent]").append(cycle[0]++).append(". ").append(document.getString("name")).append("[accent]: [cyan]").append(document.getInteger("wins")).append("\n");
+                    if (document != null)
+                        players.append("[accent]").append(cycle[0]++).append(". ").append(document.getString("name")).append("[accent]: [cyan]").append(document.getInteger("wins")).append("\n");
                     else players.append(Bundle.format("commands.lb.none", findLocale(player)));
                 }
 
@@ -391,10 +385,13 @@ public class Main extends Plugin {
             for (Player player : Groups.player) {
                 StringBuilder endGameMessage = new StringBuilder(Bundle.format("round-over", findLocale(player)));
 
-                if (player == players.first()) endGameMessage.append(Bundle.format("you-won", findLocale(player), data.getControlled(players.first()).size));
-                else endGameMessage.append(Bundle.format("player-won", findLocale(player), players.first().coloredName(), data.getControlled(players.first()).size));
+                if (player == players.first())
+                    endGameMessage.append(Bundle.format("you-won", findLocale(player), data.getControlled(players.first()).size));
+                else
+                    endGameMessage.append(Bundle.format("player-won", findLocale(player), players.first().coloredName(), data.getControlled(players.first()).size));
 
-                if (!dominated) endGameMessage.append(Bundle.format("final-score", findLocale(player), scores.toString()));
+                if (!dominated)
+                    endGameMessage.append(Bundle.format("final-score", findLocale(player), scores.toString()));
 
                 Call.infoMessage(player.con, endGameMessage.toString());
             }

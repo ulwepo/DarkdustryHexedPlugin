@@ -34,118 +34,6 @@ public class HexedGenerator implements Cons<Tiles> {
 
     public int width = Hex.size, height = Hex.size;
 
-    public enum Mode {
-        // elevation --->
-        // temperature
-        // |
-        // v
-        def(new Block[][] {
-                {Blocks.sand, Blocks.sand, Blocks.darksand, Blocks.sand, Blocks.darksand, Blocks.grass},
-                {Blocks.darksandWater, Blocks.darksand, Blocks.darksand, Blocks.darksand, Blocks.moss, Blocks.sand},
-                {Blocks.darksandWater, Blocks.darksand, Blocks.darksand, Blocks.darksand, Blocks.grass, Blocks.shale},
-                {Blocks.darksandTaintedWater, Blocks.darksandTaintedWater, Blocks.moss, Blocks.moss, Blocks.sporeMoss, Blocks.stone},
-                {Blocks.ice, Blocks.iceSnow, Blocks.snow, Blocks.dacite, Blocks.hotrock, Blocks.darksand}
-        }, new Block[][] {
-                {Blocks.stoneWall, Blocks.duneWall, Blocks.sandWall, Blocks.duneWall, Blocks.pine, Blocks.pine},
-                {Blocks.stoneWall, Blocks.stoneWall, Blocks.duneWall, Blocks.duneWall, Blocks.sporeWall, Blocks.sandWall},
-                {Blocks.stoneWall, Blocks.stoneWall, Blocks.duneWall, Blocks.duneWall, Blocks.pine, Blocks.pine},
-                {Blocks.sporeWall, Blocks.sporeWall, Blocks.sporeWall, Blocks.sporeWall, Blocks.sporeWall, Blocks.stoneWall},
-                {Blocks.iceWall, Blocks.snowWall, Blocks.snowWall, Blocks.snowWall, Blocks.stoneWall, Blocks.duneWall}
-        }),
-
-        oilFlats(new Block[][] {
-                {Blocks.sand, Blocks.darksand, Blocks.sand, Blocks.shale, Blocks.sand},
-                {Blocks.shale, Blocks.sand, Blocks.tar, Blocks.sand, Blocks.darksand},
-                {Blocks.darksand, Blocks.sand, Blocks.sand, Blocks.sand, Blocks.darksand},
-                {Blocks.tar, Blocks.sand, Blocks.tar, Blocks.darksand, Blocks.sand},
-                {Blocks.darksand, Blocks.shale, Blocks.darksand, Blocks.shale, Blocks.sand}
-        }, new Block[][] {
-                {Blocks.sandWall, Blocks.duneWall, Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall},
-                {Blocks.shaleWall, Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall, Blocks.duneWall},
-                {Blocks.duneWall, Blocks.sandWall, Blocks.sandWall, Blocks.sandWall, Blocks.duneWall},
-                {Blocks.sandWall, Blocks.sandWall, Blocks.shaleWall, Blocks.duneWall, Blocks.sandWall},
-                {Blocks.duneWall, Blocks.shaleWall, Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall}
-        }),
-
-        winter(new Block[][] {
-                {Blocks.iceSnow, Blocks.snow, Blocks.snow, Blocks.darksand, Blocks.snow},
-                {Blocks.ice, Blocks.water, Blocks.darksand, Blocks.iceSnow, Blocks.iceSnow},
-                {Blocks.water, Blocks.water, Blocks.iceSnow, Blocks.water, Blocks.darksand},
-                {Blocks.darksand, Blocks.water, Blocks.snow, Blocks.darksand, Blocks.darksand},
-                {Blocks.snow, Blocks.darksand, Blocks.darksand, Blocks.snow, Blocks.iceSnow}
-        }, new Block[][] {
-                {Blocks.iceWall, Blocks.snowWall, Blocks.snowPine, Blocks.iceWall, Blocks.snowWall},
-                {Blocks.iceWall, Blocks.snowWall, Blocks.snowWall, Blocks.iceWall, Blocks.snowWall},
-                {Blocks.snowPine, Blocks.snowWall, Blocks.snowPine, Blocks.iceWall, Blocks.snowWall},
-                {Blocks.iceWall, Blocks.snowWall, Blocks.snowWall, Blocks.snowPine, Blocks.snowWall},
-                {Blocks.iceWall, Blocks.snowPine, Blocks.snowWall, Blocks.iceWall, Blocks.snowPine}
-        }),
-
-        rived(new Block[][] {
-                {Blocks.sand, Blocks.sand, Blocks.stone, Blocks.dirt, Blocks.sand, Blocks.grass},
-                {Blocks.darksandWater, Blocks.dirt, Blocks.darksand, Blocks.taintedWater, Blocks.grass, Blocks.grass},
-                {Blocks.water, Blocks.darksand, Blocks.darksand, Blocks.water, Blocks.grass, Blocks.grass},
-                {Blocks.darksandTaintedWater, Blocks.taintedWater, Blocks.stone, Blocks.stone, Blocks.grass, Blocks.stone},
-                {Blocks.sand, Blocks.sand, Blocks.stone, Blocks.dirt, Blocks.dirt, Blocks.grass}
-        }, new Block[][] {
-                {Blocks.sandWall, Blocks.sandWall, Blocks.stoneWall, Blocks.dirtWall, Blocks.sandWall, Blocks.pine},
-                {Blocks.dirtWall, Blocks.dirtWall, Blocks.duneWall, Blocks.duneWall, Blocks.pine, Blocks.pine},
-                {Blocks.stoneWall, Blocks.duneWall, Blocks.duneWall, Blocks.duneWall, Blocks.pine, Blocks.pine},
-                {Blocks.stoneWall, Blocks.dirtWall, Blocks.duneWall, Blocks.dirtWall, Blocks.duneWall, Blocks.stoneWall},
-                {Blocks.sandWall, Blocks.sandWall, Blocks.stoneWall, Blocks.sandWall, Blocks.pine, Blocks.pine}
-        }),
-
-        lavaLand(new Block[][] {
-                {Blocks.sand, Blocks.basalt, Blocks.sand, Blocks.darksand},
-                {Blocks.sand, Blocks.darksand, Blocks.sand, Blocks.darksand},
-                {Blocks.craters, Blocks.darksand, Blocks.shale, Blocks.darksand},
-                {Blocks.slag, Blocks.magmarock, Blocks.slag, Blocks.darksand},
-                {Blocks.darksand, Blocks.darksand, Blocks.hotrock, Blocks.sand}
-        }, new Block[][] {
-                {Blocks.duneWall, Blocks.duneWall, Blocks.sandWall, Blocks.duneWall},
-                {Blocks.duneWall, Blocks.sandWall, Blocks.sandWall, Blocks.stoneWall},
-                {Blocks.sandWall, Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall},
-                {Blocks.daciteWall, Blocks.sandWall, Blocks.daciteWall, Blocks.sandWall},
-                {Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall, Blocks.sandWall}
-        }),
-
-        spore(new Block[][] {
-                {Blocks.moss, Blocks.sporeMoss, Blocks.sand, Blocks.moss},
-                {Blocks.moss, Blocks.dacite, Blocks.taintedWater, Blocks.sporeMoss},
-                {Blocks.darksandTaintedWater, Blocks.taintedWater, Blocks.moss, Blocks.hotrock},
-                {Blocks.darksand, Blocks.sand, Blocks.darksandWater, Blocks.darksand},
-                {Blocks.moss, Blocks.moss, Blocks.sporeMoss, Blocks.darksand}
-        }, new Block[][] {
-                {Blocks.sporeWall, Blocks.sporeWall, Blocks.sandWall, Blocks.sporeWall},
-                {Blocks.duneWall, Blocks.sandWall, Blocks.sporeWall, Blocks.sporeWall},
-                {Blocks.duneWall, Blocks.sporeWall, Blocks.duneWall, Blocks.sporeWall},
-                {Blocks.duneWall, Blocks.sandWall, Blocks.sporeWall, Blocks.sandWall},
-                {Blocks.sporeWall, Blocks.shaleWall, Blocks.sandWall, Blocks.sporeWall}
-        }),
-
-        nuclear(new Block[][] {
-                {Blocks.stone, Blocks.shale, Blocks.moss, Blocks.darksand},
-                {Blocks.craters, Blocks.stone, Blocks.taintedWater, Blocks.sand},
-                {Blocks.shale, Blocks.sand, Blocks.craters, Blocks.sand},
-                {Blocks.slag, Blocks.moss, Blocks.cryofluid, Blocks.snow},
-                {Blocks.shale, Blocks.hotrock, Blocks.dacite, Blocks.darksand}
-        }, new Block[][] {
-                {Blocks.stoneWall, Blocks.shaleWall, Blocks.sporePine, Blocks.duneWall},
-                {Blocks.stoneWall, Blocks.stoneWall, Blocks.sporeWall, Blocks.sandWall},
-                {Blocks.shaleWall, Blocks.sandWall, Blocks.stoneWall, Blocks.sandWall},
-                {Blocks.darkMetal, Blocks.sporePine, Blocks.darkMetal, Blocks.snowWall},
-                {Blocks.shaleWall, Blocks.stoneWall, Blocks.dirtWall, Blocks.duneWall}
-        });
-
-        final Block[][] floors;
-        final Block[][] blocks;
-
-        Mode(Block[][] floors, Block[][] blocks) {
-            this.floors = floors;
-            this.blocks = blocks;
-        }
-    }
-
     @Override
     public void get(Tiles tiles) {
         Seq<GenerateFilter> ores = new Seq<>();
@@ -183,7 +71,8 @@ public class HexedGenerator implements Cons<Tiles> {
                         ore = in.overlay;
                     }
                 }
-                if (floor.cacheLayer == CacheLayer.cryofluid || floor.cacheLayer == CacheLayer.tar || floor.cacheLayer == CacheLayer.slag || floor.cacheLayer == CacheLayer.water) ore = Blocks.air;
+                if (floor.cacheLayer == CacheLayer.cryofluid || floor.cacheLayer == CacheLayer.tar || floor.cacheLayer == CacheLayer.slag || floor.cacheLayer == CacheLayer.water)
+                    ore = Blocks.air;
                 tiles.set(x, y, new Tile(x, y, floor.id, ore.id, wall.id));
             }
         }
@@ -305,5 +194,117 @@ public class HexedGenerator implements Cons<Tiles> {
             case spore -> "\uF82B [purple]Spores";
             case nuclear -> "\uF7A9 [scarlet]Radioactive";
         };
+    }
+
+    public enum Mode {
+        // elevation --->
+        // temperature
+        // |
+        // v
+        def(new Block[][] {
+                {Blocks.sand, Blocks.sand, Blocks.darksand, Blocks.sand, Blocks.darksand, Blocks.grass},
+                {Blocks.darksandWater, Blocks.darksand, Blocks.darksand, Blocks.darksand, Blocks.moss, Blocks.sand},
+                {Blocks.darksandWater, Blocks.darksand, Blocks.darksand, Blocks.darksand, Blocks.grass, Blocks.shale},
+                {Blocks.darksandTaintedWater, Blocks.darksandTaintedWater, Blocks.moss, Blocks.moss, Blocks.sporeMoss, Blocks.stone},
+                {Blocks.ice, Blocks.iceSnow, Blocks.snow, Blocks.dacite, Blocks.hotrock, Blocks.darksand}
+        }, new Block[][] {
+                {Blocks.stoneWall, Blocks.duneWall, Blocks.sandWall, Blocks.duneWall, Blocks.pine, Blocks.pine},
+                {Blocks.stoneWall, Blocks.stoneWall, Blocks.duneWall, Blocks.duneWall, Blocks.sporeWall, Blocks.sandWall},
+                {Blocks.stoneWall, Blocks.stoneWall, Blocks.duneWall, Blocks.duneWall, Blocks.pine, Blocks.pine},
+                {Blocks.sporeWall, Blocks.sporeWall, Blocks.sporeWall, Blocks.sporeWall, Blocks.sporeWall, Blocks.stoneWall},
+                {Blocks.iceWall, Blocks.snowWall, Blocks.snowWall, Blocks.snowWall, Blocks.stoneWall, Blocks.duneWall}
+        }),
+
+        oilFlats(new Block[][] {
+                {Blocks.sand, Blocks.darksand, Blocks.sand, Blocks.shale, Blocks.sand},
+                {Blocks.shale, Blocks.sand, Blocks.tar, Blocks.sand, Blocks.darksand},
+                {Blocks.darksand, Blocks.sand, Blocks.sand, Blocks.sand, Blocks.darksand},
+                {Blocks.tar, Blocks.sand, Blocks.tar, Blocks.darksand, Blocks.sand},
+                {Blocks.darksand, Blocks.shale, Blocks.darksand, Blocks.shale, Blocks.sand}
+        }, new Block[][] {
+                {Blocks.sandWall, Blocks.duneWall, Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall},
+                {Blocks.shaleWall, Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall, Blocks.duneWall},
+                {Blocks.duneWall, Blocks.sandWall, Blocks.sandWall, Blocks.sandWall, Blocks.duneWall},
+                {Blocks.sandWall, Blocks.sandWall, Blocks.shaleWall, Blocks.duneWall, Blocks.sandWall},
+                {Blocks.duneWall, Blocks.shaleWall, Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall}
+        }),
+
+        winter(new Block[][] {
+                {Blocks.iceSnow, Blocks.snow, Blocks.snow, Blocks.darksand, Blocks.snow},
+                {Blocks.ice, Blocks.water, Blocks.darksand, Blocks.iceSnow, Blocks.iceSnow},
+                {Blocks.water, Blocks.water, Blocks.iceSnow, Blocks.water, Blocks.darksand},
+                {Blocks.darksand, Blocks.water, Blocks.snow, Blocks.darksand, Blocks.darksand},
+                {Blocks.snow, Blocks.darksand, Blocks.darksand, Blocks.snow, Blocks.iceSnow}
+        }, new Block[][] {
+                {Blocks.iceWall, Blocks.snowWall, Blocks.snowPine, Blocks.iceWall, Blocks.snowWall},
+                {Blocks.iceWall, Blocks.snowWall, Blocks.snowWall, Blocks.iceWall, Blocks.snowWall},
+                {Blocks.snowPine, Blocks.snowWall, Blocks.snowPine, Blocks.iceWall, Blocks.snowWall},
+                {Blocks.iceWall, Blocks.snowWall, Blocks.snowWall, Blocks.snowPine, Blocks.snowWall},
+                {Blocks.iceWall, Blocks.snowPine, Blocks.snowWall, Blocks.iceWall, Blocks.snowPine}
+        }),
+
+        rived(new Block[][] {
+                {Blocks.sand, Blocks.sand, Blocks.stone, Blocks.dirt, Blocks.sand, Blocks.grass},
+                {Blocks.darksandWater, Blocks.dirt, Blocks.darksand, Blocks.taintedWater, Blocks.grass, Blocks.grass},
+                {Blocks.water, Blocks.darksand, Blocks.darksand, Blocks.water, Blocks.grass, Blocks.grass},
+                {Blocks.darksandTaintedWater, Blocks.taintedWater, Blocks.stone, Blocks.stone, Blocks.grass, Blocks.stone},
+                {Blocks.sand, Blocks.sand, Blocks.stone, Blocks.dirt, Blocks.dirt, Blocks.grass}
+        }, new Block[][] {
+                {Blocks.sandWall, Blocks.sandWall, Blocks.stoneWall, Blocks.dirtWall, Blocks.sandWall, Blocks.pine},
+                {Blocks.dirtWall, Blocks.dirtWall, Blocks.duneWall, Blocks.duneWall, Blocks.pine, Blocks.pine},
+                {Blocks.stoneWall, Blocks.duneWall, Blocks.duneWall, Blocks.duneWall, Blocks.pine, Blocks.pine},
+                {Blocks.stoneWall, Blocks.dirtWall, Blocks.duneWall, Blocks.dirtWall, Blocks.duneWall, Blocks.stoneWall},
+                {Blocks.sandWall, Blocks.sandWall, Blocks.stoneWall, Blocks.sandWall, Blocks.pine, Blocks.pine}
+        }),
+
+        lavaLand(new Block[][] {
+                {Blocks.sand, Blocks.basalt, Blocks.sand, Blocks.darksand},
+                {Blocks.sand, Blocks.darksand, Blocks.sand, Blocks.darksand},
+                {Blocks.craters, Blocks.darksand, Blocks.shale, Blocks.darksand},
+                {Blocks.slag, Blocks.magmarock, Blocks.slag, Blocks.darksand},
+                {Blocks.darksand, Blocks.darksand, Blocks.hotrock, Blocks.sand}
+        }, new Block[][] {
+                {Blocks.duneWall, Blocks.duneWall, Blocks.sandWall, Blocks.duneWall},
+                {Blocks.duneWall, Blocks.sandWall, Blocks.sandWall, Blocks.stoneWall},
+                {Blocks.sandWall, Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall},
+                {Blocks.daciteWall, Blocks.sandWall, Blocks.daciteWall, Blocks.sandWall},
+                {Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall, Blocks.sandWall}
+        }),
+
+        spore(new Block[][] {
+                {Blocks.moss, Blocks.sporeMoss, Blocks.sand, Blocks.moss},
+                {Blocks.moss, Blocks.dacite, Blocks.taintedWater, Blocks.sporeMoss},
+                {Blocks.darksandTaintedWater, Blocks.taintedWater, Blocks.moss, Blocks.hotrock},
+                {Blocks.darksand, Blocks.sand, Blocks.darksandWater, Blocks.darksand},
+                {Blocks.moss, Blocks.moss, Blocks.sporeMoss, Blocks.darksand}
+        }, new Block[][] {
+                {Blocks.sporeWall, Blocks.sporeWall, Blocks.sandWall, Blocks.sporeWall},
+                {Blocks.duneWall, Blocks.sandWall, Blocks.sporeWall, Blocks.sporeWall},
+                {Blocks.duneWall, Blocks.sporeWall, Blocks.duneWall, Blocks.sporeWall},
+                {Blocks.duneWall, Blocks.sandWall, Blocks.sporeWall, Blocks.sandWall},
+                {Blocks.sporeWall, Blocks.shaleWall, Blocks.sandWall, Blocks.sporeWall}
+        }),
+
+        nuclear(new Block[][] {
+                {Blocks.stone, Blocks.shale, Blocks.moss, Blocks.darksand},
+                {Blocks.craters, Blocks.stone, Blocks.taintedWater, Blocks.sand},
+                {Blocks.shale, Blocks.sand, Blocks.craters, Blocks.sand},
+                {Blocks.slag, Blocks.moss, Blocks.cryofluid, Blocks.snow},
+                {Blocks.shale, Blocks.hotrock, Blocks.dacite, Blocks.darksand}
+        }, new Block[][] {
+                {Blocks.stoneWall, Blocks.shaleWall, Blocks.sporePine, Blocks.duneWall},
+                {Blocks.stoneWall, Blocks.stoneWall, Blocks.sporeWall, Blocks.sandWall},
+                {Blocks.shaleWall, Blocks.sandWall, Blocks.stoneWall, Blocks.sandWall},
+                {Blocks.darkMetal, Blocks.sporePine, Blocks.darkMetal, Blocks.snowWall},
+                {Blocks.shaleWall, Blocks.stoneWall, Blocks.dirtWall, Blocks.duneWall}
+        });
+
+        final Block[][] floors;
+        final Block[][] blocks;
+
+        Mode(Block[][] floors, Block[][] blocks) {
+            this.floors = floors;
+            this.blocks = blocks;
+        }
     }
 }

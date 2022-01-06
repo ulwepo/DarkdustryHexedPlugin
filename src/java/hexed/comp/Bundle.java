@@ -17,15 +17,9 @@ import java.util.ResourceBundle;
 
 public class Bundle {
 
-    private static final ObjectMap<Locale, StringMap> bundles = new ObjectMap<>();
-
-    private static final ObjectMap<Locale, MessageFormat> formats = new ObjectMap<>();
-
     public static final Locale[] supportedLocales;
-
-    public static Locale defaultLocale() {
-        return Structs.find(supportedLocales, l -> l.toString().equals("en"));
-    }
+    private static final ObjectMap<Locale, StringMap> bundles = new ObjectMap<>();
+    private static final ObjectMap<Locale, MessageFormat> formats = new ObjectMap<>();
 
     static {
         Fi[] files = Vars.mods.list().find(mod -> mod.main instanceof Main).root.child("bundles").list();
@@ -45,6 +39,10 @@ public class Bundle {
     }
 
     private Bundle() {}
+
+    public static Locale defaultLocale() {
+        return Structs.find(supportedLocales, l -> l.toString().equals("en"));
+    }
 
     public static String get(String key, Locale locale) {
         StringMap bundle = getOrLoad(locale);

@@ -20,18 +20,15 @@ import static mindustry.Vars.*;
 
 public class Hex {
 
-    private final float[] progress = new float[256];
-
     public static final int size = 516;
     public static final int diameter = 74;
     public static final int radius = diameter / 2;
     public static final int spacing = 78;
-
     public final int id;
     public final int x, y;
     public final float wx, wy;
     public final float rad = radius * tilesize;
-
+    private final float[] progress = new float[256];
     public Team controller;
 
     public Timekeeper spawnTime = new Timekeeper(Main.spawnDelay);
@@ -84,7 +81,10 @@ public class Hex {
         Call.effect(Fx.nuclearsmoke, x, y, 0, Color.white);
         world.tiles.eachTile(tile -> {
             if (tile.build != null && tile.block() != Blocks.air && contains(tile)) {
-                Time.runTask(Mathf.random(3f), tile.build::kill);
+                Call.setTeam(tile.build, Team.derelict);
+                if (Mathf.chance(0.25f)) {
+                    Time.run(Mathf.random(12f), tile.build::kill);
+                }
             }
         });
         Time.runTask(6f, this::findController);

@@ -18,45 +18,20 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 public abstract class MongoDataBridge<T extends MongoDataBridge<T>> {
-    private static MongoCollection<Document> collection;
     private static final Set<String> specialKeys = Set.of("_id", "__v");
+    private static MongoCollection<Document> collection;
     public ObjectId _id;
     public int __v;
     private Map<String, Object> latest = new HashMap<>();
 
     public MongoDataBridge() {}
 
-    public static void setSourceCollection(MongoCollection<Document> collection) {
-        MongoDataBridge.collection = collection;
-    }
-
     public static MongoCollection<Document> getSourceCollection() {
         return collection;
     }
 
-    public void save() {
-        Map<String, Object> values = this.getDeclaredPublicFields();
-        BasicDBObject operations = this.toBsonOperations(this.latest, values);
-        if (!operations.isEmpty()) {
-            this.latest = values;
-            collection.findOneAndUpdate(new BasicDBObject("_id", values.get("_id")), operations, (new FindOneAndUpdateOptions()).upsert(true).returnDocument(ReturnDocument.AFTER)).subscribe(new Subscriber<>() {
-                public void onSubscribe(Subscription s) {
-                    s.request(1);
-                }
-
-                public void onNext(Document t) {}
-
-                public void onComplete() {}
-
-                public void onError(Throwable t) {
-                    Log.err(t);
-                }
-            });
-        }
-    }
-
-    public void resetLatest() {
-        this.latest = this.getDeclaredPublicFields();
+    public static void setSourceCollection(MongoCollection<Document> collection) {
+        MongoDataBridge.collection = collection;
     }
 
     public static <T extends MongoDataBridge<T>> void find(Class<T> sourceClass, BasicDBObject filter, final Consumer<T> callback) {
@@ -100,6 +75,31 @@ public abstract class MongoDataBridge<T extends MongoDataBridge<T>> {
         } catch (Exception e) {
             Log.err(e);
         }
+    }
+
+    public void save() {
+        Map<String, Object> values = this.getDeclaredPublicFields();
+        BasicDBObject operations = this.toBsonOperations(this.latest, values);
+        if (!operations.isEmpty()) {
+            this.latest = values;
+            collection.findOneAndUpdate(new BasicDBObject("_id", values.get("_id")), operations, (new FindOneAndUpdateOptions()).upsert(true).returnDocument(ReturnDocument.AFTER)).subscribe(new Subscriber<>() {
+                public void onSubscribe(Subscription s) {
+                    s.request(1);
+                }
+
+                public void onNext(Document t) {}
+
+                public void onComplete() {}
+
+                public void onError(Throwable t) {
+                    Log.err(t);
+                }
+            });
+        }
+    }
+
+    public void resetLatest() {
+        this.latest = this.getDeclaredPublicFields();
     }
 
     private Map<String, Object> getDeclaredPublicFields() {
