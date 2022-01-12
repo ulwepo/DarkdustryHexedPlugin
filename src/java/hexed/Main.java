@@ -350,7 +350,7 @@ public class Main extends Plugin {
             world.loadGenerator(Hex.size, Hex.size, generator);
             data.initHexes(generator.getHex());
             info("Локация сгенерирована.");
-            state.rules = rules.copy();
+            state.rules = mode.applyRules(rules.copy());
             logic.play();
             netServer.openServer();
         });
@@ -443,7 +443,7 @@ public class Main extends Plugin {
         world.loadGenerator(Hex.size, Hex.size, generator);
         data.initHexes(generator.getHex());
         info("Карта сгенерирована.");
-        state.rules = rules.copy();
+        state.rules = mode.applyRules(rules.copy());
 
         logic.play();
 
