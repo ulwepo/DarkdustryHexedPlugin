@@ -318,7 +318,7 @@ public class Main extends Plugin {
         handler.removeCommand("host");
         handler.removeCommand("gameover");
 
-        handler.register("hexed", "[mode/list]", "Запустить сервер в режиме HexPvp.", args -> {
+        handler.register("hexed", "[mode/list]", "Start the server in HexPvP mode.", args -> {
             if (args.length > 0 && args[0].equalsIgnoreCase("list")) {
                 info("Доступные режимы:");
                 for (HexedGenerator.Mode value : HexedGenerator.Mode.values()) {
@@ -355,9 +355,9 @@ public class Main extends Plugin {
             netServer.openServer();
         });
 
-        handler.register("time", "Узнать время до конца раунда.", args -> info("Время до конца раунда: &lc@ минут", (int) (roundTime - counter) / 60 / 60));
+        handler.register("time", "See the time remaining until the end of the round.", args -> info("Время до конца раунда: &lc@ минут", (int) (roundTime - counter) / 60 / 60));
 
-        handler.register("end", "Принудительно закончить раунд.", args -> endGame());
+        handler.register("end", "End the round.", args -> endGame());
     }
 
     public void endGame() {
@@ -368,7 +368,7 @@ public class Main extends Plugin {
         Seq<Player> players = data.getLeaderboard();
         StringBuilder scores = new StringBuilder();
         for (int i = 0; i < players.size && i < 4; i++) {
-            if (data.getControlled(players.get(i)).size > 1) {
+            if (data.getControlled(players.get(i)).size > 0) {
                 scores.append("[yellow]").append(i + 1).append(".[accent] ").append(players.get(i).name).append("[lightgray] (x").append(data.getControlled(players.get(i)).size).append(")[]\n");
             }
         }
@@ -447,28 +447,28 @@ public class Main extends Plugin {
 
         logic.play();
 
-        for (Player p : players) {
-            boolean admin = p.admin;
-            p.reset();
-            p.admin = admin;
-            p.team(netServer.assignTeam(p, new SeqIterable<>(players)));
+        for (Player player : players) {
+            boolean admin = player.admin;
+            player.reset();
+            player.admin = admin;
+            player.team(netServer.assignTeam(player, new SeqIterable<>(players)));
 
-            if (p.team() != Team.derelict) {
+            if (player.team() != Team.derelict) {
                 Seq<Hex> copy = data.hexes().copy();
                 copy.shuffle();
                 Hex hex = copy.find(h -> h.controller == null && h.spawnTime.get());
                 if (hex != null) {
-                    loadout(p, hex.x, hex.y);
-                    Core.app.post(() -> data.data(p).chosen = false);
+                    loadout(player, hex.x, hex.y);
+                    Core.app.post(() -> data.data(player).chosen = false);
                     hex.findController();
                 } else {
-                    Call.infoMessage(p.con, Bundle.format("events.no-empty-hex", findLocale(p)));
-                    p.clearUnit();
-                    p.team(Team.derelict);
+                    Call.infoMessage(player.con, Bundle.format("events.no-empty-hex", findLocale(player)));
+                    player.clearUnit();
+                    player.team(Team.derelict);
                 }
             }
 
-            netServer.sendWorldData(p);
+            netServer.sendWorldData(player);
         }
 
         for (int i = 0; i < 5; i++) interval.reset(i, 0f);
