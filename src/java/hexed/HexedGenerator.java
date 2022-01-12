@@ -15,6 +15,7 @@ import arc.util.Structs;
 import arc.util.Tmp;
 import arc.util.noise.Simplex;
 import mindustry.content.Blocks;
+import mindustry.game.Rules;
 import mindustry.graphics.CacheLayer;
 import mindustry.maps.Map;
 import mindustry.maps.filters.GenerateFilter;
