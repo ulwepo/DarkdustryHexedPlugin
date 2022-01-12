@@ -16,6 +16,7 @@ import arc.util.Structs;
 import arc.util.Tmp;
 import arc.util.noise.Simplex;
 import mindustry.content.Blocks;
+import mindustry.content.Items;
 import mindustry.content.Weathers;
 import mindustry.game.Rules;
 import mindustry.graphics.CacheLayer;
@@ -25,6 +26,7 @@ import mindustry.maps.filters.GenerateFilter.GenerateInput;
 import mindustry.maps.filters.OreFilter;
 import mindustry.maps.filters.RiverNoiseFilter;
 import mindustry.maps.filters.ScatterFilter;
+import mindustry.type.ItemStack;
 import mindustry.type.Weather.WeatherEntry;
 import mindustry.world.Block;
 import mindustry.world.Tile;
@@ -351,7 +353,7 @@ public class HexedGenerator implements Cons<Tiles> {
 
             rules.lighting = true;
             rules.enemyLights = false;
-            rules.ambientLight = new Color(0.01f, 0.01f, 0.04f, 0.5f);
+            rules.ambientLight = new Color(0.01f, 0.01f, 0.04f, 0.7f);
         }),
 
         nuclear(new Block[][] {
