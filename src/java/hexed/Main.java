@@ -96,7 +96,6 @@ public class Main extends Plugin {
         rules.coreCapture = false;
         rules.reactorExplosions = true;
         rules.fire = false;
-        rules.unitCapVariable = true;
 
         rules.revealedBlocks.addAll(Blocks.duct, Blocks.ductRouter, Blocks.ductBridge, Blocks.thruster, Blocks.scrapWall, Blocks.scrapWallLarge, Blocks.scrapWallHuge, Blocks.scrapWallGigantic);
         rules.bannedBlocks.addAll(Blocks.ripple);
