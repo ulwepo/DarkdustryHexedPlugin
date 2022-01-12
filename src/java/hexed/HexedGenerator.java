@@ -31,7 +31,6 @@ import mindustry.type.Weather.WeatherEntry;
 import mindustry.world.Block;
 import mindustry.world.Tile;
 import mindustry.world.Tiles;
-import mindustry.world.meta.Env;
 
 import static hexed.Main.mode;
 import static mindustry.Vars.maps;
@@ -237,7 +236,6 @@ public class HexedGenerator implements Cons<Tiles> {
             rules.damageExplosions = false;
             rules.fire = false;
 
-            rules.environment = Env.groundOil;
             rules.weather.add(new WeatherEntry() {{
                 weather = Weathers.sandstorm;
                 minFrequency = 14f;
@@ -292,7 +290,6 @@ public class HexedGenerator implements Cons<Tiles> {
             rules.unitAmmo = true;
             rules.loadout = ItemStack.list(Items.copper, 350, Items.lead, 250, Items.graphite, 150, Items.metaglass, 250, Items.silicon, 200, Items.titanium, 50);
 
-            rules.environment = Env.groundWater;
             rules.weather.add(new WeatherEntry() {{
                 weather = Weathers.rain;
                 minFrequency = 20f;
@@ -340,7 +337,6 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.duneWall, Blocks.sandWall, Blocks.sporeWall, Blocks.sandWall},
                 {Blocks.sporeWall, Blocks.shaleWall, Blocks.sandWall, Blocks.sporeWall}
         }, rules -> {
-            rules.environment = Env.spores;
             rules.weather.add(new WeatherEntry() {{
                 weather = Weathers.sporestorm;
                 minFrequency = 14f;
@@ -373,7 +369,7 @@ public class HexedGenerator implements Cons<Tiles> {
 
             rules.lighting = true;
             rules.enemyLights = false;
-            rules.ambientLight = new Color(0.01f, 0.01f, 0.04f, 0.5f);
+            rules.ambientLight = new Color(0.01f, 0.01f, 0.04f, 0.4f);
         });
 
         final Block[][] floors;
