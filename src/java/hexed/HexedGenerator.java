@@ -236,7 +236,7 @@ public class HexedGenerator implements Cons<Tiles> {
             rules.fire = false;
 
             rules.environment = Env.groundOil;
-            rules.weather.add(new WeatherEntry {{
+            rules.weather.add(new WeatherEntry() {{
                 weather = Weathers.sandStorm;
                 minFrequency = 14f;
                 maxFrequency = 42f;
@@ -276,7 +276,16 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.stoneWall, Blocks.dirtWall, Blocks.duneWall, Blocks.dirtWall, Blocks.duneWall, Blocks.stoneWall},
                 {Blocks.sandWall, Blocks.sandWall, Blocks.stoneWall, Blocks.sandWall, Blocks.pine, Blocks.pine}
         }, rules -> {
-
+            rules.environment = Env.groundWater;
+            rules.weather.add(new WeatherEntry() {{
+                weather = Weathers.rain;
+                minFrequency = 20f;
+                maxFrequency = 60f;
+                minDuration = 5f;
+                maxDuration = 15f;
+                cooldown = 30f;
+                intensity = 0.75f;
+            }});
         }),
 
         lavaLand(new Block[][] {
@@ -309,7 +318,7 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.sporeWall, Blocks.shaleWall, Blocks.sandWall, Blocks.sporeWall}
         }, rules -> {
             rules.environment = Env.spores;
-            rules.weather.add(new WeatherEntry {{
+            rules.weather.add(new WeatherEntry() {{
                 weather = Weathers.sporestorm;
                 minFrequency = 14f;
                 maxFrequency = 42f;
