@@ -313,5 +313,10 @@ public class HexedGenerator implements Cons<Tiles> {
         Mode(Block[][] floors, Block[][] blocks) {
             this(floors, blocks, rules -> {});
         }
+
+        public Rules applyRules(Rules rule) {
+            rules.get(rule);
+            return rule;
+        }
     }
 }
