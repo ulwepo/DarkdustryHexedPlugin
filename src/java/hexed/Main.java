@@ -51,35 +51,31 @@ public class Main extends Plugin {
 
     public static final float spawnDelay = 60 * 4f;
     public static final int itemRequirement = 3000;
-    private static final float baseKillDelay = 60f;
-    private static final int roundTime = 60 * 60 * 90;
-    private static final int leaderboardTime = 60 * 60 * 2;
-    private static final int updateTime = 60 * 2;
-    private static final int winCondition = 20;
-    private static final int timerBoard = 0, timerUpdate = 1, timerWinCheck = 2;
+    public static final float baseKillDelay = 60f;
+    public static final int roundTime = 60 * 60 * 90;
+    public static final int leaderboardTime = 60 * 60 * 2;
+    public static final int updateTime = 60 * 2;
+    public static final int winCondition = 20;
+    public static final int timerBoard = 0, timerUpdate = 1, timerWinCheck = 2;
+
+    public static final String mongoURL = "mongodb://manager:QULIoZBckRlLkZXn@127.0.0.1:27017/?authSource=darkdustry";
+    public static final String dbName = "darkdustry";
+    public static final String dbCollection = "hexed";
 
     public static HexedGenerator.Mode mode;
 
-    private final Rules rules = new NoPauseRules();
-    private final Interval interval = new Interval(5);
-    private final ObjectMap<String, Team> leftPlayers = new ObjectMap<>();
-    private HexData data;
-    private boolean restarting = false;
-    private Schematic start;
-    private float counter = 0f;
-    private int lastMin;
-
-    private String mongoURL = "mongodb://manager:QULIoZBckRlLkZXn@127.0.0.1:27017/?authSource=darkdustry";
-    private String dbName = "darkdustry";
-    private String dbCollection = "hexed";
+    public final Rules rules = new NoPauseRules();
+    public final Interval interval = new Interval(5);
+    public final ObjectMap<String, Team> leftPlayers = new ObjectMap<>();
+    public HexData data;
+    public boolean restarting = false;
+    public Schematic start;
+    public float counter = 0f;
+    public int lastMin;
 
     public Main() {
         ConnectionString connString = new ConnectionString(mongoURL);
-        MongoClientSettings settings = MongoClientSettings
-                .builder()
-                .applyConnectionString(connString)
-                .retryWrites(true)
-                .build();
+        MongoClientSettings settings = MongoClientSettings.builder().applyConnectionString(connString).retryWrites(true).build();
 
         MongoClient mongodb = MongoClients.create(settings);
         MongoCollection<Document> hexedCollection = mongodb.getDatabase(dbName).getCollection(dbCollection);
@@ -128,7 +124,6 @@ public class Main extends Plugin {
             }
 
             state.serverPaused = false;
-            state.rules.pvp = false;
 
             int minsToGo = (int) (roundTime - counter) / 60 / 60;
             if (minsToGo != lastMin) {
@@ -195,6 +190,11 @@ public class Main extends Plugin {
                     event.player.team(Team.derelict);
                 }
             }
+
+            UserStatistics.find(event.player.uuid(), userStatistic -> {
+                userStatistic.name = event.player.coloredName();
+                userStatistic.save();
+            });
         });
 
         Events.on(PlayerLeave.class, event -> {
@@ -235,12 +235,7 @@ public class Main extends Plugin {
         netServer.chatFormatter = (player, message) -> {
             if (player != null) {
                 int[] wins = {0};
-
-                UserStatistics.find(new BasicDBObject("UUID", player.uuid()), userStatistic -> {
-                    userStatistic.name = player.name;
-                    userStatistic.save();
-                    wins[0] = userStatistic.wins;
-                });
+                UserStatistics.find(player.uuid(), userStatistic -> wins[0] = userStatistic.wins);
 
                 return ("[coral][[[cyan]" + wins[0] + " [sky]#[white] " + player.coloredName() + "[coral]]: [white]" + message);
             }
@@ -263,14 +258,13 @@ public class Main extends Plugin {
 
                 @Override
                 public void onNext(Document document) {
-                    if (document != null)
-                        players.append("[accent]").append(cycle[0]++).append(". ").append(document.getString("name")).append("[accent]: [cyan]").append(document.getInteger("wins")).append("\n");
+                    if (document != null) players.append("[accent]").append(cycle[0]++).append(". ").append(document.getString("name")).append("[accent]: [cyan]").append(document.getInteger("wins")).append("\n");
                     else players.append(Bundle.format("commands.lb.none", findLocale(player)));
                 }
 
                 @Override
-                public void onError(Throwable throwable) {
-                    err(throwable);
+                public void onError(Throwable t) {
+                    err(t);
                 }
 
                 @Override
@@ -380,24 +374,25 @@ public class Main extends Plugin {
         }
 
         if (players.any()) {
-            boolean dominated = data.getControlled(players.first()).size == data.hexes().size;
+            Player winner = players.first();
+            boolean dominated = data.getControlled(winner).size == data.hexes().size;
 
             for (Player player : Groups.player) {
                 StringBuilder endGameMessage = new StringBuilder(Bundle.format("round-over", findLocale(player)));
 
-                if (player == players.first())
-                    endGameMessage.append(Bundle.format("you-won", findLocale(player), data.getControlled(players.first()).size));
-                else
-                    endGameMessage.append(Bundle.format("player-won", findLocale(player), players.first().coloredName(), data.getControlled(players.first()).size));
+                if (player == winner) {
+                    endGameMessage.append(Bundle.format("you-won", findLocale(player), data.getControlled(player).size));
+                } else {
+                    endGameMessage.append(Bundle.format("player-won", findLocale(player), winner.coloredName(), data.getControlled(winner).size));
+                }
 
-                if (!dominated)
-                    endGameMessage.append(Bundle.format("final-score", findLocale(player), scores.toString()));
+                if (!dominated) endGameMessage.append(Bundle.format("final-score", findLocale(player), scores.toString()));
 
                 Call.infoMessage(player.con, endGameMessage.toString());
             }
 
-            UserStatistics.find(new BasicDBObject("UUID", players.first().uuid()), userStatistic -> {
-                userStatistic.name = players.first().name;
+            UserStatistics.find(winner.uuid(), userStatistic -> {
+                userStatistic.name = winner.coloredName();
                 userStatistic.wins++;
                 userStatistic.save();
             });
