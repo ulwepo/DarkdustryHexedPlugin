@@ -91,12 +91,13 @@ public class Main extends Plugin {
         rules.unitBuildSpeedMultiplier = 1.25f;
         rules.enemyCoreBuildRadius = Hex.diameter * tilesize / 2f;
         rules.unitDamageMultiplier = 1.25f;
-        rules.unitCapVariable = true;
-        rules.reactorExplosions = true;
+        rules.pvp = false;
         rules.canGameOver = false;
         rules.coreCapture = false;
+        rules.reactorExplosions = true;
         rules.fire = false;
-        rules.pvp = false;
+        rules.unitCapVariable = true;
+
         rules.revealedBlocks.addAll(Blocks.duct, Blocks.ductRouter, Blocks.ductBridge, Blocks.thruster, Blocks.scrapWall, Blocks.scrapWallLarge, Blocks.scrapWallHuge, Blocks.scrapWallGigantic);
         rules.bannedBlocks.addAll(Blocks.ripple);
         rules.modeName = "Hexed";
