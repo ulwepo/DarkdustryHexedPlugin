@@ -213,7 +213,7 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.stoneWall, Blocks.stoneWall, Blocks.duneWall, Blocks.duneWall, Blocks.pine, Blocks.pine},
                 {Blocks.sporeWall, Blocks.sporeWall, Blocks.sporeWall, Blocks.sporeWall, Blocks.sporeWall, Blocks.stoneWall},
                 {Blocks.iceWall, Blocks.snowWall, Blocks.snowWall, Blocks.snowWall, Blocks.stoneWall, Blocks.duneWall}
-        }, rules -> {}),
+        }),
 
         oilFlats(new Block[][] {
                 {Blocks.sand, Blocks.darksand, Blocks.sand, Blocks.shale, Blocks.sand},
@@ -227,7 +227,11 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.duneWall, Blocks.sandWall, Blocks.sandWall, Blocks.sandWall, Blocks.duneWall},
                 {Blocks.sandWall, Blocks.sandWall, Blocks.shaleWall, Blocks.duneWall, Blocks.sandWall},
                 {Blocks.duneWall, Blocks.shaleWall, Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall}
-        }, rules -> {}),
+        }, rules -> {
+            rules.reactorExplosions = false;
+            rules.damageExplosions = false;
+            rules.fire = false;
+        }),
 
         winter(new Block[][] {
                 {Blocks.iceSnow, Blocks.snow, Blocks.snow, Blocks.darksand, Blocks.snow},
@@ -241,7 +245,9 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.snowPine, Blocks.snowWall, Blocks.snowPine, Blocks.iceWall, Blocks.snowWall},
                 {Blocks.iceWall, Blocks.snowWall, Blocks.snowWall, Blocks.snowPine, Blocks.snowWall},
                 {Blocks.iceWall, Blocks.snowPine, Blocks.snowWall, Blocks.iceWall, Blocks.snowPine}
-        }, rules -> {}),
+        }, rules -> {
+
+        }),
 
         rived(new Block[][] {
                 {Blocks.sand, Blocks.sand, Blocks.stone, Blocks.dirt, Blocks.sand, Blocks.grass},
@@ -255,7 +261,9 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.stoneWall, Blocks.duneWall, Blocks.duneWall, Blocks.duneWall, Blocks.pine, Blocks.pine},
                 {Blocks.stoneWall, Blocks.dirtWall, Blocks.duneWall, Blocks.dirtWall, Blocks.duneWall, Blocks.stoneWall},
                 {Blocks.sandWall, Blocks.sandWall, Blocks.stoneWall, Blocks.sandWall, Blocks.pine, Blocks.pine}
-        }, rules -> {}),
+        }, rules -> {
+
+        }),
 
         lavaLand(new Block[][] {
                 {Blocks.sand, Blocks.basalt, Blocks.sand, Blocks.darksand},
@@ -269,7 +277,9 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.sandWall, Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall},
                 {Blocks.daciteWall, Blocks.sandWall, Blocks.daciteWall, Blocks.sandWall},
                 {Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall, Blocks.sandWall}
-        }, rules -> {}),
+        }, rules -> {
+
+        }),
 
         spore(new Block[][] {
                 {Blocks.moss, Blocks.sporeMoss, Blocks.sand, Blocks.moss},
@@ -283,7 +293,9 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.duneWall, Blocks.sporeWall, Blocks.duneWall, Blocks.sporeWall},
                 {Blocks.duneWall, Blocks.sandWall, Blocks.sporeWall, Blocks.sandWall},
                 {Blocks.sporeWall, Blocks.shaleWall, Blocks.sandWall, Blocks.sporeWall}
-        }, rules -> {}),
+        }, rules -> {
+
+        }),
 
         nuclear(new Block[][] {
                 {Blocks.stone, Blocks.shale, Blocks.moss, Blocks.darksand},
@@ -297,7 +309,11 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.shaleWall, Blocks.sandWall, Blocks.stoneWall, Blocks.sandWall},
                 {Blocks.darkMetal, Blocks.sporePine, Blocks.darkMetal, Blocks.snowWall},
                 {Blocks.shaleWall, Blocks.stoneWall, Blocks.dirtWall, Blocks.duneWall}
-        }, rules -> {});
+        }, rules -> {
+            rules.lighting = true;
+            rules.enemyLights = false;
+            rules.ambientLight = new Color(0.01f, 0.01f, 0.04f, 0.5f)
+        });
 
         final Block[][] floors;
         final Block[][] blocks;
