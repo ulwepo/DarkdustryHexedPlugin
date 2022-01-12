@@ -1,9 +1,8 @@
 package hexed.models;
 
+import arc.func.Cons;
 import com.mongodb.BasicDBObject;
 import hexed.database.MongoDataBridge;
-
-import java.util.function.Consumer;
 
 public class UserStatistics extends MongoDataBridge<UserStatistics> {
 
@@ -11,7 +10,7 @@ public class UserStatistics extends MongoDataBridge<UserStatistics> {
     public String name = "";
     public int wins = 0;
 
-    public static void find(BasicDBObject filter, Consumer<UserStatistics> callback) {
-        UserStatistics.find(UserStatistics.class, filter, callback);
+    public static void find(String UUID, Cons<UserStatistics> cons) {
+        find(UserStatistics.class, new BasicDBObject("UUID", UUID), cons);
     }
 }
