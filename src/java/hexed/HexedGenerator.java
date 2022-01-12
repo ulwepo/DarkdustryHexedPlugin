@@ -1,6 +1,7 @@
 package hexed;
 
 import arc.func.Cons;
+import arc.graphics.Color;
 import arc.math.Angles;
 import arc.math.Mathf;
 import arc.math.geom.Bresenham2;
