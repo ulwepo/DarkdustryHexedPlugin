@@ -16,6 +16,7 @@ import arc.util.Structs;
 import arc.util.Tmp;
 import arc.util.noise.Simplex;
 import mindustry.content.Blocks;
+import mindustry.content.Weathers;
 import mindustry.game.Rules;
 import mindustry.graphics.CacheLayer;
 import mindustry.maps.Map;
@@ -24,9 +25,11 @@ import mindustry.maps.filters.GenerateFilter.GenerateInput;
 import mindustry.maps.filters.OreFilter;
 import mindustry.maps.filters.RiverNoiseFilter;
 import mindustry.maps.filters.ScatterFilter;
+import mindustry.type.Weather.WeatherEntry;
 import mindustry.world.Block;
 import mindustry.world.Tile;
 import mindustry.world.Tiles;
+import mindustry.world.meta.Env;
 
 import static hexed.Main.mode;
 import static mindustry.Vars.maps;
@@ -61,20 +64,19 @@ public class HexedGenerator implements Cons<Tiles> {
                 Block wall = mode.blocks[temp][elev];
                 Block ore = Blocks.air;
 
-                for (GenerateFilter f : ores) {
+                for (GenerateFilter filter : ores) {
                     in.floor = Blocks.stone;
                     in.block = wall;
                     in.overlay = ore;
                     in.x = x;
                     in.y = y;
                     in.width = in.height = Hex.size;
-                    f.apply(in);
+                    filter.apply(in);
                     if (in.overlay != Blocks.air) {
                         ore = in.overlay;
                     }
                 }
-                if (floor.cacheLayer == CacheLayer.cryofluid || floor.cacheLayer == CacheLayer.tar || floor.cacheLayer == CacheLayer.slag || floor.cacheLayer == CacheLayer.water)
-                    ore = Blocks.air;
+                if (floor.cacheLayer == CacheLayer.cryofluid || floor.cacheLayer == CacheLayer.tar || floor.cacheLayer == CacheLayer.slag || floor.cacheLayer == CacheLayer.water) ore = Blocks.air;
                 tiles.set(x, y, new Tile(x, y, floor.id, ore.id, wall.id));
             }
         }
@@ -232,6 +234,17 @@ public class HexedGenerator implements Cons<Tiles> {
             rules.reactorExplosions = false;
             rules.damageExplosions = false;
             rules.fire = false;
+
+            rules.environment = Env.groundOil;
+            rules.weather.add(new WeatherEntry {{
+                weather = Weathers.sandStorm;
+                minFrequency = 14f;
+                maxFrequency = 42f;
+                minDuration = 3.5f;
+                maxDuration = 10.5f;
+                cooldown = 21f;
+                intensity = 0.5f;
+            }});
         }),
 
         winter(new Block[][] {
@@ -295,7 +308,16 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.duneWall, Blocks.sandWall, Blocks.sporeWall, Blocks.sandWall},
                 {Blocks.sporeWall, Blocks.shaleWall, Blocks.sandWall, Blocks.sporeWall}
         }, rules -> {
-
+            rules.environment = Env.spores;
+            rules.weather.add(new WeatherEntry {{
+                weather = Weathers.sporestorm;
+                minFrequency = 14f;
+                maxFrequency = 42f;
+                minDuration = 3.5f;
+                maxDuration = 10.5f;
+                cooldown = 21f;
+                intensity = 0.5f;
+            }});
         }),
 
         nuclear(new Block[][] {
@@ -313,7 +335,7 @@ public class HexedGenerator implements Cons<Tiles> {
         }, rules -> {
             rules.lighting = true;
             rules.enemyLights = false;
-            rules.ambientLight = new Color(0.01f, 0.01f, 0.04f, 0.5f)
+            rules.ambientLight = new Color(0.01f, 0.01f, 0.04f, 0.5f);
         });
 
         final Block[][] floors;
