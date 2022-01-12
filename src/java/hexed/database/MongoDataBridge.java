@@ -1,5 +1,6 @@
 package hexed.database;
 
+import arc.func.Cons;
 import arc.util.Log;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
@@ -15,14 +16,14 @@ import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
 
 public abstract class MongoDataBridge<T extends MongoDataBridge<T>> {
+
     private static final Set<String> specialKeys = Set.of("_id", "__v");
     private static MongoCollection<Document> collection;
+    private static Map<String, Object> latest = new HashMap<>();
     public ObjectId _id;
     public int __v;
-    private Map<String, Object> latest = new HashMap<>();
 
     public MongoDataBridge() {}
 
@@ -30,11 +31,11 @@ public abstract class MongoDataBridge<T extends MongoDataBridge<T>> {
         return collection;
     }
 
-    public static void setSourceCollection(MongoCollection<Document> collection) {
-        MongoDataBridge.collection = collection;
+    public static void setSourceCollection(MongoCollection<Document> newCollection) {
+        collection = newCollection;
     }
 
-    public static <T extends MongoDataBridge<T>> void find(Class<T> sourceClass, BasicDBObject filter, final Consumer<T> callback) {
+    public static <T extends MongoDataBridge<T>> void find(Class<T> sourceClass, BasicDBObject filter, final Cons<T> cons) {
         try {
             final T dataClass = sourceClass.getConstructor().newInstance();
             final Set<Field> fields = Set.of(sourceClass.getFields());
@@ -63,7 +64,7 @@ public abstract class MongoDataBridge<T extends MongoDataBridge<T>> {
                         }
                     });
                     dataClass.resetLatest();
-                    callback.accept(dataClass);
+                    cons.get(dataClass);
                 }
 
                 public void onComplete() {}
@@ -99,7 +100,7 @@ public abstract class MongoDataBridge<T extends MongoDataBridge<T>> {
     }
 
     public void resetLatest() {
-        this.latest = this.getDeclaredPublicFields();
+        latest = getDeclaredPublicFields();
     }
 
     private Map<String, Object> getDeclaredPublicFields() {
