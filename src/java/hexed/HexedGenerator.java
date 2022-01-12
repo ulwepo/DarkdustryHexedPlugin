@@ -167,8 +167,7 @@ public class HexedGenerator implements Cons<Tiles> {
             }
         }
 
-        state.map = new Map(StringMap.of("name", getModeName(mode)));
-        state.map.tags.put("author", "[gray]Skykatik");
+        state.map = new Map(StringMap.of("name", getModeName(mode), "author", "[gray]Skykatik"));
     }
 
     public IntSeq getHex() {
@@ -184,7 +183,7 @@ public class HexedGenerator implements Cons<Tiles> {
         return array;
     }
 
-    private String getModeName(Mode mapMode) {
+    public String getModeName(Mode mapMode) {
         return switch (mapMode) {
             case def -> "\uE861 [gold]Hexed Arena";
             case oilFlats -> "\uF826 [accent]Oil Flats";
