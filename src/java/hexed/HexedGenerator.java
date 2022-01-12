@@ -302,9 +302,16 @@ public class HexedGenerator implements Cons<Tiles> {
         final Block[][] floors;
         final Block[][] blocks;
 
-        Mode(Block[][] floors, Block[][] blocks) {
+        final Cons<Rules> rules;
+
+        Mode(Block[][] floors, Block[][] blocks, Cons<Rules> rules) {
             this.floors = floors;
             this.blocks = blocks;
+            this.rules = rules;
+        }
+
+        Mode(Block[][] floors, Block[][] blocks) {
+            this(floors, blocks, rules -> {});
         }
     }
 }
