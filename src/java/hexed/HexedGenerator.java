@@ -237,7 +237,7 @@ public class HexedGenerator implements Cons<Tiles> {
 
             rules.environment = Env.groundOil;
             rules.weather.add(new WeatherEntry() {{
-                weather = Weathers.sandStorm;
+                weather = Weathers.sandstorm;
                 minFrequency = 14f;
                 maxFrequency = 42f;
                 minDuration = 3.5f;
@@ -260,7 +260,18 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.iceWall, Blocks.snowWall, Blocks.snowWall, Blocks.snowPine, Blocks.snowWall},
                 {Blocks.iceWall, Blocks.snowPine, Blocks.snowWall, Blocks.iceWall, Blocks.snowPine}
         }, rules -> {
+            rules.unitCap = 48;
+            rules.unitCapVariable = false;
 
+            rules.weather.add(new WeatherEntry() {{
+                weather = Weathers.snow;
+                minFrequency = 20f;
+                maxFrequency = 60f;
+                minDuration = 5f;
+                maxDuration = 15f;
+                cooldown = 30f;
+                intensity = 0.5f;
+            }});
         }),
 
         rived(new Block[][] {
@@ -276,6 +287,9 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.stoneWall, Blocks.dirtWall, Blocks.duneWall, Blocks.dirtWall, Blocks.duneWall, Blocks.stoneWall},
                 {Blocks.sandWall, Blocks.sandWall, Blocks.stoneWall, Blocks.sandWall, Blocks.pine, Blocks.pine}
         }, rules -> {
+            rules.unitAmmo = true;
+            rules.loadout = ItemStack.list(Items.copper, 350, Items.lead, 250, Items.graphite, 150, Items.metaglass, 250, Items.silicon, 200, Items.titanium, 50);
+
             rules.environment = Env.groundWater;
             rules.weather.add(new WeatherEntry() {{
                 weather = Weathers.rain;
@@ -285,6 +299,10 @@ public class HexedGenerator implements Cons<Tiles> {
                 maxDuration = 15f;
                 cooldown = 30f;
                 intensity = 0.75f;
+            }}, new WeatherEntry() {{
+                weather = Weathers.fog;
+                intensity = 0.5f;
+                always = true;
             }});
         }),
 
@@ -301,7 +319,10 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.daciteWall, Blocks.sandWall, Blocks.daciteWall, Blocks.sandWall},
                 {Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall, Blocks.sandWall}
         }, rules -> {
-
+            rules.fire = true;
+            rules.unitBuildSpeedMultiplier = 1.5f;
+            rules.buildCostMultiplier = 1f;
+            rules.buildSpeedMultiplier = 2.25f;
         }),
 
         spore(new Block[][] {
@@ -327,6 +348,10 @@ public class HexedGenerator implements Cons<Tiles> {
                 cooldown = 21f;
                 intensity = 0.5f;
             }});
+
+            rules.lighting = true;
+            rules.enemyLights = false;
+            rules.ambientLight = new Color(0.01f, 0.01f, 0.04f, 0.5f);
         }),
 
         nuclear(new Block[][] {
@@ -342,6 +367,8 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.darkMetal, Blocks.sporePine, Blocks.darkMetal, Blocks.snowWall},
                 {Blocks.shaleWall, Blocks.stoneWall, Blocks.dirtWall, Blocks.duneWall}
         }, rules -> {
+            rules.bannedBlocks.addAll(Blocks.microProcessor, Blocks.logicProcessor, Blocks.hyperProcessor);
+
             rules.lighting = true;
             rules.enemyLights = false;
             rules.ambientLight = new Color(0.01f, 0.01f, 0.04f, 0.5f);
