@@ -349,7 +349,7 @@ public class HexedGenerator implements Cons<Tiles> {
 
             rules.lighting = true;
             rules.enemyLights = false;
-            rules.ambientLight = new Color(0.01f, 0.01f, 0.04f, 0.7f);
+            rules.ambientLight = new Color(0.01f, 0.01f, 0.04f, 0.3f);
         }),
 
         nuclear(new Block[][] {
@@ -369,7 +369,7 @@ public class HexedGenerator implements Cons<Tiles> {
 
             rules.lighting = true;
             rules.enemyLights = false;
-            rules.ambientLight = new Color(0.01f, 0.01f, 0.04f, 0.4f);
+            rules.ambientLight = new Color(0.01f, 0.01f, 0.04f, 0.6f);
         });
 
         final Block[][] floors;
