@@ -345,7 +345,7 @@ public class Main extends Plugin {
             data = new HexData();
 
             logic.reset();
-            info("Генерирую локацию по сценарию @...", mode);
+            info("Создание локации по сценарию @...", mode);
             HexedGenerator generator = new HexedGenerator();
             world.loadGenerator(Hex.size, Hex.size, generator);
             data.initHexes(generator.getHex());
@@ -437,12 +437,12 @@ public class Main extends Plugin {
         mode = Structs.random(HexedGenerator.Mode.values());
         data = new HexData();
 
-        info("Пересоздание карты по сценарию @...", mode);
+        info("Пересоздание локации по сценарию @...", mode);
 
         HexedGenerator generator = new HexedGenerator();
         world.loadGenerator(Hex.size, Hex.size, generator);
         data.initHexes(generator.getHex());
-        info("Карта сгенерирована.");
+        info("Локация сгенерирована.");
         state.rules = mode.applyRules(rules.copy());
 
         logic.play();
