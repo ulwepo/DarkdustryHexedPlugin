@@ -1,15 +1,10 @@
 package hexed;
 
-import arc.graphics.Color;
 import arc.math.Mathf;
 import arc.math.geom.Intersector;
-import arc.util.Time;
 import arc.util.Timekeeper;
-import mindustry.content.Blocks;
-import mindustry.content.Fx;
 import mindustry.game.Team;
 import mindustry.game.Teams.TeamData;
-import mindustry.gen.Call;
 import mindustry.type.ItemStack;
 import mindustry.world.Tile;
 import mindustry.world.blocks.storage.CoreBlock;
@@ -71,20 +66,9 @@ public class Hex {
 
         TeamData data = state.teams.getActive().max(t -> progress[t.team.id]);
         if (data != null && data.team != Team.derelict && progress[data.team.id] >= Main.itemRequirement) {
-            world.tile(x, y).setNet(Blocks.coreShard, data.team, 0);
             return data.team;
         }
         return null;
-    }
-
-    public void destroy() {
-        Call.effect(Fx.nuclearcloud, x, y, 0, Color.white);
-        world.tiles.eachTile(tile -> {
-            if (tile.build != null && tile.block() != Blocks.air && contains(tile)) {
-                Time.run(Mathf.random(6f), tile.build::kill);
-            }
-        });
-        Time.runTask(60f, this::findController);
     }
 
     public boolean contains(float x, float y) {
