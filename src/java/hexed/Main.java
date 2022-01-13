@@ -152,7 +152,10 @@ public class Main extends Plugin {
         Events.on(BlockDestroyEvent.class, event -> {
             if (event.tile.block() instanceof CoreBlock) {
                 Hex hex = data.getHex(event.tile.pos());
-                if (hex != null) hex.spawnTime.reset();
+                if (hex != null) {
+                    hex.updateController();
+                    hex.spawnTime.reset();
+                }
             }
         });
 
