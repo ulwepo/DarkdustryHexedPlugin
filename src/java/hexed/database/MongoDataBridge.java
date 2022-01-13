@@ -79,10 +79,11 @@ public abstract class MongoDataBridge<T extends MongoDataBridge<T>> {
     }
 
     public void save() {
-        Map<String, Object> values = this.getDeclaredPublicFields();
-        BasicDBObject operations = this.toBsonOperations(this.latest, values);
+        Map<String, Object> values = getDeclaredPublicFields();
+        BasicDBObject operations = toBsonOperations(latest, values);
+
         if (!operations.isEmpty()) {
-            this.latest = values;
+            latest = values;
             collection.findOneAndUpdate(new BasicDBObject("_id", values.get("_id")), operations, (new FindOneAndUpdateOptions()).upsert(true).returnDocument(ReturnDocument.AFTER)).subscribe(new Subscriber<>() {
                 public void onSubscribe(Subscription s) {
                     s.request(1);
@@ -121,6 +122,7 @@ public abstract class MongoDataBridge<T extends MongoDataBridge<T>> {
     private BasicDBObject toBsonOperations(Map<String, Object> previousFields, Map<String, Object> newFields) {
         Map<String, DataChanges> changes = DataChanges.getChanges(previousFields, newFields);
         Map<String, BasicDBObject> operations = new HashMap<>();
+
         changes.forEach((key, changedValues) -> {
             if (!changedValues.current.equals(DataChanges.undefined) && !specialKeys.contains(key)) {
                 if (!operations.containsKey("$set")) {
@@ -130,6 +132,7 @@ public abstract class MongoDataBridge<T extends MongoDataBridge<T>> {
                 operations.get("$set").append(key, changedValues.current);
             }
         });
+
         return new BasicDBObject(operations);
     }
 }

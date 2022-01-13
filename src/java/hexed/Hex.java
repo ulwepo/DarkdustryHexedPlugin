@@ -1,6 +1,5 @@
 package hexed;
 
-import arc.math.Mathf;
 import arc.math.geom.Intersector;
 import arc.util.Timekeeper;
 import mindustry.content.Blocks;
@@ -20,13 +19,14 @@ public class Hex {
     public static final int diameter = 74;
     public static final int radius = diameter / 2;
     public static final int spacing = 78;
+
     public final int id;
     public final int x, y;
     public final float wx, wy;
     public final float rad = radius * tilesize;
-    private final float[] progress = new float[256];
-    public Team controller;
+    public final float[] progress = new float[256];
 
+    public Team controller;
     public Timekeeper spawnTime = new Timekeeper(Main.spawnDelay);
 
     public Hex(int id, int x, int y) {

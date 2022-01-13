@@ -122,7 +122,7 @@ public class HexedGenerator implements Cons<Tiles> {
             }
         }
 
-        if (mode == Mode.rived) {
+        if (mode == Mode.rivers) {
             RiverNoiseFilter noise = new RiverNoiseFilter();
             Reflect.set(noise, "floor", Blocks.sand);
             Reflect.set(noise, "floor2", Blocks.water);
@@ -188,14 +188,14 @@ public class HexedGenerator implements Cons<Tiles> {
         return array;
     }
 
-    public String getModeName(Mode mapMode) {
-        return switch (mapMode) {
+    public String getModeName(Mode mode) {
+        return switch (mode) {
             case def -> "\uE861 [gold]Hexed Arena";
             case oilFlats -> "\uF826 [accent]Oil Flats";
             case winter -> "\uF825 [cyan]Winter";
-            case rived -> "\uF828 [accent]Rivers";
-            case lavaLand -> "\uF827 [orange]Lavaland";
-            case spore -> "\uF82B [purple]Spores";
+            case rivers -> "\uF828 [accent]Rivers";
+            case lavaLand -> "\uF827 [orange]Lava Land";
+            case spores -> "\uF82B [purple]Spores";
             case nuclear -> "\uF7A9 [scarlet]Nuclear";
         };
     }
@@ -274,7 +274,7 @@ public class HexedGenerator implements Cons<Tiles> {
             }});
         }),
 
-        rived(new Block[][] {
+        rivers(new Block[][] {
                 {Blocks.sand, Blocks.sand, Blocks.stone, Blocks.dirt, Blocks.sand, Blocks.grass},
                 {Blocks.darksandWater, Blocks.dirt, Blocks.darksand, Blocks.taintedWater, Blocks.grass, Blocks.grass},
                 {Blocks.water, Blocks.darksand, Blocks.darksand, Blocks.water, Blocks.grass, Blocks.grass},
@@ -324,7 +324,7 @@ public class HexedGenerator implements Cons<Tiles> {
             rules.buildSpeedMultiplier = 2.25f;
         }),
 
-        spore(new Block[][] {
+        spores(new Block[][] {
                 {Blocks.moss, Blocks.sporeMoss, Blocks.sand, Blocks.moss},
                 {Blocks.moss, Blocks.dacite, Blocks.taintedWater, Blocks.sporeMoss},
                 {Blocks.darksandTaintedWater, Blocks.taintedWater, Blocks.moss, Blocks.hotrock},

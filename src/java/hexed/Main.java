@@ -57,9 +57,9 @@ public class Main extends Plugin {
     public static final int winCondition = 20;
     public static final int timerBoard = 0, timerUpdate = 1, timerWinCheck = 2;
 
-    public static final String mongoURL = "mongodb://manager:QULIoZBckRlLkZXn@127.0.0.1:27017/?authSource=darkdustry";
-    public static final String dbName = "darkdustry";
-    public static final String dbCollection = "hexed";
+    public static final String connectionStringUrl = "mongodb://manager:QULIoZBckRlLkZXn@127.0.0.1:27017/?authSource=darkdustry";
+    public static final String databaseName = "darkdustry";
+    public static final String collectionName = "hexed";
 
     public static HexedGenerator.Mode mode;
 
@@ -73,11 +73,12 @@ public class Main extends Plugin {
     public int lastMin;
 
     public Main() {
-        ConnectionString connString = new ConnectionString(mongoURL);
-        MongoClientSettings settings = MongoClientSettings.builder().applyConnectionString(connString).retryWrites(true).build();
+        ConnectionString connectionString = new ConnectionString(connectionStringUrl);
+        MongoClientSettings settings = MongoClientSettings.builder().applyConnectionString(connectionString).retryWrites(true).build();
 
         MongoClient mongodb = MongoClients.create(settings);
-        MongoCollection<Document> hexedCollection = mongodb.getDatabase(dbName).getCollection(dbCollection);
+        MongoCollection<Document> hexedCollection = mongodb.getDatabase(databaseName).getCollection(collectionName);
+
         UserStatistics.setSourceCollection(hexedCollection);
     }
 
@@ -107,11 +108,11 @@ public class Main extends Plugin {
 
             for (Player player : Groups.player) {
                 if (player.team() != Team.derelict && player.team().data().noCores()) {
-                    player.clearUnit();
                     killTeam(player.team());
+                    player.clearUnit();
+                    player.team(Team.derelict);
                     sendToChat("events.player-lost", player.coloredName());
                     Call.infoMessage(player.con, Bundle.format("events.you-lost", findLocale(player)));
-                    player.team(Team.derelict);
                 }
 
                 if (player.team() == Team.derelict) {
@@ -278,6 +279,7 @@ public class Main extends Plugin {
                 bundled(player, "commands.spectator.already");
                 return;
             }
+
             killTeam(player.team());
             player.clearUnit();
             player.team(Team.derelict);
@@ -289,6 +291,7 @@ public class Main extends Plugin {
                 bundled(player, "commands.captured.spectator");
                 return;
             }
+
             bundled(player, "commands.captured.hexes", data.getControlled(player).size);
         });
 
@@ -298,8 +301,7 @@ public class Main extends Plugin {
             Hex hex = data.data(player).location;
             if (hex != null) {
                 hex.updateController();
-                StringBuilder status = new StringBuilder();
-                status.append(Bundle.format("commands.hexstatus.hex", findLocale(player))).append(hex.id).append("[]\n").append(Bundle.format("commands.hexstatus.owner", findLocale(player))).append(hex.controller != null && data.getPlayer(hex.controller) != null ? data.getPlayer(hex.controller).coloredName() : Bundle.format("commands.hexstatus.owner.none", findLocale(player))).append("\n");
+                StringBuilder status = new StringBuilder(Bundle.format("commands.hexstatus.hex", findLocale(player), hex.id)).append("\n").append(Bundle.format("commands.hexstatus.owner", findLocale(player), hex.controller != null && data.getPlayer(hex.controller) != null ? data.getPlayer(hex.controller).coloredName() : Bundle.format("commands.hexstatus.owner.none", findLocale(player)))).append("\n");
                 for (TeamData teamData : state.teams.getActive()) {
                     if (hex.getProgressPercent(teamData.team) > 0 && hex.getProgressPercent(teamData.team) <= 100) {
                         status.append("[white]|> [accent]").append(data.getPlayer(teamData.team).coloredName()).append("[lightgray]: [accent]").append(Bundle.format("commands.hexstatus.captured", findLocale(player), (int) hex.getProgressPercent(teamData.team))).append("\n");
@@ -403,20 +405,20 @@ public class Main extends Plugin {
     public void updateText(Player player) {
         HexTeam team = data.data(player);
 
-        StringBuilder message = new StringBuilder(Bundle.format("hex", findLocale(player))).append(team.location.id).append("\n");
+        StringBuilder message = new StringBuilder(Bundle.format("hex", findLocale(player), team.location.id)).append("\n");
 
         if (team.location.controller == null) {
             if (team.progressPercent > 0) {
-                message.append(Bundle.format("capture-progress", findLocale(player))).append((int) (team.progressPercent)).append("%");
+                message.append(Bundle.format("hex.capture-progress", findLocale(player), (int) (team.progressPercent)));
             } else {
-                message.append(Bundle.format("hex-empty", findLocale(player)));
+                message.append(Bundle.format("hex.empty", findLocale(player)));
             }
         } else if (team.location.controller == player.team()) {
-            message.append(Bundle.format("hex-captured", findLocale(player)));
-        } else if (team.location != null && team.location.controller != null && data.getPlayer(team.location.controller) != null) {
-            message.append("[#").append(team.location.controller.color).append("]").append(Bundle.format("hex-captured-by-player", findLocale(player))).append(data.getPlayer(team.location.controller).coloredName());
+            message.append(Bundle.format("hex.captured", findLocale(player)));
+        } else if (team.location.controller != null && data.getPlayer(team.location.controller) != null) {
+            message.append("[#").append(team.location.controller.color).append("]").append(Bundle.format("hex.captured-by-player", findLocale(player), data.getPlayer(team.location.controller).coloredName()));
         } else {
-            message.append(Bundle.format("hex-unknown", findLocale(player)));
+            message.append(Bundle.format("hex.unknown", findLocale(player)));
         }
 
         Call.setHudText(player.con, message.toString());
@@ -488,14 +490,16 @@ public class Main extends Plugin {
     }
 
     public void killTeam(Team team) {
-        data.data(team).dying = true;
-        Time.runTask(8f, () -> data.data(team).dying = false);
-        world.tiles.eachTile(tile -> {
-            if (tile.build != null && tile.block() != Blocks.air && tile.team() == team) {
-                Time.run(Mathf.random(360f), tile::removeNet);
-            }
-        });
-        Groups.unit.each(u -> u.team == team, unit -> Time.run(Mathf.random(360f), unit::kill));
+        if (team != Team.derelict) {
+            data.data(team).dying = true;
+            Time.runTask(8f, () -> data.data(team).dying = false);
+            world.tiles.eachTile(tile -> {
+                if (tile.build != null && tile.block() != Blocks.air && tile.team() == team) {
+                    Time.run(Mathf.random(360f), tile::removeNet);
+                }
+            });
+            Groups.unit.each(u -> u.team == team, unit -> Time.run(Mathf.random(360f), unit::kill));
+        }
     }
 
     public void loadout(Player player, int x, int y) {
@@ -508,7 +512,7 @@ public class Main extends Plugin {
             tile.setNet(st.block, player.team(), st.rotation);
             tile.getLinkedTiles(t -> {
                 if (t.floor().isDeep()) {
-                    t.setFloorNet(Blocks.darkPanel3.asFloor());
+                    t.setFloorNet(Blocks.darkPanel3);
                 }
             });
 

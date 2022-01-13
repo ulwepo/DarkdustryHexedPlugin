@@ -47,16 +47,12 @@ public class HexData {
             int lp = (int) (team.progressPercent);
             int np = (int) (currPercent);
             team.progressPercent = currPercent;
-            if (np != lp) {
-                Events.fire(new ProgressIncreaseEvent(player, currPercent));
-            }
+            if (np != lp) Events.fire(new ProgressIncreaseEvent(player, currPercent));
 
             boolean captured = newHex.controller == player.team();
             if (team.lastCaptured != captured) {
                 team.lastCaptured = captured;
-                if (captured && !newHex.hasCore()) {
-                    Events.fire(new HexCaptureEvent(player, newHex));
-                }
+                if (captured && !newHex.hasCore()) Events.fire(new HexCaptureEvent(player, newHex));
             }
         }
 
