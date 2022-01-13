@@ -323,8 +323,8 @@ public class Main extends Plugin {
                 return;
             }
 
-            if (!state.is(State.menu)) {
-                err("Сначала необходимо остановить сервер.");
+            if (!state.isMenu()) {
+                err("Сервер уже запущен. Используй 'stop', чтобы остановить его.");
                 return;
             }
 
