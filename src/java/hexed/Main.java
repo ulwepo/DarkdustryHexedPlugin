@@ -22,7 +22,6 @@ import hexed.comp.NoPauseRules;
 import hexed.models.UserStatistics;
 import mindustry.content.Blocks;
 import mindustry.content.Items;
-import mindustry.core.GameState.State;
 import mindustry.game.*;
 import mindustry.game.EventType.BlockDestroyEvent;
 import mindustry.game.EventType.PlayerJoin;
