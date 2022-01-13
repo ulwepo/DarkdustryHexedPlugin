@@ -92,7 +92,7 @@ public class Main extends Plugin {
         rules.unitDamageMultiplier = 1.25f;
         rules.pvp = false;
         rules.canGameOver = false;
-        rules.coreCapture = false;
+        rules.coreCapture = true;
         rules.reactorExplosions = true;
         rules.fire = false;
 
@@ -152,10 +152,7 @@ public class Main extends Plugin {
         Events.on(BlockDestroyEvent.class, event -> {
             if (event.tile.block() instanceof CoreBlock) {
                 Hex hex = data.getHex(event.tile.pos());
-                if (hex != null) {
-                    hex.spawnTime.reset();
-                    hex.destroy();
-                }
+                if (hex != null) hex.spawnTime.reset();
             }
         });
 
