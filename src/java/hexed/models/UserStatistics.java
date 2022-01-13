@@ -11,6 +11,6 @@ public class UserStatistics extends MongoDataBridge<UserStatistics> {
     public int wins = 0;
 
     public static void find(String UUID, Cons<UserStatistics> cons) {
-        find(UserStatistics.class, new BasicDBObject("UUID", UUID), cons);
+        findAndApplySchema(UserStatistics.class, new BasicDBObject("UUID", UUID), cons);
     }
 }

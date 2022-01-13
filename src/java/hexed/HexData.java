@@ -25,9 +25,11 @@ public class HexData {
 
     public void updateStats() {
         teamMap.clear();
+
         for (Player player : Groups.player) {
             teamMap.put(player.team().id, player);
         }
+
         for (Seq<Hex> arr : control.values()) {
             arr.clear();
         }
@@ -117,8 +119,7 @@ public class HexData {
         public boolean dying;
         public boolean chosen;
 
-        public @Nullable
-        Hex location;
+        public @Nullable Hex location;
 
         public float progressPercent;
         public boolean lastCaptured;

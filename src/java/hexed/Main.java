@@ -23,6 +23,7 @@ import hexed.models.UserStatistics;
 import mindustry.content.Blocks;
 import mindustry.content.Items;
 import mindustry.game.*;
+import mindustry.game.EventType.BlockBuildEndEvent;
 import mindustry.game.EventType.BlockDestroyEvent;
 import mindustry.game.EventType.PlayerJoin;
 import mindustry.game.EventType.PlayerLeave;
@@ -49,12 +50,12 @@ import static mindustry.Vars.*;
 public class Main extends Plugin {
 
     public static final float spawnDelay = 60 * 4f;
-    public static final int itemRequirement = 3000;
     public static final float baseKillDelay = 60f;
+    public static final int itemRequirement = 2500;
     public static final int roundTime = 60 * 60 * 90;
     public static final int leaderboardTime = 60 * 60 * 2;
     public static final int updateTime = 60 * 2;
-    public static final int winCondition = 20;
+    public static final int winCondition = 25;
     public static final int timerBoard = 0, timerUpdate = 1, timerWinCheck = 2;
 
     public static final String connectionStringUrl = "mongodb://manager:QULIoZBckRlLkZXn@127.0.0.1:27017/?authSource=darkdustry";
@@ -66,6 +67,7 @@ public class Main extends Plugin {
     public final Rules rules = new NoPauseRules();
     public final Interval interval = new Interval(5);
     public final ObjectMap<String, Team> leftPlayers = new ObjectMap<>();
+
     public HexData data;
     public boolean restarting = false;
     public Schematic start;
@@ -115,9 +117,9 @@ public class Main extends Plugin {
                     Call.infoMessage(player.con, Bundle.format("events.you-lost", findLocale(player)));
                 }
 
-                if (player.team() == Team.derelict) {
-                    player.clearUnit();
-                } else if (data.getControlled(player).size == data.hexes().size) {
+                if (player.team() == Team.derelict) player.clearUnit();
+
+                if (data.getControlled(player).size == data.hexes().size) {
                     endGame();
                     break;
                 }
@@ -126,12 +128,12 @@ public class Main extends Plugin {
             state.serverPaused = false;
 
             int minsToGo = (int) (roundTime - counter) / 60 / 60;
-            if (minsToGo != lastMin) {
+            if (lastMin != minsToGo) {
                 lastMin = minsToGo;
             }
 
             if (interval.get(timerBoard, leaderboardTime)) {
-                Groups.player.each(player -> Call.infoToast(player.con, getLeaderboard(player), 12.5f));
+                Groups.player.each(player -> Call.infoToast(player.con, getLeaderboard(player), 12f));
             }
 
             if (interval.get(timerUpdate, updateTime)) {
@@ -160,7 +162,7 @@ public class Main extends Plugin {
             }
         });
 
-        Events.on(EventType.BlockBuildEndEvent.class, event -> {
+        Events.on(BlockBuildEndEvent.class, event -> {
             if (event.breaking) return;
 
             Hex hex = data.hexes().find(h -> h.contains(event.tile));
@@ -368,9 +370,12 @@ public class Main extends Plugin {
         restarting = true;
         Seq<Player> players = data.getLeaderboard();
         StringBuilder scores = new StringBuilder();
-        for (int i = 0; i < players.size && i < 4; i++) {
-            if (data.getControlled(players.get(i)).size > 0) {
-                scores.append("[yellow]").append(i + 1).append(".[accent] ").append(players.get(i).name).append("[lightgray] (x").append(data.getControlled(players.get(i)).size).append(")[]\n");
+        int index = 1;
+
+        for (Player player : players) {
+            if (data.getControlled(player).size > 0) {
+                scores.append("[yellow]").append(index).append(".[accent] ").append(player.coloredName()).append("[lightgray] (x").append(data.getControlled(player).size).append(")[]\n");
+                index++;
             }
         }
 
@@ -483,8 +488,7 @@ public class Main extends Plugin {
         int index = 1;
         for (Player player : data.getLeaderboard()) {
             builder.append("[yellow]").append(index).append(".[white] ").append(player.coloredName()).append(Bundle.format("leaderboard.hexes", findLocale(p), data.getControlled(player).size));
-            index++;
-            if (index > 4) break;
+            if (index++ > 4) break;
         }
         return builder.toString();
     }
@@ -498,7 +502,7 @@ public class Main extends Plugin {
                     Time.run(Mathf.random(360f), tile::removeNet);
                 }
             });
-            Groups.unit.each(u -> u.team == team, unit -> Time.run(Mathf.random(360f), unit::kill));
+            Groups.unit.each(u -> u.team == team, unit -> Time.run(Mathf.random(360f), () -> Call.unitDespawn(unit)));
         }
     }
 

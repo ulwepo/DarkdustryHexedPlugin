@@ -1,5 +1,6 @@
 package hexed;
 
+import arc.math.Mathf;
 import arc.math.geom.Intersector;
 import arc.util.Timekeeper;
 import mindustry.content.Blocks;
@@ -59,7 +60,7 @@ public class Hex {
                 Tile tile = world.tile(cx, cy);
                 if (tile != null && tile.synthetic() && contains(tile) && tile.block().requirements != null) {
                     for (ItemStack stack : tile.block().requirements) {
-                        progress[tile.team().id] += stack.amount * stack.item.cost;
+                        progress[tile.team().id] += stack.amount * Mathf.sqrt(stack.item.cost);
                     }
                 }
             }

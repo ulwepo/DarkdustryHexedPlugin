@@ -1,12 +1,14 @@
 package hexed.database;
 
 import arc.func.Cons;
+import arc.struct.Seq;
 import arc.util.Log;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
 import com.mongodb.client.model.ReturnDocument;
 import com.mongodb.reactivestreams.client.MongoCollection;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
@@ -15,17 +17,15 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 public abstract class MongoDataBridge<T extends MongoDataBridge<T>> {
 
-    private static final Set<String> specialKeys = Set.of("_id", "__v");
+    private static final Seq<String> specialKeys = Seq.with("_id", "__v", "DEFAULT_CODEC_REGISTRY");
     private static MongoCollection<Document> collection;
     private static Map<String, Object> latest = new HashMap<>();
+
     public ObjectId _id;
     public int __v;
-
-    public MongoDataBridge() {}
 
     public static MongoCollection<Document> getSourceCollection() {
         return collection;
@@ -35,43 +35,51 @@ public abstract class MongoDataBridge<T extends MongoDataBridge<T>> {
         collection = newCollection;
     }
 
-    public static <T extends MongoDataBridge<T>> void find(Class<T> sourceClass, BasicDBObject filter, final Cons<T> cons) {
+    public static <T extends MongoDataBridge<T>> void findAndApplySchema(Class<T> sourceClass, Bson filter, Cons<T> cons) {
         try {
-            final T dataClass = sourceClass.getConstructor().newInstance();
-            final Set<Field> fields = Set.of(sourceClass.getFields());
+            T dataClass = sourceClass.getConstructor().newInstance();
+
+            Seq<Field> fields = Seq.with(sourceClass.getFields());
             Document defaultObject = new Document();
-            fields.forEach(field -> {
-                if (!specialKeys.contains(field.getName())) {
-                    try {
-                        defaultObject.append(field.getName(), field.get(dataClass));
-                    } catch (IllegalAccessException | IllegalArgumentException e) {
-                        Log.err(e);
-                    }
+
+            fields.each(field -> !specialKeys.contains(field.getName()), field -> {
+                try {
+                    defaultObject.append(field.getName(), field.get(dataClass));
+                } catch (IllegalArgumentException | IllegalAccessException e) {
+                    Log.err(e);
                 }
             });
-            filter.forEach(defaultObject::append);
-            collection.findOneAndUpdate(filter, new BasicDBObject("$setOnInsert", defaultObject), (new FindOneAndUpdateOptions()).upsert(true).returnDocument(ReturnDocument.AFTER)).subscribe(new Subscriber<>() {
+
+            filter.toBsonDocument().forEach(defaultObject::append);
+
+            collection.findOneAndUpdate(filter,
+                    new BasicDBObject("$setOnInsert", defaultObject),
+                    new FindOneAndUpdateOptions().upsert(true).returnDocument(ReturnDocument.AFTER)
+            ).subscribe(new Subscriber<>() {
+                @Override
                 public void onSubscribe(Subscription s) {
-                    s.request(1L);
+                    s.request(1);
                 }
 
+                @Override
                 public void onNext(Document document) {
-                    fields.forEach(field -> {
+                    fields.each(field -> {
                         try {
                             field.set(dataClass, document.getOrDefault(field.getName(), field.get(dataClass)));
-                        } catch (IllegalAccessException | IllegalArgumentException e) {
+                        } catch (IllegalArgumentException | IllegalAccessException e) {
                             Log.err(e);
                         }
                     });
+
                     dataClass.resetLatest();
                     cons.get(dataClass);
                 }
 
+                @Override
                 public void onComplete() {}
 
-                public void onError(Throwable t) {
-                    Log.err(t);
-                }
+                @Override
+                public void onError(Throwable t) {}
             });
         } catch (Exception e) {
             Log.err(e);
