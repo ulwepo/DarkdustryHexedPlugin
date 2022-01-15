@@ -430,6 +430,8 @@ public class Main extends Plugin {
     }
 
     public void reload() {
+        Events.fire("HexedGameOver");
+
         Seq<Player> players = new Seq<>();
         Groups.player.each(p -> {
             players.add(p);
