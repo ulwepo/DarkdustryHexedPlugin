@@ -238,16 +238,16 @@ public class HexedGenerator implements Cons<Tiles> {
 
         winter("\uF825 [cyan]Winter", new Block[][] {
                 {Blocks.iceSnow, Blocks.dacite, Blocks.snow, Blocks.darksand, Blocks.snow, Blocks.darksand},
-                {Blocks.ice, Blocks.cryofluid, Blocks.darksand, Blocks.iceSnow, Blocks.iceSnow, Blocks.dacite},
+                {Blocks.darksand, Blocks.cryofluid, Blocks.darksand, Blocks.iceSnow, Blocks.iceSnow, Blocks.dacite},
                 {Blocks.cryofluid, Blocks.darksandTaintedWater, Blocks.dacite, Blocks.cryofluid, Blocks.darksand, Blocks.snow},
                 {Blocks.darksand, Blocks.darksandTaintedWater, Blocks.snow, Blocks.darksand, Blocks.darksand, Blocks.ice},
-                {Blocks.snow, Blocks.darksand, Blocks.darksand, Blocks.grass, Blocks.iceSnow, Blocks.darksand}
+                {Blocks.snow, Blocks.darksand, Blocks.ice, Blocks.grass, Blocks.iceSnow, Blocks.darksand}
         }, new Block[][] {
-                {Blocks.iceWall, Blocks.snowWall, Blocks.snowPine, Blocks.iceWall, Blocks.snowWall, Blocks.duneWall},
-                {Blocks.iceWall, Blocks.snowWall, Blocks.snowWall, Blocks.iceWall, Blocks.snowWall, Blocks.daciteWall},
-                {Blocks.snowPine, Blocks.snowWall, Blocks.snowPine, Blocks.iceWall, Blocks.snowWall, Blocks.snowWall},
+                {Blocks.iceWall, Blocks.snowWall, Blocks.snowPine, Blocks.duneWall, Blocks.snowWall, Blocks.duneWall},
+                {Blocks.duneWall, Blocks.daciteWall, Blocks.duneWall, Blocks.iceWall, Blocks.snowWall, Blocks.daciteWall},
+                {Blocks.snowPine, Blocks.snowWall, Blocks.snowPine, Blocks.iceWall, Blocks.duneWall, Blocks.snowWall},
                 {Blocks.iceWall, Blocks.snowWall, Blocks.snowWall, Blocks.snowPine, Blocks.snowWall, Blocks.iceWall},
-                {Blocks.iceWall, Blocks.snowPine, Blocks.snowWall, Blocks.iceWall, Blocks.snowPine, Blocks.duneWall}
+                {Blocks.iceWall, Blocks.duneWall, Blocks.snowWall, Blocks.pine, Blocks.snowPine, Blocks.duneWall}
         }, rules -> {
             rules.weather.add(new WeatherEntry() {{
                 weather = Weathers.snow;
