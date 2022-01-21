@@ -19,7 +19,6 @@ import mindustry.content.Blocks;
 import mindustry.content.Items;
 import mindustry.content.Weathers;
 import mindustry.game.Rules;
-import mindustry.graphics.CacheLayer;
 import mindustry.maps.Map;
 import mindustry.maps.filters.GenerateFilter;
 import mindustry.maps.filters.GenerateFilter.GenerateInput;
@@ -77,7 +76,7 @@ public class HexedGenerator implements Cons<Tiles> {
                         ore = in.overlay;
                     }
                 }
-                if (floor.cacheLayer == CacheLayer.cryofluid || floor.cacheLayer == CacheLayer.tar || floor.cacheLayer == CacheLayer.slag || floor.cacheLayer == CacheLayer.water) ore = Blocks.air;
+                if (floor.isLiquid()) ore = Blocks.air;
                 tiles.set(x, y, new Tile(x, y, floor.id, ore.id, wall.id));
             }
         }
