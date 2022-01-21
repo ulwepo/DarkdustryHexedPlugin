@@ -19,6 +19,7 @@ import mindustry.content.Blocks;
 import mindustry.content.Items;
 import mindustry.content.Weathers;
 import mindustry.game.Rules;
+import mindustry.graphics.CacheLayer;
 import mindustry.maps.Map;
 import mindustry.maps.filters.GenerateFilter;
 import mindustry.maps.filters.GenerateFilter.GenerateInput;
@@ -76,7 +77,7 @@ public class HexedGenerator implements Cons<Tiles> {
                         ore = in.overlay;
                     }
                 }
-                if (floor.isLiquid()) ore = Blocks.air;
+                if (floor.isLiquid) ore = Blocks.air;
                 tiles.set(x, y, new Tile(x, y, floor.id, ore.id, wall.id));
             }
         }
@@ -117,6 +118,7 @@ public class HexedGenerator implements Cons<Tiles> {
                         else if (floor == Blocks.snow) wall = Blocks.snowBoulder;
                     }
                 }
+
                 tile.setBlock(wall);
             }
         }
