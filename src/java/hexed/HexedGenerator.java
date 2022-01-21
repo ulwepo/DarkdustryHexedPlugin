@@ -77,7 +77,7 @@ public class HexedGenerator implements Cons<Tiles> {
                         ore = in.overlay;
                     }
                 }
-                if (floor.isLiquid) ore = Blocks.air;
+                if (floor.asFloor().isLiquid) ore = Blocks.air;
                 tiles.set(x, y, new Tile(x, y, floor.id, ore.id, wall.id));
             }
         }
