@@ -88,7 +88,7 @@ public class HexedGenerator implements Cons<Tiles> {
             Geometry.circle(x, y, width, height, Hex.diameter, (cx, cy) -> {
                 if (Intersector.isInsideHexagon(x, y, Hex.diameter, cx, cy)) {
                     Tile tile = tiles.getn(cx, cy);
-                    tile.setBlock(Blocks.air);
+                    tile.setAir();
                 }
             });
 
@@ -96,7 +96,7 @@ public class HexedGenerator implements Cons<Tiles> {
                 Tmp.v1.trnsExact(f, Hex.spacing + 12);
                 if (Structs.inBounds(x + (int) Tmp.v1.x, y + (int) Tmp.v1.y, width, height)) {
                     Tmp.v1.trnsExact(f, Hex.spacing / 2f + 7);
-                    Bresenham2.line(x, y, x + (int) Tmp.v1.x, y + (int) Tmp.v1.y, (cx, cy) -> Geometry.circle(cx, cy, width, height, 3, (c2x, c2y) -> tiles.getn(c2x, c2y).setBlock(Blocks.air)));
+                    Bresenham2.line(x, y, x + (int) Tmp.v1.x, y + (int) Tmp.v1.y, (cx, cy) -> Geometry.circle(cx, cy, width, height, 3, (c2x, c2y) -> tiles.getn(c2x, c2y).setAir()));
                 }
             });
         }
@@ -107,16 +107,14 @@ public class HexedGenerator implements Cons<Tiles> {
                 Block wall = tile.block();
                 Block floor = tile.floor();
 
-                if (wall == Blocks.air) {
-                    if (Mathf.chance(0.03f)) {
-                        if (floor == Blocks.sand) wall = Blocks.sandBoulder;
-                        else if (floor == Blocks.stone) wall = Blocks.boulder;
-                        else if (floor == Blocks.shale) wall = Blocks.shaleBoulder;
-                        else if (floor == Blocks.darksand) wall = Blocks.boulder;
-                        else if (floor == Blocks.moss) wall = Blocks.sporeCluster;
-                        else if (floor == Blocks.ice) wall = Blocks.snowBoulder;
-                        else if (floor == Blocks.snow) wall = Blocks.snowBoulder;
-                    }
+                if (wall == Blocks.air && Mathf.chance(0.03f)) {
+                    if (floor == Blocks.sand) wall = Blocks.sandBoulder;
+                    else if (floor == Blocks.stone) wall = Blocks.boulder;
+                    else if (floor == Blocks.shale) wall = Blocks.shaleBoulder;
+                    else if (floor == Blocks.darksand) wall = Blocks.boulder;
+                    else if (floor == Blocks.moss) wall = Blocks.sporeCluster;
+                    else if (floor == Blocks.ice) wall = Blocks.snowBoulder;
+                    else if (floor == Blocks.snow) wall = Blocks.snowBoulder;
                 }
 
                 tile.setBlock(wall);
@@ -132,7 +130,7 @@ public class HexedGenerator implements Cons<Tiles> {
             in.begin(width, height, tiles::getn);
             noise.apply(tiles, in);
             for (Tile tile : tiles) {
-                if (tile.floor().cacheLayer == CacheLayer.water) tile.setBlock(Blocks.air);
+                if (tile.floor().cacheLayer == CacheLayer.water) tile.setAir();
             }
         }
 
@@ -145,7 +143,7 @@ public class HexedGenerator implements Cons<Tiles> {
             in.begin(width, height, tiles::getn);
             noise.apply(tiles, in);
             for (Tile tile : tiles) {
-                if (tile.floor().cacheLayer == CacheLayer.water) tile.setBlock(Blocks.air);
+                if (tile.floor().cacheLayer == CacheLayer.water) tile.setAir();
             }
         }
 
