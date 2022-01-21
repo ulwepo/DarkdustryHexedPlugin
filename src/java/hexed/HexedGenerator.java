@@ -235,21 +235,18 @@ public class HexedGenerator implements Cons<Tiles> {
         }),
 
         winter("\uF825 [cyan]Winter", new Block[][] {
-                {Blocks.iceSnow, Blocks.snow, Blocks.snow, Blocks.darksand, Blocks.snow},
-                {Blocks.ice, Blocks.water, Blocks.darksand, Blocks.iceSnow, Blocks.iceSnow},
-                {Blocks.water, Blocks.water, Blocks.iceSnow, Blocks.water, Blocks.darksand},
-                {Blocks.darksand, Blocks.water, Blocks.snow, Blocks.darksand, Blocks.darksand},
-                {Blocks.snow, Blocks.darksand, Blocks.darksand, Blocks.snow, Blocks.iceSnow}
+                {Blocks.iceSnow, Blocks.dacite, Blocks.snow, Blocks.darksand, Blocks.snow, Blocks.darksand},
+                {Blocks.ice, Blocks.cryofluid, Blocks.darksand, Blocks.iceSnow, Blocks.iceSnow, Blocks.dacite},
+                {Blocks.cryofluid, Blocks.darksandTaintedWater, Blocks.dacite, Blocks.cryofluid, Blocks.darksand, Blocks.snow},
+                {Blocks.darksand, Blocks.darksandTaintedWater, Blocks.snow, Blocks.darksand, Blocks.darksand, Blocks.ice},
+                {Blocks.snow, Blocks.darksand, Blocks.darksand, Blocks.grass, Blocks.iceSnow, Blocks.darksand}
         }, new Block[][] {
-                {Blocks.iceWall, Blocks.snowWall, Blocks.snowPine, Blocks.iceWall, Blocks.snowWall},
-                {Blocks.iceWall, Blocks.snowWall, Blocks.snowWall, Blocks.iceWall, Blocks.snowWall},
-                {Blocks.snowPine, Blocks.snowWall, Blocks.snowPine, Blocks.iceWall, Blocks.snowWall},
-                {Blocks.iceWall, Blocks.snowWall, Blocks.snowWall, Blocks.snowPine, Blocks.snowWall},
-                {Blocks.iceWall, Blocks.snowPine, Blocks.snowWall, Blocks.iceWall, Blocks.snowPine}
+                {Blocks.iceWall, Blocks.snowWall, Blocks.snowPine, Blocks.iceWall, Blocks.snowWall, Blocks.duneWall},
+                {Blocks.iceWall, Blocks.snowWall, Blocks.snowWall, Blocks.iceWall, Blocks.snowWall, Blocks.daciteWall},
+                {Blocks.snowPine, Blocks.snowWall, Blocks.snowPine, Blocks.iceWall, Blocks.snowWall, Blocks.snowWall},
+                {Blocks.iceWall, Blocks.snowWall, Blocks.snowWall, Blocks.snowPine, Blocks.snowWall, Blocks.iceWall},
+                {Blocks.iceWall, Blocks.snowPine, Blocks.snowWall, Blocks.iceWall, Blocks.snowPine, Blocks.duneWall}
         }, rules -> {
-            rules.unitCap = 48;
-            rules.unitCapVariable = false;
-
             rules.weather.add(new WeatherEntry() {{
                 weather = Weathers.snow;
                 minFrequency = 20f;
@@ -274,7 +271,6 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.stoneWall, Blocks.dirtWall, Blocks.duneWall, Blocks.dirtWall, Blocks.duneWall, Blocks.stoneWall},
                 {Blocks.sandWall, Blocks.sandWall, Blocks.stoneWall, Blocks.sandWall, Blocks.pine, Blocks.pine}
         }, rules -> {
-            rules.unitAmmo = true;
             rules.loadout = ItemStack.list(Items.copper, 350, Items.lead, 250, Items.graphite, 150, Items.metaglass, 250, Items.silicon, 200, Items.titanium, 50);
 
             rules.weather.add(new WeatherEntry() {{
@@ -304,11 +300,6 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.sandWall, Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall},
                 {Blocks.daciteWall, Blocks.sandWall, Blocks.daciteWall, Blocks.sandWall},
                 {Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall, Blocks.sandWall}
-        }, rules -> {
-            rules.fire = true;
-            rules.unitBuildSpeedMultiplier = 1.5f;
-            rules.buildCostMultiplier = 1f;
-            rules.buildSpeedMultiplier = 2.25f;
         }),
 
         spores("\uF82B [purple]Spores", new Block[][] {
@@ -324,16 +315,6 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.duneWall, Blocks.sandWall, Blocks.sporeWall, Blocks.sandWall},
                 {Blocks.sporeWall, Blocks.shaleWall, Blocks.sandWall, Blocks.sporeWall}
         }, rules -> {
-            rules.weather.add(new WeatherEntry() {{
-                weather = Weathers.sporestorm;
-                minFrequency = 14f;
-                maxFrequency = 42f;
-                minDuration = 3.5f;
-                maxDuration = 10.5f;
-                cooldown = 21f;
-                intensity = 0.5f;
-            }});
-
             rules.lighting = true;
             rules.enemyLights = false;
             rules.ambientLight = new Color(0.01f, 0.01f, 0.04f, 0.3f);
