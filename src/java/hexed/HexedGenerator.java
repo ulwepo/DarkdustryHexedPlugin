@@ -292,16 +292,16 @@ public class HexedGenerator implements Cons<Tiles> {
 
         lavaLand("[white]\uF827 [orange]Lava Land", new Block[][] {
                 {Blocks.sand, Blocks.basalt, Blocks.sand, Blocks.darksand, Blocks.sand},
-                {Blocks.sand, Blocks.darksand, Blocks.darksand, Blocks.slag, Blocks.darksand},
+                {Blocks.darksand, Blocks.sand, Blocks.darksand, Blocks.shale, Blocks.darksand},
                 {Blocks.craters, Blocks.slag, Blocks.shale, Blocks.darksand, Blocks.sand},
-                {Blocks.sand, Blocks.magmarock, Blocks.hotrock, Blocks.slag, Blocks.sand},
-                {Blocks.darksand, Blocks.shale, Blocks.darksand, Blocks.sand, Blocks.darksand}
+                {Blocks.sand, Blocks.magmarock, Blocks.slag, Blocks.hotrock, Blocks.sand},
+                {Blocks.darksand, Blocks.slag, Blocks.darksand, Blocks.sand, Blocks.darksand}
         }, new Block[][] {
                 {Blocks.sandWall, Blocks.duneWall, Blocks.sandWall, Blocks.duneWall, Blocks.sandWall},
-                {Blocks.sandWall, Blocks.sandWall, Blocks.sandWall, Blocks.daciteWall, Blocks.duneWall},
-                {Blocks.sandWall, Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall, Blocks.sandWall},
-                {Blocks.daciteWall, Blocks.sandWall, Blocks.daciteWall, Blocks.sandWall, Blocks.sandWall},
-                {Blocks.duneWall, Blocks.shaleWall, Blocks.stoneWall, Blocks.sandWall, Blocks.duneWall}
+                {Blocks.duneWall, Blocks.sandWall, Blocks.sandWall, Blocks.shaleWall, Blocks.duneWall},
+                {Blocks.sandWall, Blocks.daciteWall, Blocks.shaleWall, Blocks.sandWall, Blocks.sandWall},
+                {Blocks.daciteWall, Blocks.stoneWall, Blocks.daciteWall, Blocks.sandWall, Blocks.sandWall},
+                {Blocks.duneWall, Blocks.daciteWall, Blocks.duneWall, Blocks.sandWall, Blocks.duneWall}
         }),
 
         spores("[white]\uF82B [purple]Spores", new Block[][] {
