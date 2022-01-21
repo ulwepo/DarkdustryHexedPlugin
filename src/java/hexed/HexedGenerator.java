@@ -166,7 +166,9 @@ public class HexedGenerator implements Cons<Tiles> {
             int offsetY = y - 2;
             for (int x5 = offsetX; x5 < offsetX + 5; x5++) {
                 for (int y5 = offsetY; y5 < offsetY + 5; y5++) {
-                    tiles.get(x5, y5).setFloor(Blocks.metalFloor5.asFloor());
+                    Tile tile = tiles.get(x5, y5);
+                    tile.setAir();
+                    tile.setFloor(Blocks.metalFloor5.asFloor());
                 }
             }
         }
@@ -289,17 +291,17 @@ public class HexedGenerator implements Cons<Tiles> {
         }),
 
         lavaLand("\uF827 [orange]Lava Land", new Block[][] {
-                {Blocks.sand, Blocks.basalt, Blocks.sand, Blocks.darksand},
-                {Blocks.sand, Blocks.darksand, Blocks.sand, Blocks.darksand},
-                {Blocks.craters, Blocks.darksand, Blocks.shale, Blocks.darksand},
-                {Blocks.slag, Blocks.magmarock, Blocks.slag, Blocks.darksand},
-                {Blocks.darksand, Blocks.darksand, Blocks.hotrock, Blocks.sand}
+                {Blocks.sand, Blocks.basalt, Blocks.sand, Blocks.darksand, Blocks.sand},
+                {Blocks.sand, Blocks.darksand, Blocks.sand, Blocks.slag, Blocks.darksand},
+                {Blocks.craters, Blocks.darksand, Blocks.shale, Blocks.darksand, Blocks.sand},
+                {Blocks.slag, Blocks.magmarock, Blocks.slag, Blocks.darksand, Blocks.sand},
+                {Blocks.darksand, Blocks.shale, Blocks.hotrock, Blocks.sand, Blocks.darksand}
         }, new Block[][] {
-                {Blocks.duneWall, Blocks.duneWall, Blocks.sandWall, Blocks.duneWall},
-                {Blocks.duneWall, Blocks.sandWall, Blocks.sandWall, Blocks.stoneWall},
-                {Blocks.sandWall, Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall},
-                {Blocks.daciteWall, Blocks.sandWall, Blocks.daciteWall, Blocks.sandWall},
-                {Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall, Blocks.sandWall}
+                {Blocks.duneWall, Blocks.duneWall, Blocks.sandWall, Blocks.duneWall, Blocks.sandWall},
+                {Blocks.duneWall, Blocks.sandWall, Blocks.sandWall, Blocks.daciteWall, Blocks.duneWall},
+                {Blocks.sandWall, Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall, Blocks.sandWall},
+                {Blocks.daciteWall, Blocks.sandWall, Blocks.daciteWall, Blocks.sandWall, Blocks.sandWall},
+                {Blocks.duneWall, Blocks.shaleWall, Blocks.stoneWall, Blocks.sandWall, Blocks.duneWall}
         }),
 
         spores("\uF82B [purple]Spores", new Block[][] {
