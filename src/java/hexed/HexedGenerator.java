@@ -172,7 +172,7 @@ public class HexedGenerator implements Cons<Tiles> {
             }
         }
 
-        state.map = new Map(StringMap.of("name", mode.displayName, "author", "[gray]Skykatik"));
+        state.map = new Map(StringMap.of("name", mode.displayName, "author", "[gray]Skykatik", "description", "A map for Darkdustry Hexed. Automatically generated."));
     }
 
     public IntSeq getHex() {
@@ -378,9 +378,9 @@ public class HexedGenerator implements Cons<Tiles> {
             this(displayName, floors, blocks, rules -> {});
         }
 
-        public Rules applyRules(Rules rule) {
-            rules.get(rule);
-            return rule;
+        public Rules applyRules(Rules base) {
+            rules.get(base);
+            return base;
         }
     }
 }
