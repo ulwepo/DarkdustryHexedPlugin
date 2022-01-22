@@ -107,14 +107,9 @@ public class HexedGenerator implements Cons<Tiles> {
                 Block wall = tile.block();
                 Block floor = tile.floor();
 
-                if (wall == Blocks.air && Mathf.chance(0.03f)) {
-                    if (floor == Blocks.sand) wall = Blocks.sandBoulder;
-                    else if (floor == Blocks.stone) wall = Blocks.boulder;
-                    else if (floor == Blocks.shale) wall = Blocks.shaleBoulder;
-                    else if (floor == Blocks.darksand) wall = Blocks.boulder;
-                    else if (floor == Blocks.moss) wall = Blocks.sporeCluster;
-                    else if (floor == Blocks.ice) wall = Blocks.snowBoulder;
-                    else if (floor == Blocks.snow) wall = Blocks.snowBoulder;
+                if (wall == Blocks.air && Mathf.chance(0.02f)) {
+                    if (floor == Blocks.moss) wall = Blocks.sporeCluster;
+                    else if (floor.decoration != null) wall = floor.decoration;
                 }
 
                 tile.setBlock(wall);
@@ -137,7 +132,7 @@ public class HexedGenerator implements Cons<Tiles> {
         if (mode == Mode.winter) {
             RiverNoiseFilter noise = new RiverNoiseFilter();
             Reflect.set(noise, "floor", Blocks.ice);
-            Reflect.set(noise, "floor2", Blocks.water);
+            Reflect.set(noise, "floor2", Blocks.darksandTaintedWater);
 
             noise.randomize();
             in.begin(width, height, tiles::getn);
