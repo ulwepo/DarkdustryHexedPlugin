@@ -119,7 +119,8 @@ public class HexData {
         public boolean dying;
         public boolean chosen;
 
-        public @Nullable Hex location;
+        public @Nullable
+        Hex location;
 
         public float progressPercent;
         public boolean lastCaptured;
