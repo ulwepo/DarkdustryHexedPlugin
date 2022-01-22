@@ -109,7 +109,7 @@ public class HexedGenerator implements Cons<Tiles> {
 
                 if (wall == Blocks.air && Mathf.chance(0.02f)) {
                     if (floor == Blocks.moss) wall = Blocks.sporeCluster;
-                    else if (floor.decoration != null) wall = floor.decoration;
+                    else if (floor.asFloor().decoration != null) wall = floor.asFloor().decoration;
                 }
 
                 tile.setBlock(wall);
