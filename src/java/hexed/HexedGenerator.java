@@ -131,8 +131,8 @@ public class HexedGenerator implements Cons<Tiles> {
 
         if (mode == Mode.winter) {
             RiverNoiseFilter noise = new RiverNoiseFilter();
-            Reflect.set(noise, "floor", Blocks.ice);
-            Reflect.set(noise, "floor2", Blocks.darksandTaintedWater);
+            Reflect.set(noise, "floor", Blocks.darksand);
+            Reflect.set(noise, "floor2", Blocks.darksandWater);
 
             noise.randomize();
             in.begin(width, height, tiles::getn);
@@ -234,8 +234,8 @@ public class HexedGenerator implements Cons<Tiles> {
         winter("[white]\uF825 [cyan]Winter", new Block[][] {
                 {Blocks.iceSnow, Blocks.dacite, Blocks.snow, Blocks.darksand, Blocks.snow, Blocks.darksand},
                 {Blocks.darksand, Blocks.cryofluid, Blocks.darksand, Blocks.iceSnow, Blocks.iceSnow, Blocks.dacite},
-                {Blocks.cryofluid, Blocks.darksandTaintedWater, Blocks.dacite, Blocks.cryofluid, Blocks.darksand, Blocks.snow},
-                {Blocks.darksand, Blocks.darksandTaintedWater, Blocks.snow, Blocks.darksand, Blocks.darksand, Blocks.ice},
+                {Blocks.snow, Blocks.darksandTaintedWater, Blocks.dacite, Blocks.cryofluid, Blocks.darksand, Blocks.snow},
+                {Blocks.ice, Blocks.darksandTaintedWater, Blocks.snow, Blocks.ice, Blocks.darksand, Blocks.ice},
                 {Blocks.snow, Blocks.darksand, Blocks.ice, Blocks.grass, Blocks.iceSnow, Blocks.darksand}
         }, new Block[][] {
                 {Blocks.iceWall, Blocks.snowWall, Blocks.snowPine, Blocks.duneWall, Blocks.snowWall, Blocks.duneWall},
