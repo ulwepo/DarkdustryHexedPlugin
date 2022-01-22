@@ -11,6 +11,7 @@ import arc.math.geom.Point2;
 import arc.struct.IntSeq;
 import arc.struct.Seq;
 import arc.struct.StringMap;
+import arc.util.Reflect;
 import arc.util.Structs;
 import arc.util.Tmp;
 import arc.util.noise.Simplex;
@@ -115,10 +116,9 @@ public class HexedGenerator implements Cons<Tiles> {
         }
 
         if (mode == Mode.rivers) {
-            RiverNoiseFilter noise = new RiverNoiseFilter() {{
-                floor = Blocks.sand;
-                floor2 = Blocks.water;
-            }};
+            RiverNoiseFilter noise = new RiverNoiseFilter();
+            Reflect.set(noise, "floor", Blocks.sand);
+            Reflect.set(noise, "floor2", Blocks.water);
 
             noise.randomize();
             in.begin(width, height, tiles::getn);
@@ -129,10 +129,9 @@ public class HexedGenerator implements Cons<Tiles> {
         }
 
         if (mode == Mode.winter) {
-            RiverNoiseFilter noise = new RiverNoiseFilter() {{
-                floor = Blocks.darksand;
-                floor2 = Blocks.darksandWater;
-            }};
+            RiverNoiseFilter noise = new RiverNoiseFilter();
+            Reflect.set(noise, "floor", Blocks.darksand);
+            Reflect.set(noise, "floor2", Blocks.darksandWater);
 
             noise.randomize();
             in.begin(width, height, tiles::getn);
