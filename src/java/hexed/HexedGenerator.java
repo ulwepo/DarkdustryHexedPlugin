@@ -335,6 +335,12 @@ public class HexedGenerator implements Cons<Tiles> {
             rules.lighting = true;
             rules.enemyLights = false;
             rules.ambientLight = new Color(0.01f, 0.01f, 0.04f, 0.6f);
+
+            rules.weather.add(new WeatherEntry() {{
+                weather = Weathers.suspendParticles;
+                intensity = 2.0f;
+                always = true;
+            }});
         });
 
         final String displayName;
