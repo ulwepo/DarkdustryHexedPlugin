@@ -73,11 +73,11 @@ public class HexedGenerator implements Cons<Tiles> {
                     in.y = y;
                     in.width = in.height = Hex.size;
                     filter.apply(in);
-                    if (in.overlay != Blocks.air) {
+                    if (in.overlay != Blocks.air && !floor.asFloor().isLiquid) {
                         ore = in.overlay;
                     }
                 }
-                if (floor.asFloor().isLiquid) ore = Blocks.air;
+
                 tiles.set(x, y, new Tile(x, y, floor.id, ore.id, wall.id));
             }
         }
@@ -104,8 +104,8 @@ public class HexedGenerator implements Cons<Tiles> {
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 Tile tile = tiles.getn(x, y);
-                Block wall = tile.block();
                 Block floor = tile.floor();
+                Block wall = tile.block();
 
                 if (wall == Blocks.air && Mathf.chance(0.02f)) {
                     if (floor == Blocks.moss) wall = Blocks.sporeCluster;
@@ -117,36 +117,39 @@ public class HexedGenerator implements Cons<Tiles> {
         }
 
         if (mode == Mode.rivers) {
-            RiverNoiseFilter noise = new RiverNoiseFilter();
-            Reflect.set(noise, "floor", Blocks.sand);
-            Reflect.set(noise, "floor2", Blocks.water);
+            RiverNoiseFilter noise = new RiverNoiseFilter() {{
+                floor = Blocks.sand;
+                floor2 = Blocks.water;
+            }};
 
             noise.randomize();
             in.begin(width, height, tiles::getn);
             noise.apply(tiles, in);
             for (Tile tile : tiles) {
-                if (tile.floor().cacheLayer == CacheLayer.water) tile.setAir();
+                if (tile.floor().isLiquid) tile.setAir();
             }
         }
 
         if (mode == Mode.winter) {
-            RiverNoiseFilter noise = new RiverNoiseFilter();
-            Reflect.set(noise, "floor", Blocks.darksand);
-            Reflect.set(noise, "floor2", Blocks.darksandWater);
+            RiverNoiseFilter noise = new RiverNoiseFilter() {{
+                floor = Blocks.darksand;
+                floor2 = Blocks.darksandWater;
+            }};
 
             noise.randomize();
             in.begin(width, height, tiles::getn);
             noise.apply(tiles, in);
             for (Tile tile : tiles) {
-                if (tile.floor().cacheLayer == CacheLayer.water) tile.setAir();
+                if (tile.floor().isLiquid) tile.setAir();
             }
         }
 
         if (mode == Mode.nuclear) {
-            ScatterFilter scatter = new ScatterFilter();
-            Reflect.set(scatter, "flooronto", Blocks.snow);
-            Reflect.set(scatter, "floor", Blocks.iceSnow);
-            Reflect.set(scatter, "block", Blocks.whiteTreeDead);
+            ScatterFilter scatter = new ScatterFilter() {{
+                flooronto = Blocks.snow;
+                floor = Blocks.ice;
+                block = Blocks.whiteTreeDead;
+            }};
 
             scatter.randomize();
             in.begin(width, height, tiles::getn);
