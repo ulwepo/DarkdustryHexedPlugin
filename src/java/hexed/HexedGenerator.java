@@ -20,11 +20,8 @@ import mindustry.content.Items;
 import mindustry.content.Weathers;
 import mindustry.game.Rules;
 import mindustry.maps.Map;
-import mindustry.maps.filters.GenerateFilter;
+import mindustry.maps.filters.*;
 import mindustry.maps.filters.GenerateFilter.GenerateInput;
-import mindustry.maps.filters.OreFilter;
-import mindustry.maps.filters.RiverNoiseFilter;
-import mindustry.maps.filters.ScatterFilter;
 import mindustry.type.ItemStack;
 import mindustry.type.Weather.WeatherEntry;
 import mindustry.world.Block;
@@ -44,10 +41,12 @@ public class HexedGenerator implements Cons<Tiles> {
         Seq<GenerateFilter> ores = new Seq<>();
         maps.addDefaultOres(ores);
         ores.each(o -> ((OreFilter) o).threshold -= 0.05f);
+
         ores.insert(0, new OreFilter() {{
             ore = Blocks.oreScrap;
             scl += 2 / 2.1f;
         }});
+
         ores.each(GenerateFilter::randomize);
         GenerateInput in = new GenerateInput();
         IntSeq hex = getHex();
@@ -115,27 +114,27 @@ public class HexedGenerator implements Cons<Tiles> {
             }
         }
 
-        if (mode == Mode.rivers) {
-            RiverNoiseFilter noise = new RiverNoiseFilter();
-            Reflect.set(noise, "floor", Blocks.sand);
-            Reflect.set(noise, "floor2", Blocks.water);
+        if (mode == Mode.winter) {
+            RiverNoiseFilter riverNoise = new RiverNoiseFilter();
+            Reflect.set(riverNoise, "floor", Blocks.darksand);
+            Reflect.set(riverNoise, "floor2", Blocks.darksandWater);
 
-            noise.randomize();
+            riverNoise.randomize();
             in.begin(width, height, tiles::getn);
-            noise.apply(tiles, in);
+            riverNoise.apply(tiles, in);
             for (Tile tile : tiles) {
                 if (tile.floor().isLiquid) tile.setAir();
             }
         }
 
-        if (mode == Mode.winter) {
-            RiverNoiseFilter noise = new RiverNoiseFilter();
-            Reflect.set(noise, "floor", Blocks.darksand);
-            Reflect.set(noise, "floor2", Blocks.darksandWater);
+        if (mode == Mode.rivers) {
+            RiverNoiseFilter riverNoise = new RiverNoiseFilter();
+            Reflect.set(riverNoise, "floor", Blocks.sand);
+            Reflect.set(riverNoise, "floor2", Blocks.water);
 
-            noise.randomize();
+            riverNoise.randomize();
             in.begin(width, height, tiles::getn);
-            noise.apply(tiles, in);
+            riverNoise.apply(tiles, in);
             for (Tile tile : tiles) {
                 if (tile.floor().isLiquid) tile.setAir();
             }
@@ -290,13 +289,13 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.darksand, Blocks.sand, Blocks.darksand, Blocks.shale, Blocks.darksand},
                 {Blocks.craters, Blocks.slag, Blocks.shale, Blocks.darksand, Blocks.sand},
                 {Blocks.sand, Blocks.magmarock, Blocks.slag, Blocks.hotrock, Blocks.sand},
-                {Blocks.darksand, Blocks.slag, Blocks.darksand, Blocks.sand, Blocks.darksand}
+                {Blocks.darksand, Blocks.shale, Blocks.darksand, Blocks.sand, Blocks.darksand}
         }, new Block[][] {
                 {Blocks.sandWall, Blocks.duneWall, Blocks.sandWall, Blocks.duneWall, Blocks.sandWall},
                 {Blocks.duneWall, Blocks.sandWall, Blocks.sandWall, Blocks.shaleWall, Blocks.duneWall},
                 {Blocks.sandWall, Blocks.daciteWall, Blocks.shaleWall, Blocks.sandWall, Blocks.sandWall},
                 {Blocks.daciteWall, Blocks.stoneWall, Blocks.daciteWall, Blocks.sandWall, Blocks.sandWall},
-                {Blocks.duneWall, Blocks.daciteWall, Blocks.duneWall, Blocks.sandWall, Blocks.duneWall}
+                {Blocks.duneWall, Blocks.shaleWall, Blocks.duneWall, Blocks.sandWall, Blocks.duneWall}
         }),
 
         spores("[white]\uF82B [purple]Spores", new Block[][] {

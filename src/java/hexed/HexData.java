@@ -5,7 +5,6 @@ import arc.math.geom.Point2;
 import arc.struct.IntMap;
 import arc.struct.IntSeq;
 import arc.struct.Seq;
-import arc.util.Nullable;
 import mindustry.game.Team;
 import mindustry.gen.Groups;
 import mindustry.gen.Player;
@@ -76,8 +75,7 @@ public class HexData {
         return players;
     }
 
-    public @Nullable
-    Player getPlayer(Team team) {
+    public Player getPlayer(Team team) {
         return teamMap.get(team.id);
     }
 
@@ -101,8 +99,7 @@ public class HexData {
         return hexes;
     }
 
-    public @Nullable
-    Hex getHex(int position) {
+    public Hex getHex(int position) {
         return hexPos.get(position);
     }
 
@@ -119,8 +116,7 @@ public class HexData {
         public boolean dying;
         public boolean chosen;
 
-        public @Nullable
-        Hex location;
+        public Hex location;
 
         public float progressPercent;
         public boolean lastCaptured;
