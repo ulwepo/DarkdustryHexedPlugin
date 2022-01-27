@@ -112,6 +112,7 @@ public class Main extends Plugin {
                     killTeam(player.team());
                     player.clearUnit();
                     player.team(Team.derelict);
+                    Call.hideHudText(player.con);
                     sendToChat("events.player-lost", player.coloredName());
                     Call.infoMessage(player.con, Bundle.format("events.you-lost", findLocale(player)));
                 }
@@ -259,8 +260,7 @@ public class Main extends Plugin {
 
                 @Override
                 public void onNext(Document document) {
-                    if (document != null)
-                        players.append("[accent]").append(cycle[0]++).append(". ").append(document.getString("name")).append("[accent]: [cyan]").append(document.getInteger("wins")).append("\n");
+                    if (document != null) players.append("[accent]").append(cycle[0]++).append(". ").append(document.getString("name")).append("[accent]: [cyan]").append(document.getInteger("wins")).append("\n");
                     else players.append(Bundle.format("commands.lb.none", findLocale(player)));
                 }
 
@@ -285,6 +285,7 @@ public class Main extends Plugin {
             killTeam(player.team());
             player.clearUnit();
             player.team(Team.derelict);
+            Call.hideHudText(player.con);
             bundled(player, "commands.spectator.success");
         });
 
