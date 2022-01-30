@@ -49,13 +49,18 @@ import static mindustry.Vars.*;
 public class Main extends Plugin {
 
     public static final float spawnDelay = 60 * 4f;
-    public static final float baseKillDelay = 60f;
-    public static final int itemRequirement = 2500;
+    public static final float baseKillDelay = 60 * 1f;
+
     public static final int roundTime = 60 * 60 * 90;
     public static final int leaderboardTime = 60 * 60 * 2;
     public static final int updateTime = 60 * 2;
+    public static final int winCheckTime = 60 * 2;
+    public static final int loadoutIncreaseTime = 60 * 5;
     public static final int winCondition = 25;
-    public static final int timerBoard = 0, timerUpdate = 1, timerWinCheck = 2;
+
+    public static final int itemRequirement = 2500;
+
+    public static final int leaderboardTimer = 0, updateTimer = 1, winCheckTimer = 2, loadoutIncreaseTimer = 3;
 
     public static final String connectionStringUrl = "mongodb://manager:QULIoZBckRlLkZXn@127.0.0.1:27017/?authSource=darkdustry";
     public static final String databaseName = "darkdustry";
@@ -63,15 +68,16 @@ public class Main extends Plugin {
 
     public static HexedGenerator.Mode mode;
 
-    public final Rules rules = new NoPauseRules();
-    public final Interval interval = new Interval(5);
-    public final ObjectMap<String, Team> leftPlayers = new ObjectMap<>();
+    public static final Rules rules = new NoPauseRules();
+    public static final Interval interval = new Interval(5);
+    public static final ObjectMap<String, Team> leftPlayers = new ObjectMap<>();
 
-    public HexData data;
-    public boolean restarting = false;
-    public Schematic start;
-    public float counter = 0f;
-    public int lastMin;
+    public static HexData data;
+    public static Schematic start;
+    public static boolean restarting = false;
+    public static float counter = 0f;
+    public static float loadoutMultiplier = 1f;
+    public static int lastMin;
 
     public Main() {
         ConnectionString connectionString = new ConnectionString(connectionStringUrl);
@@ -126,25 +132,25 @@ public class Main extends Plugin {
             }
 
             state.serverPaused = false;
+            lastMin = (int) (roundTime - counter) / 60 / 60;
 
-            int minsToGo = (int) (roundTime - counter) / 60 / 60;
-            if (lastMin != minsToGo) {
-                lastMin = minsToGo;
-            }
-
-            if (interval.get(timerBoard, leaderboardTime)) {
+            if (interval.get(leaderboardTimer, leaderboardTime)) {
                 Groups.player.each(player -> Call.infoToast(player.con, getLeaderboard(player), 12f));
             }
 
-            if (interval.get(timerUpdate, updateTime)) {
+            if (interval.get(updateTimer, updateTime)) {
                 data.updateControl();
             }
 
-            if (interval.get(timerWinCheck, 60 * 2)) {
+            if (interval.get(winCheckTimer, winCheckTime)) {
                 Seq<Player> players = data.getLeaderboard();
-                if (players.any() && data.getControlled(players.first()).size >= winCondition && players.size > 1 && data.getControlled(players.get(1)).size <= 1) {
+                if (players.size > 1 && data.getControlled(players.first()).size >= winCondition && data.getControlled(players.get(1)).size <= 1) {
                     endGame();
                 }
+            }
+
+            if (interval.get(loadoutIncreaseTimer, loadoutIncreaseTime)) {
+                loadoutMultiplier += 0.1f;
             }
 
             counter += Time.delta;
@@ -193,7 +199,7 @@ public class Main extends Plugin {
                 }
             }
 
-            UserStatistics.find(event.player.uuid(), userStatistic -> {
+            UserStatistics.find(event.player, userStatistic -> {
                 userStatistic.name = event.player.coloredName();
                 userStatistic.save();
             });
@@ -237,7 +243,7 @@ public class Main extends Plugin {
         netServer.chatFormatter = (player, message) -> {
             if (player != null) {
                 int[] wins = {0};
-                UserStatistics.find(player.uuid(), userStatistic -> wins[0] = userStatistic.wins);
+                UserStatistics.find(player, userStatistic -> wins[0] = userStatistic.wins);
 
                 return ("[coral][[[cyan]" + wins[0] + " [sky]#[white] " + player.coloredName() + "[coral]]: [white]" + message);
             }
@@ -276,7 +282,7 @@ public class Main extends Plugin {
             });
         });
 
-        handler.<Player>register("spectator", "commands.spectator.description", (args, player) -> {
+        handler.<Player>register("spectator", "Перейти в режим наблюдателя.", (args, player) -> {
             if (player.team() == Team.derelict) {
                 bundled(player, "commands.spectator.already");
                 return;
@@ -289,7 +295,7 @@ public class Main extends Plugin {
             bundled(player, "commands.spectator.success");
         });
 
-        handler.<Player>register("captured", "commands.captured.description", (args, player) -> {
+        handler.<Player>register("captured", "Посмотреть количество захваченных хексов.", (args, player) -> {
             if (player.team() == Team.derelict) {
                 bundled(player, "commands.captured.spectator");
                 return;
@@ -298,9 +304,9 @@ public class Main extends Plugin {
             bundled(player, "commands.captured.hexes", data.getControlled(player).size);
         });
 
-        handler.<Player>register("leaderboard", "commands.leaderboard.description", (args, player) -> player.sendMessage(getLeaderboard(player)));
+        handler.<Player>register("leaderboard", "Посмотреть текущий список лидеров.", (args, player) -> player.sendMessage(getLeaderboard(player)));
 
-        handler.<Player>register("hexstatus", "commands.hexstatus.description", (args, player) -> {
+        handler.<Player>register("hexstatus", "Посмотреть статус хекса на своем местоположении.", (args, player) -> {
             Hex hex = data.data(player).location;
             if (hex != null) {
                 hex.updateController();
@@ -393,13 +399,12 @@ public class Main extends Plugin {
                     endGameMessage.append(Bundle.format("player-won", findLocale(player), winner.coloredName(), data.getControlled(winner).size));
                 }
 
-                if (!dominated)
-                    endGameMessage.append(Bundle.format("final-score", findLocale(player), scores.toString()));
+                if (!dominated) endGameMessage.append(Bundle.format("final-score", findLocale(player), scores.toString()));
 
                 Call.infoMessage(player.con, endGameMessage.toString());
             }
 
-            UserStatistics.find(winner.uuid(), userStatistic -> {
+            UserStatistics.find(winner, userStatistic -> {
                 userStatistic.name = winner.coloredName();
                 userStatistic.wins++;
                 userStatistic.save();
@@ -481,9 +486,10 @@ public class Main extends Plugin {
             netServer.sendWorldData(player);
         }
 
-        for (int i = 0; i < 5; i++) interval.reset(i, 0f);
+        for (int i = 0; i < interval.getTimes().length; i++) interval.reset(i, 0f);
 
         counter = 0f;
+        loadoutMultiplier = 1f;
         restarting = false;
     }
 
@@ -506,13 +512,13 @@ public class Main extends Plugin {
                     Time.run(Mathf.random(360f), tile::removeNet);
                 }
             });
+
             Groups.unit.each(u -> u.team == team, unit -> Time.run(Mathf.random(360f), () -> Call.unitDespawn(unit)));
         }
     }
 
     public void loadout(Player player, int x, int y) {
         Stile coreTile = start.tiles.find(s -> s.block instanceof CoreBlock);
-        if (coreTile == null) throw new IllegalArgumentException("Загруженная схема не имеет ядра. Выключаю сервер...");
         int ox = x - coreTile.x, oy = y - coreTile.y;
         start.tiles.each(st -> {
             Tile tile = world.tile(st.x + ox, st.y + oy);
@@ -526,9 +532,9 @@ public class Main extends Plugin {
 
             if (st.config != null) tile.build.configureAny(st.config);
 
-            if (tile.block() instanceof CoreBlock) {
+            if (st == coreTile) {
                 for (ItemStack stack : state.rules.loadout) {
-                    Call.setItem(tile.build, stack.item, stack.amount);
+                    Call.setItem(tile.build, stack.item, Mathf.ceil(stack.amount * loadoutMultiplier));
                 }
             }
         });
