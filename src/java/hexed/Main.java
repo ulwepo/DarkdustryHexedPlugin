@@ -377,8 +377,8 @@ public class Main extends Plugin {
         restarting = true;
         Seq<Player> players = data.getLeaderboard();
         StringBuilder scores = new StringBuilder();
-        int index = 1;
 
+        int index = 1;
         for (Player player : players) {
             if (data.getControlled(player).size > 0) {
                 scores.append("[yellow]").append(index).append(".[accent] ").append(player.coloredName()).append("[lightgray] (x").append(data.getControlled(player).size).append(")[]\n");
@@ -493,14 +493,14 @@ public class Main extends Plugin {
         restarting = false;
     }
 
-    public String getLeaderboard(Player p) {
-        StringBuilder builder = new StringBuilder(Bundle.format("leaderboard.header", findLocale(p), lastMin));
-        int index = 1;
-        for (Player player : data.getLeaderboard()) {
-            builder.append("[yellow]").append(index).append(".[white] ").append(player.coloredName()).append(Bundle.format("leaderboard.hexes", findLocale(p), data.getControlled(player).size));
-            if (index++ > 4) break;
+    public String getLeaderboard(Player player) {
+        Seq<Player> players = data.getLeaderboard();
+        StringBuilder leaders = new StringBuilder(Bundle.format("leaderboard.header", findLocale(player), lastMin));
+        for (int i = 0; i < 3 && i < players.size; i++) {
+            Player p = players.get(i);
+            leaders.append("[yellow]").append(i + 1).append(".[white] ").append(p.coloredName()).append(Bundle.format("leaderboard.hexes", findLocale(player), data.getControlled(p).size));
         }
-        return builder.toString();
+        return leaders.toString();
     }
 
     public void killTeam(Team team) {
