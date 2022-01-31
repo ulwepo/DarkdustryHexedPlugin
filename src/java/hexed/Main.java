@@ -55,12 +55,11 @@ public class Main extends Plugin {
     public static final int leaderboardTime = 60 * 60 * 2;
     public static final int updateTime = 60 * 2;
     public static final int winCheckTime = 60 * 2;
-    public static final int loadoutIncreaseTime = 60 * 5;
     public static final int winCondition = 25;
 
     public static final int itemRequirement = 2500;
 
-    public static final int leaderboardTimer = 0, updateTimer = 1, winCheckTimer = 2, loadoutIncreaseTimer = 3;
+    public static final int leaderboardTimer = 0, updateTimer = 1, winCheckTimer = 2;
 
     public static final String connectionStringUrl = "mongodb://manager:QULIoZBckRlLkZXn@127.0.0.1:27017/?authSource=darkdustry";
     public static final String databaseName = "darkdustry";
@@ -69,14 +68,13 @@ public class Main extends Plugin {
     public static HexedGenerator.Mode mode;
 
     public static final Rules rules = new NoPauseRules();
-    public static final Interval interval = new Interval(5);
+    public static final Interval interval = new Interval(3);
     public static final ObjectMap<String, Team> leftPlayers = new ObjectMap<>();
 
     public static HexData data;
     public static Schematic start;
     public static boolean restarting = false;
     public static float counter = 0f;
-    public static float loadoutMultiplier = 1f;
     public static int lastMin;
 
     public Main() {
@@ -147,10 +145,6 @@ public class Main extends Plugin {
                 if (players.size > 1 && data.getControlled(players.first()).size >= winCondition && data.getControlled(players.get(1)).size <= 1) {
                     endGame();
                 }
-            }
-
-            if (interval.get(loadoutIncreaseTimer, loadoutIncreaseTime)) {
-                loadoutMultiplier += 0.01f;
             }
 
             counter += Time.delta;
@@ -489,7 +483,6 @@ public class Main extends Plugin {
         for (int i = 0; i < interval.getTimes().length; i++) interval.reset(i, 0f);
 
         counter = 0f;
-        loadoutMultiplier = 1f;
         restarting = false;
     }
 
@@ -534,7 +527,7 @@ public class Main extends Plugin {
 
             if (st == coreTile) {
                 for (ItemStack stack : state.rules.loadout) {
-                    Call.setItem(tile.build, stack.item, Mathf.ceil(stack.amount * loadoutMultiplier));
+                    Call.setItem(tile.build, stack.item, stack.amount);
                 }
             }
         });
