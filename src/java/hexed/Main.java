@@ -150,7 +150,7 @@ public class Main extends Plugin {
             }
 
             if (interval.get(loadoutIncreaseTimer, loadoutIncreaseTime)) {
-                loadoutMultiplier += 0.1f;
+                loadoutMultiplier += 0.01f;
             }
 
             counter += Time.delta;
