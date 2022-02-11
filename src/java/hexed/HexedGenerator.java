@@ -16,13 +16,14 @@ import arc.util.Structs;
 import arc.util.Tmp;
 import arc.util.noise.Simplex;
 import mindustry.content.Blocks;
-import mindustry.content.Items;
 import mindustry.content.Weathers;
 import mindustry.game.Rules;
 import mindustry.maps.Map;
-import mindustry.maps.filters.*;
+import mindustry.maps.filters.GenerateFilter;
 import mindustry.maps.filters.GenerateFilter.GenerateInput;
-import mindustry.type.ItemStack;
+import mindustry.maps.filters.OreFilter;
+import mindustry.maps.filters.RiverNoiseFilter;
+import mindustry.maps.filters.ScatterFilter;
 import mindustry.type.Weather.WeatherEntry;
 import mindustry.world.Block;
 import mindustry.world.Tile;
@@ -85,8 +86,7 @@ public class HexedGenerator implements Cons<Tiles> {
             int y = Point2.y(hex.get(i));
             Geometry.circle(x, y, width, height, Hex.diameter, (cx, cy) -> {
                 if (Intersector.isInsideHexagon(x, y, Hex.diameter, cx, cy)) {
-                    Tile tile = tiles.getn(cx, cy);
-                    tile.setAir();
+                    tiles.getn(cx, cy).remove();
                 }
             });
 
@@ -94,7 +94,7 @@ public class HexedGenerator implements Cons<Tiles> {
                 Tmp.v1.trnsExact(f, Hex.spacing + 12);
                 if (Structs.inBounds(x + (int) Tmp.v1.x, y + (int) Tmp.v1.y, width, height)) {
                     Tmp.v1.trnsExact(f, Hex.spacing / 2f + 7);
-                    Bresenham2.line(x, y, x + (int) Tmp.v1.x, y + (int) Tmp.v1.y, (cx, cy) -> Geometry.circle(cx, cy, width, height, 3, (c2x, c2y) -> tiles.getn(c2x, c2y).setAir()));
+                    Bresenham2.line(x, y, x + (int) Tmp.v1.x, y + (int) Tmp.v1.y, (cx, cy) -> Geometry.circle(cx, cy, width, height, 3, (c2x, c2y) -> tiles.getn(c2x, c2y).remove()));
                 }
             });
         }
@@ -123,7 +123,7 @@ public class HexedGenerator implements Cons<Tiles> {
             in.begin(width, height, tiles::getn);
             riverNoise.apply(tiles, in);
             for (Tile tile : tiles) {
-                if (tile.floor().isLiquid) tile.setAir();
+                if (tile.floor().isLiquid) tile.remove();
             }
         }
 
@@ -136,7 +136,7 @@ public class HexedGenerator implements Cons<Tiles> {
             in.begin(width, height, tiles::getn);
             riverNoise.apply(tiles, in);
             for (Tile tile : tiles) {
-                if (tile.floor().isLiquid) tile.setAir();
+                if (tile.floor().isLiquid) tile.remove();
             }
         }
 
@@ -160,8 +160,8 @@ public class HexedGenerator implements Cons<Tiles> {
             int offsetY = y - 2;
             for (int x5 = offsetX; x5 < offsetX + 5; x5++) {
                 for (int y5 = offsetY; y5 < offsetY + 5; y5++) {
-                    Tile tile = tiles.get(x5, y5);
-                    tile.setAir();
+                    Tile tile = tiles.getn(x5, y5);
+                    tile.remove();
                     tile.setFloor(Blocks.metalFloor5.asFloor());
                 }
             }
@@ -172,7 +172,7 @@ public class HexedGenerator implements Cons<Tiles> {
 
     public IntSeq getHex() {
         IntSeq array = new IntSeq();
-        double h = Math.sqrt(3) * Hex.spacing / 2;
+        float h = Mathf.sqrt3 * Hex.spacing / 2;
         for (int x = 0; x < width / Hex.spacing - 2; x++) {
             for (int y = 0; y < height / (h / 2) - 2; y++) {
                 int cx = (int) (x * Hex.spacing * 1.5 + (y % 2) * Hex.spacing * 3.0 / 4) + Hex.spacing / 2;
@@ -215,10 +215,6 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.sandWall, Blocks.sandWall, Blocks.shaleWall, Blocks.duneWall, Blocks.sandWall},
                 {Blocks.duneWall, Blocks.shaleWall, Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall}
         }, rules -> {
-            rules.reactorExplosions = false;
-            rules.damageExplosions = false;
-            rules.fire = false;
-
             rules.weather.add(new WeatherEntry() {{
                 weather = Weathers.sandstorm;
                 minFrequency = 14f;
@@ -255,20 +251,18 @@ public class HexedGenerator implements Cons<Tiles> {
         }),
 
         rivers("[white]\uF828 [accent]Rivers", new Block[][] {
-                {Blocks.sand, Blocks.sand, Blocks.stone, Blocks.dirt, Blocks.sand, Blocks.grass},
-                {Blocks.darksandWater, Blocks.dirt, Blocks.darksand, Blocks.taintedWater, Blocks.grass, Blocks.grass},
-                {Blocks.water, Blocks.darksand, Blocks.darksand, Blocks.water, Blocks.grass, Blocks.grass},
-                {Blocks.darksandTaintedWater, Blocks.taintedWater, Blocks.stone, Blocks.stone, Blocks.grass, Blocks.stone},
-                {Blocks.sand, Blocks.sand, Blocks.stone, Blocks.dirt, Blocks.dirt, Blocks.grass}
+                {Blocks.sand, Blocks.stone, Blocks.sand, Blocks.dirt, Blocks.sand, Blocks.grass},
+                {Blocks.darksandWater, Blocks.dirt, Blocks.darksand, Blocks.mud, Blocks.grass, Blocks.grass},
+                {Blocks.water, Blocks.darksand, Blocks.darksand, Blocks.water, Blocks.sand, Blocks.grass},
+                {Blocks.darksandTaintedWater, Blocks.taintedWater, Blocks.stone, Blocks.sand, Blocks.grass, Blocks.stone},
+                {Blocks.dirt, Blocks.sand, Blocks.stone, Blocks.sand, Blocks.dirt, Blocks.grass}
         }, new Block[][] {
-                {Blocks.sandWall, Blocks.sandWall, Blocks.stoneWall, Blocks.dirtWall, Blocks.sandWall, Blocks.pine},
-                {Blocks.dirtWall, Blocks.dirtWall, Blocks.duneWall, Blocks.duneWall, Blocks.pine, Blocks.pine},
-                {Blocks.stoneWall, Blocks.duneWall, Blocks.duneWall, Blocks.duneWall, Blocks.pine, Blocks.pine},
-                {Blocks.stoneWall, Blocks.dirtWall, Blocks.duneWall, Blocks.dirtWall, Blocks.duneWall, Blocks.stoneWall},
-                {Blocks.sandWall, Blocks.sandWall, Blocks.stoneWall, Blocks.sandWall, Blocks.pine, Blocks.pine}
+                {Blocks.sandWall, Blocks.stoneWall, Blocks.sandWall, Blocks.dirtWall, Blocks.sandWall, Blocks.pine},
+                {Blocks.dirtWall, Blocks.dirtWall, Blocks.duneWall, Blocks.dirtWall, Blocks.pine, Blocks.pine},
+                {Blocks.stoneWall, Blocks.duneWall, Blocks.duneWall, Blocks.duneWall, Blocks.sandWall, Blocks.pine},
+                {Blocks.stoneWall, Blocks.dirtWall, Blocks.duneWall, Blocks.sandWall, Blocks.duneWall, Blocks.stoneWall},
+                {Blocks.dirt, Blocks.sandWall, Blocks.stoneWall, Blocks.sandWall, Blocks.pine, Blocks.pine}
         }, rules -> {
-            rules.loadout = ItemStack.list(Items.copper, 350, Items.lead, 250, Items.graphite, 150, Items.metaglass, 250, Items.silicon, 200, Items.titanium, 50);
-
             rules.weather.add(new WeatherEntry() {{
                 weather = Weathers.rain;
                 minFrequency = 20f;
