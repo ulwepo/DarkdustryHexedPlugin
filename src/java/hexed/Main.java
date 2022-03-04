@@ -22,6 +22,7 @@ import hexed.comp.NoPauseRules;
 import hexed.models.UserStatistics;
 import mindustry.content.Blocks;
 import mindustry.content.Items;
+import mindustry.entities.Damage;
 import mindustry.game.EventType.*;
 import mindustry.game.Rules;
 import mindustry.game.Schematic;
@@ -64,13 +65,10 @@ public class Main extends Plugin {
     public static final String connectionStringUrl = "mongodb://manager:QULIoZBckRlLkZXn@127.0.0.1:27017/?authSource=darkdustry";
     public static final String databaseName = "darkdustry";
     public static final String collectionName = "hexed";
-
-    public static HexedGenerator.Mode mode;
-
     public static final Rules rules = new NoPauseRules();
     public static final Interval interval = new Interval(3);
     public static final ObjectMap<String, Team> leftPlayers = new ObjectMap<>();
-
+    public static HexedGenerator.Mode mode;
     public static HexData data;
     public static Schematic start;
     public static boolean restarting = false;
@@ -153,11 +151,13 @@ public class Main extends Plugin {
         });
 
         Events.on(BlockDestroyEvent.class, event -> {
-            if (event.tile.block() instanceof CoreBlock) {
+            if (event.tile.block() instanceof CoreBlock coreBlock) {
                 Hex hex = data.getHex(event.tile.pos());
                 if (hex != null) {
                     hex.updateController();
                     hex.spawnTime.reset();
+
+                    Damage.damage(hex.controller, hex.x * tilesize, hex.y * tilesize, Hex.radius, coreBlock.health / Mathf.sqrt2, true, true);
                 }
             }
         });
@@ -260,7 +260,8 @@ public class Main extends Plugin {
 
                 @Override
                 public void onNext(Document document) {
-                    if (document != null) players.append("[accent]").append(cycle[0]++).append(". ").append(document.getString("name")).append("[accent]: [cyan]").append(document.getInteger("wins")).append("\n");
+                    if (document != null)
+                        players.append("[accent]").append(cycle[0]++).append(". ").append(document.getString("name")).append("[accent]: [cyan]").append(document.getInteger("wins")).append("\n");
                     else players.append(Bundle.format("commands.lb.none", findLocale(player)));
                 }
 
@@ -393,7 +394,8 @@ public class Main extends Plugin {
                     endGameMessage.append(Bundle.format("player-won", findLocale(player), winner.coloredName(), data.getControlled(winner).size));
                 }
 
-                if (!dominated) endGameMessage.append(Bundle.format("final-score", findLocale(player), scores.toString()));
+                if (!dominated)
+                    endGameMessage.append(Bundle.format("final-score", findLocale(player), scores.toString()));
 
                 Call.infoMessage(player.con, endGameMessage.toString());
             }
@@ -517,11 +519,7 @@ public class Main extends Plugin {
             Tile tile = world.tile(st.x + ox, st.y + oy);
             if (tile == null) return;
             tile.setNet(st.block, player.team(), st.rotation);
-            tile.getLinkedTiles(t -> {
-                if (t.floor().isDeep()) {
-                    t.setFloorNet(Blocks.darkPanel3);
-                }
-            });
+            tile.getLinkedTiles(new Seq<>()).each(t -> t.floor().isDeep(), t -> t.setFloorNet(Blocks.darkPanel3));
 
             if (st.config != null) tile.build.configureAny(st.config);
 
