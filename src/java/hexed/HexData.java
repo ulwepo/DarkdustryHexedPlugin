@@ -44,6 +44,7 @@ public class HexData {
                 team.lastCaptured = newHex.controller == player.team();
                 Events.fire(new HexMoveEvent(player, newHex));
             }
+
             float currPercent = newHex.getProgressPercent(player.team());
             int lp = (int) (team.progressPercent);
             int np = (int) (currPercent);
@@ -69,10 +70,8 @@ public class HexData {
     }
 
     public Seq<Player> getLeaderboard() {
-        Seq<Player> players = new Seq<>();
-        Groups.player.copy(players);
-        players.sort(p -> -getControlled(p).size);
-        return players;
+        Seq<Player> players = Groups.player.copy(new Seq<>());
+        return players.sort(p -> -getControlled(p).size);
     }
 
     public Player getPlayer(Team team) {

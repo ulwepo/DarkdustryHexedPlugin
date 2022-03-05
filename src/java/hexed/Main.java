@@ -52,7 +52,7 @@ import static mindustry.Vars.*;
 public class Main extends Plugin {
 
     public static final float spawnDelay = 60 * 4f;
-    public static final float baseKillDelay = 60 * 1f;
+    public static final float baseKillDelay = 60 * 75f;
 
     public static final int roundTime = 60 * 60 * 90;
     public static final int leaderboardTime = 60 * 60 * 2;
@@ -207,13 +207,14 @@ public class Main extends Plugin {
         Events.on(PlayerLeave.class, event -> {
             if (event.player.team() != Team.derelict) {
                 leftPlayers.put(event.player.uuid(), event.player.team());
-                Timer.schedule(() -> {
+
+                Time.run(baseKillDelay, () -> {
                     Player player = Groups.player.find(p -> p.team() == event.player.team() && p.uuid().equals(event.player.uuid()));
                     if (player == null) {
                         killTeam(event.player.team());
                         leftPlayers.remove(event.player.uuid());
                     }
-                }, baseKillDelay);
+                });
             }
         });
 
@@ -228,7 +229,7 @@ public class Main extends Plugin {
                 return leftPlayers.get(player.uuid());
             }
 
-            for (Team team : Team.all) {
+            for (Team team : Seq.with(Team.all).shuffle()) {
                 if (team.id > 5 && !team.active() && !Seq.with(players).contains(p -> p.team() == team) && !data.data(team).dying && !data.data(team).chosen && !leftPlayers.containsValue(team, true)) {
                     data.data(team).chosen = true;
                     return team;
