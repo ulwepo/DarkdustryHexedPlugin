@@ -2,6 +2,7 @@ package hexed;
 
 import arc.Core;
 import arc.Events;
+import arc.graphics.Color;
 import arc.math.Mathf;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
@@ -21,8 +22,8 @@ import hexed.comp.Bundle;
 import hexed.comp.NoPauseRules;
 import hexed.models.UserStatistics;
 import mindustry.content.Blocks;
+import mindustry.content.Fx;
 import mindustry.content.Items;
-import mindustry.entities.Damage;
 import mindustry.game.EventType.*;
 import mindustry.game.Rules;
 import mindustry.game.Schematic;
@@ -34,6 +35,7 @@ import mindustry.gen.Call;
 import mindustry.gen.Groups;
 import mindustry.gen.Player;
 import mindustry.mod.Plugin;
+import mindustry.net.Administration.Config;
 import mindustry.type.ItemStack;
 import mindustry.world.Tile;
 import mindustry.world.blocks.storage.CoreBlock;
@@ -106,6 +108,8 @@ public class Main extends Plugin {
 
         start = Schematics.readBase64("bXNjaAF4nE2SX3LbIBDGFyQh/sh2fINcQCfK5IHItPWMIjSS3DRvuUqu0Jnew71OX5JdPs80wuYDdvmxu0CBjhXVU3xOFH6kX+l0v25x2Sic0jos53k754mIzBif0rjS/uH6fv3z9+36W/rHHYUhz3Na+pc4jnT8MunHuHxPZIc8/UyveaF2HeK2pYXCmtnWz3FKI1VxGah9KpZXOn4x3QDmOU0n3mUv05ijjLohL6mfLsOYLiv5Ob/wkVM+cQbxvPTf4rBlZhEl/pMqP9Lc+KshDcSQFm2pTC3EUfk8JEA6UHaYHcRRYaxkUHFXY7EwFZgKTAWmEmbNEiAdFm+wO9Lqf3DcGMTcEnphajA1mBpMLcyW/TrSsm8vKC1My4vsVpE07bhrGjZqz3wryVbsrCXsUogSvWVpMNvLvEZwtQRnEJc4VBDeElgaK5UwZRxk/PGvmDt47bC1BNaAZ1A5I5UzkhzplpOoJUxDQcLk3S3t1K2+LZXracXTsYiLK+sHSdvidi3qVPxELMTBVmpvcZ+3K3Z4HA55OQlApDwOB5gDzAHmAHOAOVykw0U6SVHkAJc7EY9X4lFeD7QH2gPtgfZAe7w7jzg90B7vzuMELyd8Ao5MVAI=");
 
+        Config.startCommands.set("hexed");
+
         Events.run(Trigger.update, () -> {
             data.updateStats();
 
@@ -157,7 +161,8 @@ public class Main extends Plugin {
                     hex.updateController();
                     hex.spawnTime.reset();
 
-                    Damage.damage(hex.controller, hex.x * tilesize, hex.y * tilesize, Hex.radius, coreBlock.health / Mathf.sqrt2, true, true);
+                    Groups.unit.each(hex::contains, unit -> unit.damagePierce(coreBlock.health * unit.health / unit.maxHealth));
+                    Call.effect(Fx.reactorExplosion, hex.wx, hex.wy, Mathf.random(360f), hex.controller == null ? Color.white : hex.controller.color);
                 }
             }
         });

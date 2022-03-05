@@ -331,7 +331,7 @@ public class HexedGenerator implements Cons<Tiles> {
 
             rules.weather.add(new WeatherEntry() {{
                 weather = Weathers.suspendParticles;
-                intensity = 2.0f;
+                intensity = 2.5f;
                 always = true;
             }});
         });

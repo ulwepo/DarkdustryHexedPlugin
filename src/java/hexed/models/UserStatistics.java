@@ -12,7 +12,7 @@ public class UserStatistics extends MongoDataBridge<UserStatistics> {
     public int wins = 0;
 
     public static void find(Player player, Cons<UserStatistics> cons) {
-        find(player.uuid(), cons);
+        if (player != null && !player.isLocal()) find(player.uuid(), cons);
     }
 
     public static void find(String UUID, Cons<UserStatistics> cons) {
