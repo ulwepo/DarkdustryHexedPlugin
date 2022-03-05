@@ -261,7 +261,7 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.dirtWall, Blocks.dirtWall, Blocks.duneWall, Blocks.dirtWall, Blocks.pine, Blocks.pine},
                 {Blocks.stoneWall, Blocks.duneWall, Blocks.duneWall, Blocks.duneWall, Blocks.sandWall, Blocks.pine},
                 {Blocks.stoneWall, Blocks.dirtWall, Blocks.duneWall, Blocks.sandWall, Blocks.duneWall, Blocks.stoneWall},
-                {Blocks.dirt, Blocks.sandWall, Blocks.stoneWall, Blocks.sandWall, Blocks.pine, Blocks.pine}
+                {Blocks.dirtWall, Blocks.sandWall, Blocks.stoneWall, Blocks.sandWall, Blocks.pine, Blocks.pine}
         }, rules -> {
             rules.weather.add(new WeatherEntry() {{
                 weather = Weathers.rain;
