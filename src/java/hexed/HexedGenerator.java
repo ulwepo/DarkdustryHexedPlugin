@@ -162,7 +162,7 @@ public class HexedGenerator implements Cons<Tiles> {
                 for (int y5 = offsetY; y5 < offsetY + 5; y5++) {
                     Tile tile = tiles.getn(x5, y5);
                     tile.remove();
-                    tile.setFloor(Blocks.metalFloor5.asFloor());
+                    tile.setFloor(tile.floor() == Blocks.water ? Blocks.darksandWater.asFloor() : tile.floor() == Blocks.darksandWater ? Blocks.darksandTaintedWater.asFloor() : Blocks.metalFloor5.asFloor());
                 }
             }
         }
