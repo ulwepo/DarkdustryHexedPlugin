@@ -41,7 +41,10 @@ public class HexedGenerator implements Cons<Tiles> {
     public void get(Tiles tiles) {
         Seq<GenerateFilter> ores = new Seq<>();
         maps.addDefaultOres(ores);
-        ores.each(o -> ((OreFilter) o).threshold -= 0.05f);
+        ores.each(o -> {
+            ((OreFilter) o).threshold -= 0.05f;
+            ((OreFilter) o).scl += 10f;
+        });
 
         ores.insert(0, new OreFilter() {{
             ore = Blocks.oreScrap;
