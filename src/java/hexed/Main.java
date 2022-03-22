@@ -158,11 +158,11 @@ public class Main extends Plugin {
             if (event.tile.block() instanceof CoreBlock coreBlock) {
                 Hex hex = data.getHex(event.tile.pos());
                 if (hex != null) {
+                    Groups.unit.each(unit -> unit.team != hex.controller && hex.contains(unit), unit -> unit.damagePierce(coreBlock.health * unit.health / unit.maxHealth));
+                    Call.effect(Fx.reactorExplosion, hex.wx, hex.wy, Mathf.random(360f), hex.controller == null ? Color.white : hex.controller.color);
+
                     hex.updateController();
                     hex.spawnTime.reset();
-
-                    Groups.unit.each(hex::contains, unit -> unit.damagePierce(coreBlock.health * unit.health / unit.maxHealth));
-                    Call.effect(Fx.reactorExplosion, hex.wx, hex.wy, Mathf.random(360f), hex.controller == null ? Color.white : hex.controller.color);
                 }
             }
         });
