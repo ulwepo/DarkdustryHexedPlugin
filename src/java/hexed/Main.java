@@ -168,8 +168,6 @@ public class Main extends Plugin {
         });
 
         Events.on(BlockBuildEndEvent.class, event -> {
-            if (event.breaking) return;
-
             Hex hex = data.hexes().find(h -> h.contains(event.tile));
             if (hex != null) {
                 hex.updateController();
