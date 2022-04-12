@@ -251,7 +251,7 @@ public class Main extends Plugin {
 
     @Override
     public void registerClientCommands(CommandHandler handler) {
-        handler.<Player>register("lb", "Показать лучших игроков сервера.", (args, player) -> {
+        handler.<Player>register("top", "Показать лучших игроков сервера.", (args, player) -> {
             StringBuilder players = new StringBuilder();
             int[] cycle = {1};
 
@@ -265,7 +265,7 @@ public class Main extends Plugin {
                 public void onNext(Document document) {
                     if (document != null)
                         players.append("[accent]").append(cycle[0]++).append(". ").append(document.getString("name")).append("[accent]: [cyan]").append(document.getInteger("wins")).append("\n");
-                    else players.append(Bundle.format("commands.lb.none", findLocale(player)));
+                    else players.append(Bundle.format("commands.top.none", findLocale(player)));
                 }
 
                 @Override
@@ -275,7 +275,7 @@ public class Main extends Plugin {
 
                 @Override
                 public void onComplete() {
-                    Call.infoMessage(player.con, Bundle.format("commands.lb.list", findLocale(player), players.toString()));
+                    Call.infoMessage(player.con, Bundle.format("commands.top.list", findLocale(player), players.toString()));
                 }
             });
         });
@@ -302,7 +302,7 @@ public class Main extends Plugin {
             bundled(player, "commands.captured.hexes", data.getControlled(player).size);
         });
 
-        handler.<Player>register("leaderboard", "Посмотреть текущий список лидеров.", (args, player) -> player.sendMessage(getLeaderboard(player)));
+        handler.<Player>register("lb", "Посмотреть текущий список лидеров.", (args, player) -> player.sendMessage(getLeaderboard(player)));
 
         handler.<Player>register("hexstatus", "Посмотреть статус хекса на своем местоположении.", (args, player) -> {
             Hex hex = data.data(player).location;
