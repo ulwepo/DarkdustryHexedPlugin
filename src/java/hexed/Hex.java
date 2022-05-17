@@ -35,8 +35,8 @@ public class Hex {
         this.id = id;
         this.x = x;
         this.y = y;
-        wx = x * tilesize;
-        wy = y * tilesize;
+        this.wx = x * tilesize;
+        this.wy = y * tilesize;
     }
 
     public void updateController() {

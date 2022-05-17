@@ -15,14 +15,17 @@ import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import static mindustry.Vars.mods;
+
 public class Bundle {
 
     public static final Locale[] supportedLocales;
+
     private static final ObjectMap<Locale, StringMap> bundles = new ObjectMap<>();
     private static final ObjectMap<Locale, MessageFormat> formats = new ObjectMap<>();
 
     static {
-        Fi[] files = Vars.mods.list().find(mod -> mod.main instanceof Main).root.child("bundles").list();
+        Fi[] files = mods.list().find(mod -> mod.main instanceof Main).root.child("bundles").list();
         supportedLocales = new Locale[files.length + 1];
         supportedLocales[supportedLocales.length - 1] = new Locale("router");
 

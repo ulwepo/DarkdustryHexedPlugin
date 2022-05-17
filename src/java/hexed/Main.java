@@ -7,20 +7,17 @@ import arc.math.Mathf;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.struct.Seq.SeqIterable;
-import arc.util.*;
-import com.mongodb.BasicDBObject;
-import com.mongodb.ConnectionString;
-import com.mongodb.MongoClientSettings;
-import com.mongodb.reactivestreams.client.MongoClient;
-import com.mongodb.reactivestreams.client.MongoClients;
-import com.mongodb.reactivestreams.client.MongoCollection;
+import arc.util.CommandHandler;
+import arc.util.Interval;
+import arc.util.Structs;
+import arc.util.Time;
 import hexed.HexData.HexCaptureEvent;
 import hexed.HexData.HexMoveEvent;
 import hexed.HexData.HexTeam;
 import hexed.HexData.ProgressIncreaseEvent;
 import hexed.comp.Bundle;
 import hexed.comp.NoPauseRules;
-import hexed.models.UserStatistics;
+import hexed.comp.PlayerData;
 import mindustry.content.Blocks;
 import mindustry.content.Fx;
 import mindustry.content.Items;
@@ -35,14 +32,9 @@ import mindustry.gen.Call;
 import mindustry.gen.Groups;
 import mindustry.gen.Player;
 import mindustry.mod.Plugin;
-import mindustry.net.Administration.Config;
 import mindustry.type.ItemStack;
 import mindustry.world.Tile;
 import mindustry.world.blocks.storage.CoreBlock;
-import org.bson.BsonInt32;
-import org.bson.Document;
-import org.reactivestreams.Subscriber;
-import org.reactivestreams.Subscription;
 
 import static arc.util.Log.err;
 import static arc.util.Log.info;
@@ -51,7 +43,7 @@ import static mindustry.Vars.*;
 
 public class Main extends Plugin {
 
-    public static final float spawnDelay = 60 * 4f;
+    public static final float spawnDelay = 60 * 6f;
     public static final float baseKillDelay = 60 * 75f;
 
     public static final int roundTime = 60 * 60 * 90;
@@ -64,12 +56,10 @@ public class Main extends Plugin {
 
     public static final int leaderboardTimer = 0, updateTimer = 1, winCheckTimer = 2;
 
-    public static final String connectionStringUrl = "mongodb://manager:QULIoZBckRlLkZXn@127.0.0.1:27017/?authSource=darkdustry";
-    public static final String databaseName = "darkdustry";
-    public static final String collectionName = "hexed";
     public static final Rules rules = new NoPauseRules();
     public static final Interval interval = new Interval(3);
     public static final ObjectMap<String, Team> leftPlayers = new ObjectMap<>();
+
     public static HexedGenerator.Mode mode;
     public static HexData data;
     public static Schematic start;
@@ -77,17 +67,10 @@ public class Main extends Plugin {
     public static float counter = 0f;
     public static int lastMin;
 
-    public Main() {
-        ConnectionString connectionString = new ConnectionString(connectionStringUrl);
-        MongoClientSettings settings = MongoClientSettings.builder().applyConnectionString(connectionString).retryWrites(true).build();
-
-        MongoClient mongodb = MongoClients.create(settings);
-        MongoCollection<Document> hexedCollection = mongodb.getDatabase(databaseName).getCollection(collectionName);
-
-        UserStatistics.setSourceCollection(hexedCollection);
-    }
+    public static ObjectMap<String, PlayerData> statistics;
 
     @Override
+    @SuppressWarnings("unchecked")
     public void init() {
         rules.loadout = ItemStack.list(Items.copper, 350, Items.lead, 250, Items.graphite, 150, Items.metaglass, 100, Items.silicon, 250, Items.titanium, 30);
         rules.buildCostMultiplier = 0.8f;
@@ -106,9 +89,9 @@ public class Main extends Plugin {
         rules.bannedBlocks.addAll(Blocks.ripple);
         rules.modeName = "Hexed";
 
-        start = Schematics.readBase64("bXNjaAF4nE2SX3LbIBDGFyQh/sh2fINcQCfK5IHItPWMIjSS3DRvuUqu0Jnew71OX5JdPs80wuYDdvmxu0CBjhXVU3xOFH6kX+l0v25x2Sic0jos53k754mIzBif0rjS/uH6fv3z9+36W/rHHYUhz3Na+pc4jnT8MunHuHxPZIc8/UyveaF2HeK2pYXCmtnWz3FKI1VxGah9KpZXOn4x3QDmOU0n3mUv05ijjLohL6mfLsOYLiv5Ob/wkVM+cQbxvPTf4rBlZhEl/pMqP9Lc+KshDcSQFm2pTC3EUfk8JEA6UHaYHcRRYaxkUHFXY7EwFZgKTAWmEmbNEiAdFm+wO9Lqf3DcGMTcEnphajA1mBpMLcyW/TrSsm8vKC1My4vsVpE07bhrGjZqz3wryVbsrCXsUogSvWVpMNvLvEZwtQRnEJc4VBDeElgaK5UwZRxk/PGvmDt47bC1BNaAZ1A5I5UzkhzplpOoJUxDQcLk3S3t1K2+LZXracXTsYiLK+sHSdvidi3qVPxELMTBVmpvcZ+3K3Z4HA55OQlApDwOB5gDzAHmAHOAOVykw0U6SVHkAJc7EY9X4lFeD7QH2gPtgfZAe7w7jzg90B7vzuMELyd8Ao5MVAI=");
+        statistics = Core.settings.getJson("statictics", ObjectMap.class, ObjectMap::new);
 
-        Config.startCommands.set("hexed");
+        start = Schematics.readBase64("bXNjaAF4nE2SX3LbIBDGFyQh/sh2fINcQCfK5IHItPWMIjSS3DRvuUqu0Jnew71OX5JdPs80wuYDdvmxu0CBjhXVU3xOFH6kX+l0v25x2Sic0jos53k754mIzBif0rjS/uH6fv3z9+36W/rHHYUhz3Na+pc4jnT8MunHuHxPZIc8/UyveaF2HeK2pYXCmtnWz3FKI1VxGah9KpZXOn4x3QDmOU0n3mUv05ijjLohL6mfLsOYLiv5Ob/wkVM+cQbxvPTf4rBlZhEl/pMqP9Lc+KshDcSQFm2pTC3EUfk8JEA6UHaYHcRRYaxkUHFXY7EwFZgKTAWmEmbNEiAdFm+wO9Lqf3DcGMTcEnphajA1mBpMLcyW/TrSsm8vKC1My4vsVpE07bhrGjZqz3wryVbsrCXsUogSvWVpMNvLvEZwtQRnEJc4VBDeElgaK5UwZRxk/PGvmDt47bC1BNaAZ1A5I5UzkhzplpOoJUxDQcLk3S3t1K2+LZXracXTsYiLK+sHSdvidi3qVPxELMTBVmpvcZ+3K3Z4HA55OQlApDwOB5gDzAHmAHOAOVykw0U6SVHkAJc7EY9X4lFeD7QH2gPtgfZAe7w7jzg90B7vzuMELyd8Ao5MVAI=");
 
         Events.run(Trigger.update, () -> {
             data.updateStats();
@@ -196,10 +179,9 @@ public class Main extends Plugin {
                 }
             }
 
-            UserStatistics.find(event.player, userStatistic -> {
-                userStatistic.name = event.player.coloredName();
-                userStatistic.save();
-            });
+            PlayerData data = statistics.get(player.uuid(), PlayerData::new);
+            data.name = event.player.coloredName();
+            saveDatas();
         });
 
         Events.on(PlayerLeave.class, event -> {
@@ -240,10 +222,8 @@ public class Main extends Plugin {
 
         netServer.chatFormatter = (player, message) -> {
             if (player != null) {
-                int[] wins = {0};
-                UserStatistics.find(player, userStatistic -> wins[0] = userStatistic.wins);
-
-                return ("[coral][[[cyan]" + wins[0] + " [sky]#[white] " + player.coloredName() + "[coral]]: [white]" + message);
+                int wins = statistics.get(player.uuid(), PlayerData::new).wins;
+                return ("[coral][[[cyan]" + wins + " [sky]#[white] " + player.coloredName() + "[coral]]: [white]" + message);
             }
 
             return message;
@@ -254,31 +234,17 @@ public class Main extends Plugin {
     public void registerClientCommands(CommandHandler handler) {
         handler.<Player>register("lb", "Показать лучших игроков сервера.", (args, player) -> {
             StringBuilder players = new StringBuilder();
-            int[] cycle = {1};
+            Seq<PlayerData> leaders = statistics.values().toSeq().sort(data -> -data.wins).filter(data -> data.wins > 0);
 
-            UserStatistics.getSourceCollection().find().sort(new BasicDBObject("wins", new BsonInt32(-1))).limit(10).subscribe(new Subscriber<>() {
-                @Override
-                public void onSubscribe(Subscription subscription) {
-                    subscription.request(10);
-                }
+            for (int i = 0; i < Math.min(leaders.size, 10); i++) {
+                players.append("[accent]").append(i + 1).append(". ").append(leaders.get(i).name).append("[accent]: [cyan]").append(leaders.get(i).wins).append("\n");
+            }
 
-                @Override
-                public void onNext(Document document) {
-                    if (document != null)
-                        players.append("[accent]").append(cycle[0]++).append(". ").append(document.getString("name")).append("[accent]: [cyan]").append(document.getInteger("wins")).append("\n");
-                    else players.append(Bundle.format("commands.lb.none", findLocale(player)));
-                }
+            if (leaders.isEmpty()) {
+                players.append(Bundle.format("commands.lb.none", findLocale(player)));
+            }
 
-                @Override
-                public void onError(Throwable t) {
-                    err(t);
-                }
-
-                @Override
-                public void onComplete() {
-                    Call.infoMessage(player.con, Bundle.format("commands.lb.list", findLocale(player), players.toString()));
-                }
-            });
+            Call.infoMessage(player.con, Bundle.format("commands.lb.list", findLocale(player), players.toString()));
         });
 
         handler.<Player>register("spectator", "Перейти в режим наблюдателя.", (args, player) -> {
@@ -404,11 +370,9 @@ public class Main extends Plugin {
                 Call.infoMessage(player.con, endGameMessage.toString());
             }
 
-            UserStatistics.find(winner, userStatistic -> {
-                userStatistic.name = winner.coloredName();
-                userStatistic.wins++;
-                userStatistic.save();
-            });
+            PlayerData data = statistics.get(player.uuid(), PlayerData::new);
+            data.wins++;
+            saveDatas();
         }
 
         Time.runTask(60f * 15f, this::reload);
@@ -533,5 +497,9 @@ public class Main extends Plugin {
                 }
             }
         });
+    }
+
+    public static void saveDatas() {
+        Core.settings.putJson("statistics", ObjectMap.class, statistics);
     }
 }
