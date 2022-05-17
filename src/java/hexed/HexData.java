@@ -98,6 +98,10 @@ public class HexData {
         return hexes;
     }
 
+    public Hex getSpawnHex() {
+        return hexes.copy().shuffle().find(h -> h.controller == null && h.spawnTime.get());
+    }
+
     public Hex getHex(int position) {
         return hexPos.get(position);
     }

@@ -50,20 +50,19 @@ public class Main extends Plugin {
     public static final int roundTime = 60 * 60 * 90;
     public static final int leaderboardTime = 60 * 60 * 2;
     public static final int updateTime = 60 * 2;
-    public static final int winCheckTime = 60 * 2;
-    public static final int winCondition = 25;
 
-    public static final int itemRequirement = 2500;
+    public static final int itemRequirement = 2560;
 
-    public static final int leaderboardTimer = 0, updateTimer = 1, winCheckTimer = 2;
+    public static final int leaderboardTimer = 0, updateTimer = 1;
 
     public static final Rules rules = new NoPauseRules();
-    public static final Interval interval = new Interval(3);
+    public static final Interval interval = new Interval(2);
     public static final ObjectMap<String, Team> leftPlayers = new ObjectMap<>();
+
+    public static final Schematic start = Schematics.readBase64("bXNjaAF4nE2SX3LbIBDGFyQh/sh2fINcQCfK5IHItPWMIjSS3DRvuUqu0Jnew71OX5JdPs80wuYDdvmxu0CBjhXVU3xOFH6kX+l0v25x2Sic0jos53k754mIzBif0rjS/uH6fv3z9+36W/rHHYUhz3Na+pc4jnT8MunHuHxPZIc8/UyveaF2HeK2pYXCmtnWz3FKI1VxGah9KpZXOn4x3QDmOU0n3mUv05ijjLohL6mfLsOYLiv5Ob/wkVM+cQbxvPTf4rBlZhEl/pMqP9Lc+KshDcSQFm2pTC3EUfk8JEA6UHaYHcRRYaxkUHFXY7EwFZgKTAWmEmbNEiAdFm+wO9Lqf3DcGMTcEnphajA1mBpMLcyW/TrSsm8vKC1My4vsVpE07bhrGjZqz3wryVbsrCXsUogSvWVpMNvLvEZwtQRnEJc4VBDeElgaK5UwZRxk/PGvmDt47bC1BNaAZ1A5I5UzkhzplpOoJUxDQcLk3S3t1K2+LZXracXTsYiLK+sHSdvidi3qVPxELMTBVmpvcZ+3K3Z4HA55OQlApDwOB5gDzAHmAHOAOVykw0U6SVHkAJc7EY9X4lFeD7QH2gPtgfZAe7w7jzg90B7vzuMELyd8Ao5MVAI=");
 
     public static HexedGenerator.Mode mode;
     public static HexData data;
-    public static Schematic start;
     public static boolean restarting = false;
     public static float counter = 0f;
 
@@ -85,8 +84,6 @@ public class Main extends Plugin {
 
         rules.modeName = "Hexed";
 
-        start = Schematics.readBase64("bXNjaAF4nE2SX3LbIBDGFyQh/sh2fINcQCfK5IHItPWMIjSS3DRvuUqu0Jnew71OX5JdPs80wuYDdvmxu0CBjhXVU3xOFH6kX+l0v25x2Sic0jos53k754mIzBif0rjS/uH6fv3z9+36W/rHHYUhz3Na+pc4jnT8MunHuHxPZIc8/UyveaF2HeK2pYXCmtnWz3FKI1VxGah9KpZXOn4x3QDmOU0n3mUv05ijjLohL6mfLsOYLiv5Ob/wkVM+cQbxvPTf4rBlZhEl/pMqP9Lc+KshDcSQFm2pTC3EUfk8JEA6UHaYHcRRYaxkUHFXY7EwFZgKTAWmEmbNEiAdFm+wO9Lqf3DcGMTcEnphajA1mBpMLcyW/TrSsm8vKC1My4vsVpE07bhrGjZqz3wryVbsrCXsUogSvWVpMNvLvEZwtQRnEJc4VBDeElgaK5UwZRxk/PGvmDt47bC1BNaAZ1A5I5UzkhzplpOoJUxDQcLk3S3t1K2+LZXracXTsYiLK+sHSdvidi3qVPxELMTBVmpvcZ+3K3Z4HA55OQlApDwOB5gDzAHmAHOAOVykw0U6SVHkAJc7EY9X4lFeD7QH2gPtgfZAe7w7jzg90B7vzuMELyd8Ao5MVAI=");
-
         Bundle.load();
         Statistics.load();
 
@@ -103,8 +100,6 @@ public class Main extends Plugin {
                     Call.infoMessage(player.con, Bundle.format("events.you-lost", findLocale(player)));
                 }
 
-                if (player.team() == Team.derelict) player.clearUnit();
-
                 if (data.getControlled(player).size == data.hexes().size) {
                     endGame();
                 }
@@ -118,13 +113,6 @@ public class Main extends Plugin {
 
             if (interval.get(updateTimer, updateTime)) {
                 data.updateControl();
-            }
-
-            if (interval.get(winCheckTimer, winCheckTime)) {
-                Seq<Player> players = data.getLeaderboard();
-                if (players.size > 1 && data.getControlled(players.first()).size >= winCondition && data.getControlled(players.get(1)).size <= 1) {
-                    endGame();
-                }
             }
 
             counter += Time.delta;
@@ -158,10 +146,7 @@ public class Main extends Plugin {
                     return;
                 }
 
-                Seq<Hex> copy = data.hexes().copy();
-                copy.shuffle();
-                Hex hex = copy.find(h -> h.controller == null && h.spawnTime.get());
-
+                Hex hex = data.getSpawnHex();
                 if (hex != null) {
                     loadout(event.player, hex.x, hex.y);
                     Core.app.post(() -> data.data(event.player).chosen = false);
@@ -203,6 +188,7 @@ public class Main extends Plugin {
                 return leftPlayers.get(player.uuid());
             }
 
+            // TODO упростить (отдельный метод?)
             for (Team team : Seq.with(Team.all).shuffle()) {
                 if (team.id > 5 && !team.active() && !Seq.with(players).contains(p -> p.team() == team) && !data.data(team).dying && !data.data(team).chosen && !leftPlayers.containsValue(team, true)) {
                     data.data(team).chosen = true;
@@ -337,6 +323,7 @@ public class Main extends Plugin {
         Seq<Player> players = data.getLeaderboard();
         StringBuilder scores = new StringBuilder();
 
+        // TOD0 Упростить
         int index = 1;
         for (Player player : players) {
             if (data.getControlled(player).size > 0) {
@@ -347,7 +334,6 @@ public class Main extends Plugin {
 
         if (players.any()) {
             Player winner = players.first();
-            boolean dominated = data.getControlled(winner).size == data.hexes().size;
 
             for (Player player : Groups.player) {
                 StringBuilder endGameMessage = new StringBuilder(Bundle.format("round-over", findLocale(player)));
@@ -358,7 +344,7 @@ public class Main extends Plugin {
                     endGameMessage.append(Bundle.format("player-won", findLocale(player), winner.coloredName(), data.getControlled(winner).size));
                 }
 
-                if (!dominated) endGameMessage.append(Bundle.format("final-score", findLocale(player), scores.toString()));
+                endGameMessage.append(Bundle.format("final-score", findLocale(player), scores.toString()));
 
                 Call.infoMessage(player.con, endGameMessage.toString());
             }
@@ -373,7 +359,6 @@ public class Main extends Plugin {
 
     public void updateText(Player player) {
         HexTeam team = data.data(player);
-
         StringBuilder message = new StringBuilder(Bundle.format("hex", findLocale(player), team.location.id)).append("\n");
 
         if (team.location.controller == null) {
@@ -396,11 +381,7 @@ public class Main extends Plugin {
     public void reload() {
         Events.fire("HexedGameOver");
 
-        Seq<Player> players = new Seq<>();
-        Groups.player.each(p -> {
-            players.add(p);
-            p.clearUnit();
-        });
+        Seq<Player> players = Groups.player.copy(new Seq<>());
 
         logic.reset();
 
@@ -419,16 +400,14 @@ public class Main extends Plugin {
 
         logic.play();
 
-        for (Player player : players) {
+        players.each(player -> {
             boolean admin = player.admin;
             player.reset();
             player.admin = admin;
             player.team(netServer.assignTeam(player, new SeqIterable<>(players)));
 
             if (player.team() != Team.derelict) {
-                Seq<Hex> copy = data.hexes().copy();
-                copy.shuffle();
-                Hex hex = copy.find(h -> h.controller == null && h.spawnTime.get());
+                Hex hex = data.getSpawnHex();
                 if (hex != null) {
                     loadout(player, hex.x, hex.y);
                     Core.app.post(() -> data.data(player).chosen = false);
@@ -441,7 +420,7 @@ public class Main extends Plugin {
             }
 
             netServer.sendWorldData(player);
-        }
+        });
 
         for (int i = 0; i < interval.getTimes().length; i++) interval.reset(i, 0f);
 
