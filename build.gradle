@@ -22,12 +22,6 @@ dependencies {
     compileOnly "com.github.Anuken.Mindustry:core:$mindustryVersion"
 }
 
-tasks.withType(JavaCompile) {
-    doFirst {
-        options.compilerArgs = options.compilerArgs.findAll{ it != '--enable-preview' }
-    }
-}
-
 jar {
     archiveBaseName.set 'HexedPlugin'
     from {

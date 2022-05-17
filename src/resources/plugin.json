@@ -1,11 +1,11 @@
 {
-  "name": "HexedPlugin",
-  "displayName": "Hexed",
-  "description": "A special gamemode",
+  "name": "hexed-plugin",
+  "displayName": "Hexed Plugin",
+  "description": "A special battle-royal-like gamemode.",
   "author": "Skat",
   "main": "hexed.Main",
   "hidden": false,
   "java": true,
   "version": "1.2",
-  "minGameVersion": 129
+  "minGameVersion": 135
 }

@@ -18,6 +18,7 @@ import hexed.HexData.ProgressIncreaseEvent;
 import hexed.comp.Bundle;
 import hexed.comp.NoPauseRules;
 import hexed.comp.PlayerData;
+import hexed.comp.Statistics;
 import mindustry.content.Blocks;
 import mindustry.content.Fx;
 import mindustry.content.Items;
@@ -65,12 +66,8 @@ public class Main extends Plugin {
     public static Schematic start;
     public static boolean restarting = false;
     public static float counter = 0f;
-    public static int lastMin;
-
-    public static ObjectMap<String, PlayerData> statistics;
 
     @Override
-    @SuppressWarnings("unchecked")
     public void init() {
         rules.loadout = ItemStack.list(Items.copper, 350, Items.lead, 250, Items.graphite, 150, Items.metaglass, 100, Items.silicon, 250, Items.titanium, 30);
         rules.buildCostMultiplier = 0.8f;
@@ -86,18 +83,17 @@ public class Main extends Plugin {
         rules.reactorExplosions = true;
         rules.fire = false;
 
-        rules.revealedBlocks.addAll(Blocks.duct, Blocks.ductRouter, Blocks.ductBridge, Blocks.thruster, Blocks.scrapWall, Blocks.scrapWallLarge, Blocks.scrapWallHuge, Blocks.scrapWallGigantic);
-        rules.bannedBlocks.addAll(Blocks.ripple);
         rules.modeName = "Hexed";
 
-        statistics = Core.settings.getJson("statictics", ObjectMap.class, ObjectMap::new);
-
         start = Schematics.readBase64("bXNjaAF4nE2SX3LbIBDGFyQh/sh2fINcQCfK5IHItPWMIjSS3DRvuUqu0Jnew71OX5JdPs80wuYDdvmxu0CBjhXVU3xOFH6kX+l0v25x2Sic0jos53k754mIzBif0rjS/uH6fv3z9+36W/rHHYUhz3Na+pc4jnT8MunHuHxPZIc8/UyveaF2HeK2pYXCmtnWz3FKI1VxGah9KpZXOn4x3QDmOU0n3mUv05ijjLohL6mfLsOYLiv5Ob/wkVM+cQbxvPTf4rBlZhEl/pMqP9Lc+KshDcSQFm2pTC3EUfk8JEA6UHaYHcRRYaxkUHFXY7EwFZgKTAWmEmbNEiAdFm+wO9Lqf3DcGMTcEnphajA1mBpMLcyW/TrSsm8vKC1My4vsVpE07bhrGjZqz3wryVbsrCXsUogSvWVpMNvLvEZwtQRnEJc4VBDeElgaK5UwZRxk/PGvmDt47bC1BNaAZ1A5I5UzkhzplpOoJUxDQcLk3S3t1K2+LZXracXTsYiLK+sHSdvidi3qVPxELMTBVmpvcZ+3K3Z4HA55OQlApDwOB5gDzAHmAHOAOVykw0U6SVHkAJc7EY9X4lFeD7QH2gPtgfZAe7w7jzg90B7vzuMELyd8Ao5MVAI=");
+
+        Bundle.load();
+        Statistics.load();
 
         Events.run(Trigger.update, () -> {
             data.updateStats();
 
-            for (Player player : Groups.player) {
+            Groups.player.each(player -> {
                 if (player.team() != Team.derelict && player.team().data().noCores()) {
                     killTeam(player.team());
                     player.clearUnit();
@@ -111,12 +107,10 @@ public class Main extends Plugin {
 
                 if (data.getControlled(player).size == data.hexes().size) {
                     endGame();
-                    break;
                 }
-            }
+            });
 
             state.serverPaused = false;
-            lastMin = (int) (roundTime - counter) / 60 / 60;
 
             if (interval.get(leaderboardTimer, leaderboardTime)) {
                 Groups.player.each(player -> Call.infoToast(player.con, getLeaderboard(player), 12f));
@@ -179,9 +173,9 @@ public class Main extends Plugin {
                 }
             }
 
-            PlayerData data = statistics.get(player.uuid(), PlayerData::new);
+            PlayerData data = Statistics.getData(player.uuid());
             data.name = event.player.coloredName();
-            saveDatas();
+            Statistics.save();
         });
 
         Events.on(PlayerLeave.class, event -> {
@@ -222,7 +216,7 @@ public class Main extends Plugin {
 
         netServer.chatFormatter = (player, message) -> {
             if (player != null) {
-                int wins = statistics.get(player.uuid(), PlayerData::new).wins;
+                int wins = Statistics.getData(player.uuid()).wins;
                 return ("[coral][[[cyan]" + wins + " [sky]#[white] " + player.coloredName() + "[coral]]: [white]" + message);
             }
 
@@ -232,19 +226,19 @@ public class Main extends Plugin {
 
     @Override
     public void registerClientCommands(CommandHandler handler) {
-        handler.<Player>register("lb", "Показать лучших игроков сервера.", (args, player) -> {
+        handler.<Player>register("top", "Показать лучших игроков сервера.", (args, player) -> {
             StringBuilder players = new StringBuilder();
-            Seq<PlayerData> leaders = statistics.values().toSeq().sort(data -> -data.wins).filter(data -> data.wins > 0);
+            Seq<PlayerData> leaders = Statistics.getLeaders();
 
             for (int i = 0; i < Math.min(leaders.size, 10); i++) {
                 players.append("[accent]").append(i + 1).append(". ").append(leaders.get(i).name).append("[accent]: [cyan]").append(leaders.get(i).wins).append("\n");
             }
 
             if (leaders.isEmpty()) {
-                players.append(Bundle.format("commands.lb.none", findLocale(player)));
+                players.append(Bundle.format("commands.top.none", findLocale(player)));
             }
 
-            Call.infoMessage(player.con, Bundle.format("commands.lb.list", findLocale(player), players.toString()));
+            Call.infoMessage(player.con, Bundle.format("commands.top.list", findLocale(player), players.toString()));
         });
 
         handler.<Player>register("spectator", "Перейти в режим наблюдателя.", (args, player) -> {
@@ -269,7 +263,7 @@ public class Main extends Plugin {
             bundled(player, "commands.captured.hexes", data.getControlled(player).size);
         });
 
-        handler.<Player>register("leaderboard", "Посмотреть текущий список лидеров.", (args, player) -> player.sendMessage(getLeaderboard(player)));
+        handler.<Player>register("lb", "Посмотреть текущий список лидеров.", (args, player) -> player.sendMessage(getLeaderboard(player)));
 
         handler.<Player>register("hexstatus", "Посмотреть статус хекса на своем местоположении.", (args, player) -> {
             Hex hex = data.data(player).location;
@@ -364,15 +358,14 @@ public class Main extends Plugin {
                     endGameMessage.append(Bundle.format("player-won", findLocale(player), winner.coloredName(), data.getControlled(winner).size));
                 }
 
-                if (!dominated)
-                    endGameMessage.append(Bundle.format("final-score", findLocale(player), scores.toString()));
+                if (!dominated) endGameMessage.append(Bundle.format("final-score", findLocale(player), scores.toString()));
 
                 Call.infoMessage(player.con, endGameMessage.toString());
             }
 
-            PlayerData data = statistics.get(player.uuid(), PlayerData::new);
+            PlayerData data = Statistics.getData(player.uuid());
             data.wins++;
-            saveDatas();
+            Statistics.save();
         }
 
         Time.runTask(60f * 15f, this::reload);
@@ -458,8 +451,8 @@ public class Main extends Plugin {
 
     public String getLeaderboard(Player player) {
         Seq<Player> players = data.getLeaderboard();
-        StringBuilder leaders = new StringBuilder(Bundle.format("leaderboard.header", findLocale(player), lastMin));
-        for (int i = 0; i < 3 && i < players.size; i++) {
+        StringBuilder leaders = new StringBuilder(Bundle.format("leaderboard.header", findLocale(player), (int) (roundTime - counter) / 60 / 60));
+        for (int i = 0; i < Math.min(3, players.size); i++) {
             Player p = players.get(i);
             leaders.append("[yellow]").append(i + 1).append(".[white] ").append(p.coloredName()).append(Bundle.format("leaderboard.hexes", findLocale(player), data.getControlled(p).size));
         }
@@ -497,9 +490,5 @@ public class Main extends Plugin {
                 }
             }
         });
-    }
-
-    public static void saveDatas() {
-        Core.settings.putJson("statistics", ObjectMap.class, statistics);
     }
 }
