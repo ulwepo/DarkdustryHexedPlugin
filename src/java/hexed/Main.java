@@ -138,10 +138,9 @@ public class Main extends Plugin {
         });
 
         Events.on(BlockDestroyEvent.class, event -> {
-            if (event.tile.block() instanceof CoreBlock coreBlock) {
+            if (event.tile.block() instanceof CoreBlock) {
                 Hex hex = data.getHex(event.tile.pos());
                 if (hex != null) {
-                    Groups.unit.each(unit -> unit.team != hex.controller && hex.contains(unit), unit -> unit.damagePierce(coreBlock.health * unit.health / unit.maxHealth));
                     Call.effect(Fx.reactorExplosion, hex.wx, hex.wy, Mathf.random(360f), hex.controller == null ? Color.white : hex.controller.color);
 
                     hex.updateController();
