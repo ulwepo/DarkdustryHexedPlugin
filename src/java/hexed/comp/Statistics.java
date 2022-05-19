@@ -19,9 +19,10 @@ public class Statistics {
 
     public static void save() {
         Core.settings.putJson("statistics", ObjectMap.class, datas);
+        Core.settings.forceSave();
     }
 
     public static Seq<PlayerData> getLeaders() {
-        return datas.values().toSeq().filter(data -> data.wins != 0).sort(data -> -data.wins);
+        return datas.values().toSeq().filter(data -> data.wins > 0).sort(data -> -data.wins);
     }
 }

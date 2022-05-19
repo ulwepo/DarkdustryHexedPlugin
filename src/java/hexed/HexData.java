@@ -71,7 +71,7 @@ public class HexData {
 
     public Seq<Player> getLeaderboard() {
         Seq<Player> players = Groups.player.copy(new Seq<>());
-        return players.sort(p -> -getControlled(p).size);
+        return players.filter(p -> getControlled(p).size > 0).sort(p -> -getControlled(p).size);
     }
 
     public Player getPlayer(Team team) {
