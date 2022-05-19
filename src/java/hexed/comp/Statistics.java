@@ -1,16 +1,23 @@
 package hexed.comp;
 
-import arc.Core;
+import arc.files.Fi;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
+import arc.util.serialization.Json;
+
+import static mindustry.Vars.*;
 
 public class Statistics {
 
     public static ObjectMap<String, PlayerData> datas;
 
+    public static Json json = new Json();
+    public static Fi file = dataDirectory.child("statistics");
+
     @SuppressWarnings("unchecked")
     public static void load() {
-        datas = Core.settings.getJson("statistics", ObjectMap.class, ObjectMap::new);
+        json.addClassTag("hexed.comp.PlayerData", PlayerData.class); // rly important thing
+        datas = file.exists() ? json.fromJson(ObjectMap.class, file) : new ObjectMap<>();
     }
 
     public static PlayerData getData(String uuid) {
@@ -18,8 +25,7 @@ public class Statistics {
     }
 
     public static void save() {
-        Core.settings.putJson("statistics", ObjectMap.class, datas);
-        Core.settings.forceSave();
+        json.toJson(datas, file);
     }
 
     public static Seq<PlayerData> getLeaders() {
