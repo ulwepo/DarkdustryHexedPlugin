@@ -12,7 +12,7 @@ public class Statistics {
     public static ObjectMap<String, PlayerData> datas;
 
     public static Json json = new Json();
-    public static Fi file = dataDirectory.child("statistics");
+    public static Fi file = dataDirectory.child("statistics.json");
 
     @SuppressWarnings("unchecked")
     public static void load() {

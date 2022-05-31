@@ -101,6 +101,10 @@ public class Main extends Plugin {
                     Call.infoMessage(player.con, Bundle.format("events.you-lost", findLocale(player)));
                 }
 
+                if (player.team() == Team.derelict) {
+                    player.clearUnit();
+                }
+
                 if (data.getControlled(player).size == data.hexes().size) {
                     endGame();
                 }
