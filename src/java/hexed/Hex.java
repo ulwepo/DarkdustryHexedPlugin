@@ -6,7 +6,6 @@ import arc.util.Timekeeper;
 import mindustry.content.Blocks;
 import mindustry.game.Team;
 import mindustry.game.Teams.TeamData;
-import mindustry.gen.Unit;
 import mindustry.type.ItemStack;
 import mindustry.world.Tile;
 import mindustry.world.blocks.storage.CoreBlock;
@@ -81,9 +80,5 @@ public class Hex {
 
     public boolean contains(Tile tile) {
         return tile != null && contains(tile.worldx(), tile.worldy());
-    }
-
-    public boolean contains(Unit unit) {
-        return contains(unit.tileOn());
     }
 }

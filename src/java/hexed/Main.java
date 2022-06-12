@@ -308,6 +308,8 @@ public class Main extends Plugin {
         if (player.team() == Team.derelict) return;
 
         HexTeam team = data.data(player);
+        if (team.location == null) return;
+
         StringBuilder message = new StringBuilder(Bundle.format("hex", findLocale(player), team.location.id)).append("\n");
 
         if (team.location.controller == null) {
