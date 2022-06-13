@@ -46,6 +46,7 @@ public class Main extends Plugin {
 
     public static final float spawnDelay = 60 * 6f;
     public static final float baseKillDelay = 60 * 75f;
+    public static final float winCapturePercent = 0.75f;
 
     public static final int roundTime = 60 * 60 * 90;
     public static final int leaderboardTime = 60 * 60 * 2;
@@ -82,6 +83,8 @@ public class Main extends Plugin {
         rules.reactorExplosions = true;
         rules.fire = false;
 
+        rules.bannedBlocks.add(Blocks.ripple);
+
         rules.modeName = "Hexed";
 
         start = Schematics.readBase64("bXNjaAF4nE2SX3LbIBDGFyQh/sh2fINcQCfK5IHItPWMIjSS3DRvuUqu0Jnew71OX5JdPs80wuYDdvmxu0CBjhXVU3xOFH6kX+l0v25x2Sic0jos53k754mIzBif0rjS/uH6fv3z9+36W/rHHYUhz3Na+pc4jnT8MunHuHxPZIc8/UyveaF2HeK2pYXCmtnWz3FKI1VxGah9KpZXOn4x3QDmOU0n3mUv05ijjLohL6mfLsOYLiv5Ob/wkVM+cQbxvPTf4rBlZhEl/pMqP9Lc+KshDcSQFm2pTC3EUfk8JEA6UHaYHcRRYaxkUHFXY7EwFZgKTAWmEmbNEiAdFm+wO9Lqf3DcGMTcEnphajA1mBpMLcyW/TrSsm8vKC1My4vsVpE07bhrGjZqz3wryVbsrCXsUogSvWVpMNvLvEZwtQRnEJc4VBDeElgaK5UwZRxk/PGvmDt47bC1BNaAZ1A5I5UzkhzplpOoJUxDQcLk3S3t1K2+LZXracXTsYiLK+sHSdvidi3qVPxELMTBVmpvcZ+3K3Z4HA55OQlApDwOB5gDzAHmAHOAOVykw0U6SVHkAJc7EY9X4lFeD7QH2gPtgfZAe7w7jzg90B7vzuMELyd8Ao5MVAI=");
@@ -105,7 +108,7 @@ public class Main extends Plugin {
                     player.clearUnit();
                 }
 
-                if (data.getControlled(player).size == data.hexes().size) {
+                if (data.getControlled(player).size >= data.hexes().size * winCapturePercent) {
                     endGame();
                 }
             });
@@ -257,7 +260,7 @@ public class Main extends Plugin {
         handler.removeCommand("host");
         handler.removeCommand("gameover");
 
-        handler.register("hexed", "[mode/list]", "Start the server in HexPvP mode.", args -> {
+        handler.register("hexed", "[mode/list]", "Запустить сервер в режиме Hexed.", args -> {
             if (args.length > 0 && args[0].equalsIgnoreCase("list")) {
                 info("Доступные режимы:");
                 for (HexedGenerator.Mode value : HexedGenerator.Mode.values()) {
@@ -299,9 +302,9 @@ public class Main extends Plugin {
             netServer.openServer();
         });
 
-        handler.register("time", "See the time remaining until the end of the round.", args -> info("Время до конца раунда: &lc@ минут", (int) (roundTime - counter) / 60 / 60));
+        handler.register("time", "Посмотреть время, оставшееся до конца раунда.", args -> info("Время до конца раунда: &lc@ минут", (int) (roundTime - counter) / 60 / 60));
 
-        handler.register("end", "End the round.", args -> endGame());
+        handler.register("end", "Завершить раунд.", args -> endGame());
     }
 
     public void updateText(Player player) {

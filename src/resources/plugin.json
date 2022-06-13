@@ -2,7 +2,7 @@
   "name": "hexed-plugin",
   "displayName": "Hexed Plugin",
   "description": "A special battle-royal-like gamemode.",
-  "author": "Skat",
+  "author": "Skatus",
   "main": "hexed.Main",
   "hidden": false,
   "java": true,
