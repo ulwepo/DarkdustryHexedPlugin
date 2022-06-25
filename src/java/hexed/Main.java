@@ -78,13 +78,13 @@ public class Main extends Plugin {
         rules.unitDamageMultiplier = 1.25f;
         rules.logicUnitBuild = true;
         rules.pvp = false;
+        ruled.attackMode = true;
         rules.canGameOver = false;
         rules.coreCapture = true;
         rules.reactorExplosions = true;
         rules.fire = false;
 
         rules.bannedBlocks.add(Blocks.ripple);
-
         rules.modeName = "Hexed";
 
         start = Schematics.readBase64("bXNjaAF4nE2SX3LbIBDGFyQh/sh2fINcQCfK5IHItPWMIjSS3DRvuUqu0Jnew71OX5JdPs80wuYDdvmxu0CBjhXVU3xOFH6kX+l0v25x2Sic0jos53k754mIzBif0rjS/uH6fv3z9+36W/rHHYUhz3Na+pc4jnT8MunHuHxPZIc8/UyveaF2HeK2pYXCmtnWz3FKI1VxGah9KpZXOn4x3QDmOU0n3mUv05ijjLohL6mfLsOYLiv5Ob/wkVM+cQbxvPTf4rBlZhEl/pMqP9Lc+KshDcSQFm2pTC3EUfk8JEA6UHaYHcRRYaxkUHFXY7EwFZgKTAWmEmbNEiAdFm+wO9Lqf3DcGMTcEnphajA1mBpMLcyW/TrSsm8vKC1My4vsVpE07bhrGjZqz3wryVbsrCXsUogSvWVpMNvLvEZwtQRnEJc4VBDeElgaK5UwZRxk/PGvmDt47bC1BNaAZ1A5I5UzkhzplpOoJUxDQcLk3S3t1K2+LZXracXTsYiLK+sHSdvidi3qVPxELMTBVmpvcZ+3K3Z4HA55OQlApDwOB5gDzAHmAHOAOVykw0U6SVHkAJc7EY9X4lFeD7QH2gPtgfZAe7w7jzg90B7vzuMELyd8Ao5MVAI=");
@@ -113,7 +113,7 @@ public class Main extends Plugin {
                 }
             });
 
-            state.serverPaused = false;
+            //state.serverPaused = false;
 
             if (interval.get(leaderboardTimer, leaderboardTime)) {
                 Groups.player.each(player -> Call.infoToast(player.con, getLeaderboard(player), 12f));
@@ -186,8 +186,8 @@ public class Main extends Plugin {
         netServer.assigner = (player, players) -> {
             if (leftPlayers.containsKey(player.uuid())) return leftPlayers.get(player.uuid());
 
-            Team team = Seq.with(Team.all).shuffle().find(t -> t.id > 5 && !t.active() && !data.data(t).dying && !data.data(t).chosen && !leftPlayers.containsValue(t, true));
-            return team != null ? team : Team.derelict;
+            Seq<Team> teams = Seq.with(Team.all).filter(t -> t.id > 5 && !t.active() && !data.data(t).dying && !data.data(t).chosen && !leftPlayers.containsValue(t, true));
+            return teams.any() ? teams.random() : Team.derelict;
         };
 
         netServer.chatFormatter = (player, message) -> {
