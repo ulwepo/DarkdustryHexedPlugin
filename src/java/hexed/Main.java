@@ -78,7 +78,7 @@ public class Main extends Plugin {
         rules.unitDamageMultiplier = 1.25f;
         rules.logicUnitBuild = true;
         rules.pvp = false;
-        ruled.attackMode = true;
+        rules.attackMode = true;
         rules.canGameOver = false;
         rules.coreCapture = true;
         rules.reactorExplosions = true;
