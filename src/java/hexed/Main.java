@@ -36,6 +36,7 @@ import mindustry.mod.Plugin;
 import mindustry.type.ItemStack;
 import mindustry.world.Tile;
 import mindustry.world.blocks.storage.CoreBlock;
+import mindustry.world.meta.Attribute;
 
 import static arc.util.Log.err;
 import static arc.util.Log.info;
@@ -91,6 +92,8 @@ public class Main extends Plugin {
 
         Bundle.load();
         Statistics.load();
+
+        content.weathers().each(weather -> weather.attrs.set(Attribute.light, 0f));
 
         Events.run(Trigger.update, () -> {
             if (!state.isPlaying()) return;
