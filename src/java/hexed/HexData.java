@@ -13,7 +13,7 @@ public class HexData {
 
     /** All hexes on the map. No order. */
     private final Seq<Hex> hexes = new Seq<>();
-    /** Maps world pos -> hex */
+    /** Maps world pos -> hud.hex */
     private final IntMap<Hex> hexPos = new IntMap<>();
     /** Maps team ID -> player */
     private final IntMap<Player> teamMap = new IntMap<>();

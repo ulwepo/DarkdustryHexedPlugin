@@ -9,7 +9,7 @@ import arc.struct.Seq;
 import arc.struct.Seq.SeqIterable;
 import arc.util.CommandHandler;
 import arc.util.Interval;
-import arc.util.Structs;
+import arc.util.Log;
 import arc.util.Time;
 import hexed.HexData.HexCaptureEvent;
 import hexed.HexData.HexMoveEvent;
@@ -37,15 +37,12 @@ import mindustry.type.ItemStack;
 import mindustry.world.Tile;
 import mindustry.world.blocks.storage.CoreBlock;
 
-import static arc.util.Log.err;
-import static arc.util.Log.info;
 import static hexed.comp.Bundle.*;
 import static mindustry.Vars.*;
 
 public class Main extends Plugin {
 
     public static final float spawnDelay = 60 * 6f;
-    public static final float baseKillDelay = 60 * 75f;
     public static final float winCapturePercent = 0.75f;
 
     public static final int roundTime = 60 * 60 * 90;
@@ -101,7 +98,7 @@ public class Main extends Plugin {
                 if (player.team() != Team.derelict && player.team().data().noCores()) {
                     killPlayer(player);
                     sendToChat("events.player-lost", player.coloredName());
-                    Call.infoMessage(player.con, Bundle.format("events.you-lost", findLocale(player)));
+                    Call.infoMessage(player.con, format("events.you-lost", findLocale(player)));
                 }
 
                 if (player.team() == Team.derelict) {
@@ -147,31 +144,21 @@ public class Main extends Plugin {
         });
 
         Events.on(PlayerJoin.class, event -> {
-            if (event.player.team() != Team.derelict) {
-                if (leftPlayers.containsKey(event.player.uuid())) {
-                    leftPlayers.remove(event.player.uuid());
-                    return;
-                }
-
-                spawn(event.player);
-            }
-
             PlayerData data = Statistics.getData(event.player.uuid());
             data.name = event.player.coloredName();
             Statistics.save();
+
+            if (event.player.team() != Team.derelict) {
+                Team team = leftPlayers.remove(event.player.uuid());
+                if (team != null && !team.cores().isEmpty()) return;
+
+                spawn(event.player);
+            }
         });
 
         Events.on(PlayerLeave.class, event -> {
             if (event.player.team() != Team.derelict) {
                 leftPlayers.put(event.player.uuid(), event.player.team());
-
-                Time.run(baseKillDelay, () -> {
-                    Player player = Groups.player.find(p -> p.team() == event.player.team() && p.uuid().equals(event.player.uuid()));
-                    if (player == null) {
-                        killTeam(event.player.team());
-                        leftPlayers.remove(event.player.uuid());
-                    }
-                });
             }
         });
 
@@ -184,7 +171,7 @@ public class Main extends Plugin {
         netServer.assigner = (player, players) -> {
             if (leftPlayers.containsKey(player.uuid())) return leftPlayers.get(player.uuid());
 
-            Seq<Team> teams = Seq.with(Team.all).filter(t -> t.id > 5 && !t.active() && !data.data(t).dying && !data.data(t).chosen && !leftPlayers.containsValue(t, true));
+            Seq<Team> teams = Seq.with(Team.all).filter(team -> team.id > 5 && !team.active() && !data.data(team).dying && !data.data(team).chosen && !leftPlayers.containsValue(team, true));
             return teams.any() ? teams.random() : Team.derelict;
         };
 
@@ -200,7 +187,7 @@ public class Main extends Plugin {
 
     @Override
     public void registerClientCommands(CommandHandler handler) {
-        handler.<Player>register("top", "Показать лучших игроков сервера.", (args, player) -> {
+        handler.<Player>register("top", "Показать топ-10 игроков сервера.", (args, player) -> {
             StringBuilder players = new StringBuilder();
             Seq<PlayerData> leaders = Statistics.getLeaders();
 
@@ -209,10 +196,10 @@ public class Main extends Plugin {
             }
 
             if (leaders.isEmpty()) {
-                players.append(Bundle.format("commands.top.none", findLocale(player)));
+                players.append(format("commands.top.none", findLocale(player)));
             }
 
-            Call.infoMessage(player.con, Bundle.format("commands.top.list", findLocale(player), players.toString()));
+            Call.infoMessage(player.con, format("commands.top.list", findLocale(player), players.toString()));
         });
 
         handler.<Player>register("spectator", "Перейти в режим наблюдателя.", (args, player) -> {
@@ -225,31 +212,25 @@ public class Main extends Plugin {
             bundled(player, "commands.spectator.success");
         });
 
-        handler.<Player>register("captured", "Посмотреть количество захваченных хексов.", (args, player) -> {
-            if (player.team() == Team.derelict) {
-                bundled(player, "commands.captured.spectator");
-                return;
-            }
+        handler.<Player>register("lb", "Посмотреть текущий список лидеров.", (args, player) -> Call.infoMessage(player.con, getLeaderboard(player)));
 
-            bundled(player, "commands.captured.hexes", data.getControlled(player).size);
-        });
-
-        handler.<Player>register("lb", "Посмотреть текущий список лидеров.", (args, player) -> player.sendMessage(getLeaderboard(player)));
+        handler.<Player>register("time", "Посмотреть время, оставшееся до конца раунда.", (args, player) -> bundled(player, "commands.time", (int) (roundTime - counter) / 60 / 60));
 
         handler.<Player>register("hexstatus", "Посмотреть статус хекса на своем местоположении.", (args, player) -> {
             Hex hex = data.data(player).location;
-            if (hex != null) {
-                hex.updateController();
-                StringBuilder status = new StringBuilder(Bundle.format("commands.hexstatus.hex", findLocale(player), hex.id)).append("\n").append(Bundle.format("commands.hexstatus.owner", findLocale(player), hex.controller != null && data.getPlayer(hex.controller) != null ? data.getPlayer(hex.controller).coloredName() : Bundle.format("commands.hexstatus.owner.none", findLocale(player)))).append("\n");
-                for (TeamData teamData : state.teams.getActive()) {
-                    if (hex.getProgressPercent(teamData.team) > 0 && hex.getProgressPercent(teamData.team) <= 100) {
-                        status.append("[white]|> [accent]").append(data.getPlayer(teamData.team).coloredName()).append("[lightgray]: [accent]").append(Bundle.format("commands.hexstatus.captured", findLocale(player), (int) hex.getProgressPercent(teamData.team))).append("\n");
-                    }
-                }
-                player.sendMessage(status.toString());
+            if (hex == null) {
+                bundled(player, "commands.hexstatus.not-found");
                 return;
             }
-            bundled(player, "commands.hexstatus.not-found");
+
+            hex.updateController();
+            StringBuilder status = new StringBuilder(format("commands.hexstatus.hex", findLocale(player), hex.id)).append("\n").append(format("commands.hexstatus.owner", findLocale(player), hex.controller != null && data.getPlayer(hex.controller) != null ? data.getPlayer(hex.controller).coloredName() : format("commands.hexstatus.owner.none", findLocale(player)))).append("\n");
+            for (TeamData teamData : state.teams.getActive()) {
+                if (hex.getProgressPercent(teamData.team) > 0 && hex.getProgressPercent(teamData.team) <= 100) {
+                    status.append("[white]|> [accent]").append(data.getPlayer(teamData.team).coloredName()).append("[lightgray]: [accent]").append(format("commands.hexstatus.captured", findLocale(player), (int) hex.getProgressPercent(teamData.team))).append("\n");
+                }
+            }
+            player.sendMessage(status.toString());
         });
     }
 
@@ -258,51 +239,26 @@ public class Main extends Plugin {
         handler.removeCommand("host");
         handler.removeCommand("gameover");
 
-        handler.register("hexed", "[mode/list]", "Запустить сервер в режиме Hexed.", args -> {
-            if (args.length > 0 && args[0].equalsIgnoreCase("list")) {
-                info("Доступные режимы:");
-                for (HexedGenerator.Mode value : HexedGenerator.Mode.values()) {
-                    info("- @", value);
-                }
-                return;
-            }
-
+        handler.register("hexed", "Запустить сервер в режиме Hexed.", args -> {
             if (!state.isMenu()) {
-                err("Сервер уже запущен. Используй 'stop', чтобы остановить его.");
+                Log.err("Сервер уже запущен. Используй 'stop', чтобы остановить его.");
                 return;
             }
 
-            HexedGenerator.Mode custom = null;
-            if (args.length > 0) {
-                try {
-                    custom = HexedGenerator.Mode.valueOf(args[0]);
-                } catch (Exception e) {
-                    err("Неверное название режима. Будет выбран случайный режим.");
-                }
-            }
-
-            mode = custom == null ? Structs.random(HexedGenerator.Mode.values()) : custom;
-            data = new HexData();
-
-            logic.reset();
-
-            info("Создание локации по сценарию @...", mode);
-
-            HexedGenerator generator = new HexedGenerator();
-            world.loadGenerator(Hex.size, Hex.size, generator);
-            data.initHexes(generator.getHex());
-
-            info("Локация сгенерирована.");
-
-            state.rules = mode.applyRules(rules.copy());
-            logic.play();
-
+            startGame();
             netServer.openServer();
         });
 
-        handler.register("time", "Посмотреть время, оставшееся до конца раунда.", args -> info("Время до конца раунда: &lc@ минут", (int) (roundTime - counter) / 60 / 60));
+        handler.register("end", "Завершить раунд.", args -> {
+            if (state.isMenu()) {
+                Log.err("Сервер не запущен. Используй 'hexed', чтобы запустить его.");
+                return;
+            }
 
-        handler.register("end", "Завершить раунд.", args -> endGame());
+            endGame();
+        });
+
+        handler.register("time", "Посмотреть время, оставшееся до конца раунда.", args -> Log.info("Время до конца раунда: '@' минут", (int) (roundTime - counter) / 60 / 60));
     }
 
     public void updateText(Player player) {
@@ -311,23 +267,42 @@ public class Main extends Plugin {
         HexTeam team = data.data(player);
         if (team.location == null) return;
 
-        StringBuilder message = new StringBuilder(Bundle.format("hex", findLocale(player), team.location.id)).append("\n");
+        StringBuilder message = new StringBuilder(format("hud.hex", findLocale(player), team.location.id)).append("\n");
 
         if (team.location.controller == null) {
             if (team.progressPercent > 0) {
-                message.append(Bundle.format("hex.capture-progress", findLocale(player), (int) (team.progressPercent)));
+                message.append(format("hud.hex.capture-progress", findLocale(player), (int) (team.progressPercent)));
             } else {
-                message.append(Bundle.format("hex.empty", findLocale(player)));
+                message.append(format("hud.hex.empty", findLocale(player)));
             }
         } else if (team.location.controller == player.team()) {
-            message.append(Bundle.format("hex.captured", findLocale(player)));
+            message.append(format("hud.hex.captured", findLocale(player)));
         } else if (team.location.controller != null && data.getPlayer(team.location.controller) != null) {
-            message.append("[#").append(team.location.controller.color).append("]").append(Bundle.format("hex.captured-by-player", findLocale(player), data.getPlayer(team.location.controller).coloredName()));
+            message.append("[#").append(team.location.controller.color).append("]").append(format("hud.hex.captured-by-player", findLocale(player), data.getPlayer(team.location.controller).coloredName()));
         } else {
-            message.append(Bundle.format("hex.unknown", findLocale(player)));
+            message.append(format("hud.hex.unknown", findLocale(player)));
         }
 
         Call.setHudText(player.con, message.toString());
+    }
+
+    public void startGame() {
+        mode = Seq.with(HexedGenerator.Mode.values()).random(mode);
+        data = new HexData();
+
+        logic.reset();
+        Call.worldDataBegin();
+
+        Log.info("Создание локации по сценарию @...", mode);
+
+        HexedGenerator generator = new HexedGenerator();
+        world.loadGenerator(Hex.size, Hex.size, generator);
+        data.initHexes(generator.getHex());
+
+        Log.info("Локация сгенерирована.");
+
+        state.rules = mode.applyRules(rules.copy());
+        logic.play();
     }
 
     public void endGame() {
@@ -345,15 +320,15 @@ public class Main extends Plugin {
 
             Player winner = players.first();
             Groups.player.each(player -> {
-                StringBuilder endGameMessage = new StringBuilder(Bundle.format("round-over", findLocale(player)));
+                StringBuilder endGameMessage = new StringBuilder(format("restart.header", findLocale(player)));
 
                 if (player == winner) {
-                    endGameMessage.append(Bundle.format("you-won", findLocale(player), data.getControlled(player).size));
+                    endGameMessage.append(format("restart.you-won", findLocale(player), data.getControlled(player).size));
                 } else {
-                    endGameMessage.append(Bundle.format("player-won", findLocale(player), winner.coloredName(), data.getControlled(winner).size));
+                    endGameMessage.append(format("restart.player-won", findLocale(player), winner.coloredName(), data.getControlled(winner).size));
                 }
 
-                endGameMessage.append(Bundle.format("final-score", findLocale(player), scores.toString()));
+                endGameMessage.append(format("restart.final-score", findLocale(player), scores.toString()));
 
                 Call.infoMessage(player.con, endGameMessage.toString());
             });
@@ -370,22 +345,8 @@ public class Main extends Plugin {
         Events.fire("HexedGameOver");
 
         Seq<Player> players = Groups.player.copy(new Seq<>());
-        mode = Structs.random(HexedGenerator.Mode.values());
-        data = new HexData();
 
-        logic.reset();
-        Call.worldDataBegin();
-
-        info("Пересоздание локации по сценарию @...", mode);
-
-        HexedGenerator generator = new HexedGenerator();
-        world.loadGenerator(Hex.size, Hex.size, generator);
-        data.initHexes(generator.getHex());
-
-        info("Локация сгенерирована.");
-
-        state.rules = mode.applyRules(rules.copy());
-        logic.play();
+        startGame();
 
         players.each(player -> {
             boolean admin = player.admin;
@@ -408,9 +369,9 @@ public class Main extends Plugin {
 
     public String getLeaderboard(Player player) {
         Seq<Player> players = data.getLeaderboard();
-        StringBuilder leaders = new StringBuilder(Bundle.format("leaderboard.header", findLocale(player), (int) (roundTime - counter) / 60 / 60));
+        StringBuilder leaders = new StringBuilder(format("leaderboard.header", findLocale(player), (int) (roundTime - counter) / 60 / 60));
         for (int i = 0; i < Math.min(3, players.size); i++) {
-            leaders.append("[yellow]").append(i + 1).append(".[white] ").append(players.get(i).coloredName()).append(Bundle.format("leaderboard.hexes", findLocale(player), data.getControlled(players.get(i)).size));
+            leaders.append("[yellow]").append(i + 1).append(".[white] ").append(players.get(i).coloredName()).append(format("leaderboard.hexes", findLocale(player), data.getControlled(players.get(i)).size));
         }
         return leaders.toString();
     }
@@ -444,7 +405,7 @@ public class Main extends Plugin {
             Core.app.post(() -> data.data(player).chosen = false);
             hex.findController();
         } else {
-            Call.infoMessage(player.con, Bundle.format("events.no-empty-hex", findLocale(player)));
+            Call.infoMessage(player.con, format("events.no-empty-hex", findLocale(player)));
             player.clearUnit();
             player.team(Team.derelict);
         }
