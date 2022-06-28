@@ -192,7 +192,10 @@ public class Main extends Plugin {
             Seq<PlayerData> leaders = Statistics.getLeaders();
 
             for (int i = 0; i < Math.min(leaders.size, 10); i++) {
-                players.append("[accent]").append(i + 1).append(". ").append(leaders.get(i).name).append("[accent]: [cyan]").append(leaders.get(i).wins).append("\n");
+                players.append("[accent]").append(i + 1).append(". ")
+                        .append(leaders.get(i).name).append("[accent]: [cyan]")
+                        .append(leaders.get(i).wins)
+                        .append("\n");
             }
 
             if (leaders.isEmpty()) {
@@ -224,10 +227,18 @@ public class Main extends Plugin {
             }
 
             hex.updateController();
-            StringBuilder status = new StringBuilder(format("commands.hexstatus.hex", findLocale(player), hex.id)).append("\n").append(format("commands.hexstatus.owner", findLocale(player), hex.controller != null && data.getPlayer(hex.controller) != null ? data.getPlayer(hex.controller).coloredName() : format("commands.hexstatus.owner.none", findLocale(player)))).append("\n");
+            StringBuilder status = new StringBuilder(format("commands.hexstatus.hex", findLocale(player), hex.id))
+                    .append("\n")
+                    .append(format("commands.hexstatus.owner", findLocale(player), hex.controller != null && data.getPlayer(hex.controller) != null ? data.getPlayer(hex.controller).coloredName() : format("commands.hexstatus.owner.none", findLocale(player))))
+                    .append("\n");
+
             for (TeamData teamData : state.teams.getActive()) {
                 if (hex.getProgressPercent(teamData.team) > 0 && hex.getProgressPercent(teamData.team) <= 100) {
-                    status.append("[white]|> [accent]").append(data.getPlayer(teamData.team).coloredName()).append("[lightgray]: [accent]").append(format("commands.hexstatus.captured", findLocale(player), (int) hex.getProgressPercent(teamData.team))).append("\n");
+                    status.append("[white]|> [accent]")
+                            .append(data.getPlayer(teamData.team).coloredName())
+                            .append("[lightgray]: [accent]")
+                            .append(format("commands.hexstatus.captured", findLocale(player), (int) hex.getProgressPercent(teamData.team)))
+                            .append("\n");
                 }
             }
             player.sendMessage(status.toString());
@@ -315,7 +326,11 @@ public class Main extends Plugin {
 
         if (players.any()) {
             for (int i = 0; i < players.size; i++) {
-                scores.append("[yellow]").append(i + 1).append(".[white] ").append(players.get(i).coloredName()).append("[lightgray] (x").append(data.getControlled(players.get(i)).size).append(")[]\n");
+                scores.append("[yellow]")
+                        .append(i + 1).append(".[white] ")
+                        .append(players.get(i).coloredName())
+                        .append("[lightgray] (x").append(data.getControlled(players.get(i)).size).append(")[]")
+                        .append("\n");
             }
 
             Player winner = players.first();
