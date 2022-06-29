@@ -33,6 +33,8 @@ import mindustry.type.ItemStack;
 import mindustry.world.Tile;
 import mindustry.world.blocks.storage.CoreBlock;
 
+import java.util.Locale;
+
 import static hexed.comp.Bundle.*;
 import static mindustry.Vars.*;
 
@@ -133,6 +135,13 @@ public class Main extends Plugin {
             }
         });
 
+        Events.on(BuildSelectEvent.class, event -> {
+            Hex hex = data.hexes().find(h -> h.contains(event.tile));
+            if (hex != null) {
+                hex.updateController();
+            }
+        });
+
         Events.on(BlockBuildEndEvent.class, event -> {
             Hex hex = data.hexes().find(h -> h.contains(event.tile));
             if (hex != null) {
@@ -141,8 +150,8 @@ public class Main extends Plugin {
         });
 
         Events.on(PlayerJoin.class, event -> {
-            PlayerData data = Statistics.getData(event.player.uuid());
-            data.name = event.player.name;
+            PlayerData statistic = Statistics.getData(event.player.uuid());
+            statistic.name = event.player.name;
             Statistics.save();
 
             if (event.player.team() != Team.derelict) {
@@ -154,7 +163,7 @@ public class Main extends Plugin {
         });
 
         Events.on(PlayerLeave.class, event -> {
-            if (event.player.team() != Team.derelict) {
+            if (event.player.team() != Team.derelict && !restarting) {
                 leftPlayers.put(event.player.uuid(), event.player.team());
             }
         });
@@ -187,23 +196,26 @@ public class Main extends Plugin {
     @Override
     public void registerClientCommands(CommandHandler handler) {
         handler.<Player>register("top", "Показать топ-10 игроков сервера.", (args, player) -> {
-            StringBuilder players = new StringBuilder();
             Seq<PlayerData> leaders = Statistics.getLeaders();
+            leaders.setSize(Math.min(10, leaders.size));
 
-            for (int i = 0; i < Math.min(leaders.size, 10);) {
-                PlayerData leader = leaders.get(i);
+            Locale locale = findLocale(player);
+            StringBuilder players = new StringBuilder();
 
-                players.append("[accent]").append(++i).append(". ")
-                        .append(leader.name).append("[accent]: [cyan]")
-                        .append(getForm("decl.wins", findLocale(player), leader.wins))
+            for (int i = 0; i < leaders.size;) {
+                PlayerData statistic = leaders.get(i);
+
+                players.append("[orange]").append(++i).append(". ")
+                        .append(statistic.name).append("[accent]: [cyan]")
+                        .append(getForm("decl.wins", locale, statistic.wins))
                         .append("\n");
             }
 
             if (leaders.isEmpty()) {
-                players.append(format("commands.top.none", findLocale(player)));
+                players.append(format("commands.top.none", locale));
             }
 
-            Call.infoMessage(player.con, format("commands.top.list", findLocale(player), players.toString()));
+            Call.infoMessage(player.con, format("commands.top.list", locale, players.toString()));
         });
 
         handler.<Player>register("spectator", "Перейти в режим наблюдателя.", (args, player) -> {
@@ -228,18 +240,23 @@ public class Main extends Plugin {
             }
 
             hex.updateController();
-            StringBuilder status = new StringBuilder(format("commands.hexstatus.hex", findLocale(player), hex.id))
-                    .append("\n")
-                    .append(format("commands.hexstatus.owner", findLocale(player), hex.controller != null && data.getPlayer(hex.controller) != null ? data.getPlayer(hex.controller).name : format("commands.hexstatus.owner.none", findLocale(player))))
-                    .append("\n");
 
-            for (TeamData teamData : state.teams.getActive()) {
-                if (hex.getProgressPercent(teamData.team) > 0 && hex.getProgressPercent(teamData.team) <= 100) {
-                    status.append("[white]|> [accent]")
-                            .append(data.getPlayer(teamData.team).name)
-                            .append("[lightgray]: [accent]")
-                            .append(format("commands.hexstatus.captured", findLocale(player), (int) hex.getProgressPercent(teamData.team)))
-                            .append("\n");
+            Locale locale = findLocale(player);
+            StringBuilder status = new StringBuilder(format("commands.hexstatus.hex", locale, hex.id)).append("\n");
+
+            if (hex.controller != null && data.getPlayer(hex.controller) != null) {
+                status.append(format("commands.hexstatus.owner", locale, data.getPlayer(hex.controller).name)).append("\n");
+            } else {
+                status.append(format("commands.hexstatus.owner.none", locale)).append("\n");
+
+                for (TeamData teamData : state.teams.getActive()) {
+                    if (hex.getProgressPercent(teamData.team) > 0 && data.getPlayer(teamData.team) != null) {
+                        status.append("[white]|> [accent]")
+                                .append(data.getPlayer(teamData.team).name)
+                                .append("[lightgray]: [accent]")
+                                .append(format("commands.hexstatus.progress", locale, Strings.autoFixed(hex.getProgressPercent(teamData.team), 4)))
+                                .append("\n");
+                    }
                 }
             }
             player.sendMessage(status.toString());
@@ -279,20 +296,21 @@ public class Main extends Plugin {
         HexTeam team = data.data(player);
         if (team.location == null) return;
 
-        StringBuilder message = new StringBuilder(format("hud.hex", findLocale(player), team.location.id)).append("\n");
+        Locale locale = findLocale(player);
+        StringBuilder message = new StringBuilder(format("hud.hex", locale, team.location.id)).append("\n");
 
         if (team.location.controller == null) {
             if (team.progressPercent > 0) {
-                message.append(format("hud.hex.capture-progress", findLocale(player), (int) (team.progressPercent)));
+                message.append(format("hud.hex.capture-progress", locale, Strings.autoFixed(team.progressPercent, 4)));
             } else {
-                message.append(format("hud.hex.empty", findLocale(player)));
+                message.append(format("hud.hex.empty", locale));
             }
         } else if (team.location.controller == player.team()) {
-            message.append(format("hud.hex.captured", findLocale(player)));
+            message.append(format("hud.hex.captured", locale));
         } else if (team.location.controller != null && data.getPlayer(team.location.controller) != null) {
-            message.append("[#").append(team.location.controller.color).append("]").append(format("hud.hex.captured-by-player", findLocale(player), data.getPlayer(team.location.controller).name));
+            message.append("[#").append(team.location.controller.color).append("]").append(format("hud.hex.captured-by-player", locale, data.getPlayer(team.location.controller).name));
         } else {
-            message.append(format("hud.hex.unknown", findLocale(player)));
+            message.append(format("hud.hex.unknown", locale));
         }
 
         Call.setHudText(player.con, message.toString());
@@ -315,12 +333,16 @@ public class Main extends Plugin {
 
         state.rules = mode.applyRules(rules.copy());
         logic.play();
+
+        Call.sendMessage(mode.displayName + "[white] by " + mode.author);
     }
 
     public void endGame() {
         if (restarting) return;
-
         restarting = true;
+
+        Events.fire("HexedGameOver");
+        Log.info("Раунд окончен.");
 
         Seq<Player> players = data.getLeaderboard();
         StringBuilder scores = new StringBuilder();
@@ -328,29 +350,38 @@ public class Main extends Plugin {
         if (players.any()) {
             for (int i = 0; i < players.size;) {
                 Player player = players.get(i);
-                scores.append("[yellow]").append(++i).append(".[white] ")
+                scores.append("[orange]").append(++i).append(". ")
                         .append(player.name)
                         .append("[lightgray] (").append(getForm("decl.hexes", findLocale(player), data.getControlledSize(player))).append(")")
                         .append("\n");
             }
 
             Player winner = players.first();
+            PlayerData statistic = Statistics.getData(winner.uuid());
+
             Groups.player.each(player -> {
-                StringBuilder endGameMessage = new StringBuilder(format("restart.header", findLocale(player)));
+                Locale locale = findLocale(player);
+                StringBuilder endGameMessage = new StringBuilder(format("restart.header", locale));
 
                 if (player == winner) {
-                    endGameMessage.append(format("restart.you-won", findLocale(player), getForm("decl.hexes", findLocale(player), data.getControlledSize(player))));
+                    endGameMessage.append(format("restart.you-won", locale, getForm("decl.hexes", locale, data.getControlledSize(player))));
                 } else {
-                    endGameMessage.append(format("restart.player-won", findLocale(player), winner.name, getForm("decl.hexes", findLocale(player), data.getControlledSize(winner))));
+                    endGameMessage.append(format("restart.player-won", locale, winner.name, getForm("decl.hexes", locale, data.getControlledSize(winner))));
                 }
 
-                endGameMessage.append(format("restart.final-score", findLocale(player), scores.toString()));
+                endGameMessage.append("\n\n");
+
+                endGameMessage.append(winner.name).append("[white]: [accent]")
+                        .append(getForm("decl.wins", locale, statistic.wins))
+                        .append(" [lime]\uE803[accent] ")
+                        .append(getForm("decl.wins", locale, statistic.wins + 1));
+
+                endGameMessage.append(format("restart.final-score", locale, scores.toString()));
 
                 Call.infoMessage(player.con, endGameMessage.toString());
             });
 
-            PlayerData data = Statistics.getData(winner.uuid());
-            data.wins++;
+            statistic.wins++;
             Statistics.save();
         }
 
@@ -358,8 +389,6 @@ public class Main extends Plugin {
     }
 
     public void reload() {
-        Events.fire("HexedGameOver");
-
         Seq<Player> players = Groups.player.copy(new Seq<>());
 
         startGame();
@@ -379,19 +408,24 @@ public class Main extends Plugin {
 
         for (int i = 0; i < interval.getTimes().length; i++) interval.reset(i, 0f);
 
+        leftPlayers.clear();
+
         counter = 0f;
         restarting = false;
     }
 
     public String getLeaderboard(Player player) {
         Seq<Player> players = data.getLeaderboard();
-        StringBuilder leaders = new StringBuilder(format("leaderboard.header", findLocale(player), (int) (roundTime - counter) / 60 / 60));
-        for (int i = 0; i < Math.min(players.size, 4); i++) {
+        players.setSize(Math.min(4, players.size));
+
+        Locale locale = findLocale(player);
+        StringBuilder leaders = new StringBuilder(format("leaderboard.header", locale, (int) (roundTime - counter) / 60 / 60));
+
+        for (int i = 0; i < players.size;) {
             Player p = players.get(i);
-            leaders.append("[orange]")
-                    .append(i + 1).append(".[white] ")
+            leaders.append("[orange]").append(++i).append(". ")
                     .append(p.name)
-                    .append("[orange] (").append(getForm("decl.hexes", findLocale(player), data.getControlledSize(p))).append(")")
+                    .append("[orange] (").append(getForm("decl.hexes", locale, data.getControlledSize(p))).append(")")
                     .append("\n");
         }
         return leaders.toString();

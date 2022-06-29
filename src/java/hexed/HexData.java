@@ -46,10 +46,10 @@ public class HexData {
             }
 
             float currPercent = newHex.getProgressPercent(player.team());
-            int lp = (int) (team.progressPercent);
-            int np = (int) (currPercent);
-            team.progressPercent = currPercent;
-            if (np != lp) Events.fire(new ProgressIncreaseEvent(player, currPercent));
+            if (team.progressPercent != currPercent) {
+                team.progressPercent = currPercent;
+                Events.fire(new ProgressIncreaseEvent(player, currPercent));
+            }
 
             boolean captured = newHex.controller == player.team();
             if (team.lastCaptured != captured) {
@@ -107,7 +107,7 @@ public class HexData {
     }
 
     public Hex getSpawnHex() {
-        return hexes.copy().shuffle().find(h -> h.controller == null && h.spawnTime.get());
+        return hexes.copy().shuffle().find(hex -> hex.controller == null && hex.spawnTime.get());
     }
 
     public Hex getHex(int position) {

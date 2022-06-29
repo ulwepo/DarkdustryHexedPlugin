@@ -170,7 +170,7 @@ public class HexedGenerator implements Cons<Tiles> {
             }
         }
 
-        state.map = new Map(StringMap.of("name", mode.displayName, "author", "[gray]Skykatik", "description", "A map for Darkdustry Hexed. Automatically generated."));
+        state.map = new Map(StringMap.of("name", mode.displayName, "author", mode.author, "description", "A map for Darkdustry Hexed. Automatically generated."));
     }
 
     public IntSeq getHex() {
@@ -191,7 +191,7 @@ public class HexedGenerator implements Cons<Tiles> {
         // temperature
         // |
         // v
-        def("[white]\uE861 [gold]Hexed Arena", new Block[][] {
+        def("[white]\uE861 [gold]Hexed Arena", "[gray]Skat", new Block[][] {
                 {Blocks.sand, Blocks.sand, Blocks.darksand, Blocks.sand, Blocks.darksand, Blocks.grass},
                 {Blocks.darksandWater, Blocks.darksand, Blocks.darksand, Blocks.darksand, Blocks.moss, Blocks.sand},
                 {Blocks.darksandWater, Blocks.darksand, Blocks.darksand, Blocks.darksand, Blocks.grass, Blocks.shale},
@@ -205,7 +205,7 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.iceWall, Blocks.snowWall, Blocks.snowWall, Blocks.snowWall, Blocks.stoneWall, Blocks.duneWall}
         }),
 
-        oilFlats("[white]\uF826 [accent]Oil Flats", new Block[][] {
+        oilFlats("[white]\uF826 [accent]Oil Flats", "[gray]Skat", new Block[][] {
                 {Blocks.sand, Blocks.darksand, Blocks.sand, Blocks.shale, Blocks.sand},
                 {Blocks.shale, Blocks.sand, Blocks.tar, Blocks.sand, Blocks.darksand},
                 {Blocks.darksand, Blocks.sand, Blocks.sand, Blocks.sand, Blocks.darksand},
@@ -229,7 +229,7 @@ public class HexedGenerator implements Cons<Tiles> {
             }});
         }),
 
-        winter("[white]\uF825 [cyan]Winter", new Block[][] {
+        winter("[white]\uF825 [cyan]Winter", "[gray]Skat", new Block[][] {
                 {Blocks.iceSnow, Blocks.dacite, Blocks.snow, Blocks.darksand, Blocks.snow, Blocks.darksand},
                 {Blocks.darksand, Blocks.cryofluid, Blocks.darksand, Blocks.iceSnow, Blocks.iceSnow, Blocks.dacite},
                 {Blocks.snow, Blocks.darksandTaintedWater, Blocks.dacite, Blocks.cryofluid, Blocks.darksand, Blocks.snow},
@@ -253,7 +253,7 @@ public class HexedGenerator implements Cons<Tiles> {
             }});
         }),
 
-        rivers("[white]\uF828 [accent]Rivers", new Block[][] {
+        rivers("[white]\uF828 [accent]Rivers", "[gray]Skat", new Block[][] {
                 {Blocks.sand, Blocks.stone, Blocks.sand, Blocks.dirt, Blocks.sand, Blocks.grass},
                 {Blocks.darksandWater, Blocks.dirt, Blocks.darksand, Blocks.mud, Blocks.grass, Blocks.grass},
                 {Blocks.water, Blocks.darksand, Blocks.darksand, Blocks.water, Blocks.sand, Blocks.grass},
@@ -281,7 +281,7 @@ public class HexedGenerator implements Cons<Tiles> {
             }});
         }),
 
-        lavaLand("[white]\uF827 [orange]Lava Land", new Block[][] {
+        lavaLand("[white]\uF827 [orange]Lava Land", "[gray]Skat", new Block[][] {
                 {Blocks.sand, Blocks.basalt, Blocks.sand, Blocks.darksand, Blocks.sand},
                 {Blocks.darksand, Blocks.sand, Blocks.darksand, Blocks.shale, Blocks.darksand},
                 {Blocks.craters, Blocks.slag, Blocks.shale, Blocks.darksand, Blocks.sand},
@@ -295,7 +295,7 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.duneWall, Blocks.shaleWall, Blocks.duneWall, Blocks.sandWall, Blocks.duneWall}
         }),
 
-        spores("[white]\uF82B [purple]Spores", new Block[][] {
+        spores("[white]\uF82B [purple]Spores", "[cyan]\uE810 [royal]Darkness [cyan]\uE810", new Block[][] {
                 {Blocks.moss, Blocks.sporeMoss, Blocks.sand, Blocks.moss},
                 {Blocks.moss, Blocks.dacite, Blocks.taintedWater, Blocks.sporeMoss},
                 {Blocks.darksandTaintedWater, Blocks.taintedWater, Blocks.moss, Blocks.hotrock},
@@ -323,7 +323,7 @@ public class HexedGenerator implements Cons<Tiles> {
             }});
         }),
 
-        nuclear("[white]\uF7A9 [scarlet]Nuclear", new Block[][] {
+        nuclear("[white]\uF7A9 [scarlet]Nuclear", "[cyan]\uE810 [royal]Darkness [cyan]\uE810", new Block[][] {
                 {Blocks.stone, Blocks.shale, Blocks.moss, Blocks.darksand},
                 {Blocks.craters, Blocks.stone, Blocks.taintedWater, Blocks.sand},
                 {Blocks.shale, Blocks.sand, Blocks.craters, Blocks.sand},
@@ -349,22 +349,23 @@ public class HexedGenerator implements Cons<Tiles> {
             }});
         });
 
-        final String displayName;
+        final String displayName, author;
 
         final Block[][] floors;
         final Block[][] blocks;
 
         final Cons<Rules> rules;
 
-        Mode(String displayName, Block[][] floors, Block[][] blocks, Cons<Rules> rules) {
+        Mode(String displayName, String author, Block[][] floors, Block[][] blocks, Cons<Rules> rules) {
             this.displayName = displayName;
+            this.author = author;
             this.floors = floors;
             this.blocks = blocks;
             this.rules = rules;
         }
 
-        Mode(String displayName, Block[][] floors, Block[][] blocks) {
-            this(displayName, floors, blocks, rules -> {});
+        Mode(String displayName, String author, Block[][] floors, Block[][] blocks) {
+            this(displayName, author, floors, blocks, rules -> {});
         }
 
         public Rules applyRules(Rules base) {
