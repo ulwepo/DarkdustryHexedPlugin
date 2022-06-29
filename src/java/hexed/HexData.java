@@ -86,6 +86,14 @@ public class HexData {
         return control.get(team.id, Seq::new);
     }
 
+    public int getControlledSize(Player player) {
+        return getControlledSize(player.team());
+    }
+
+    public int getControlledSize(Team team) {
+        return getControlled(team).size;
+    }
+
     public void initHexes(IntSeq ints) {
         for (int i = 0; i < ints.size; i++) {
             int pos = ints.get(i);

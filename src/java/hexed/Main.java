@@ -2,15 +2,11 @@ package hexed;
 
 import arc.Core;
 import arc.Events;
-import arc.graphics.Color;
 import arc.math.Mathf;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.struct.Seq.SeqIterable;
-import arc.util.CommandHandler;
-import arc.util.Interval;
-import arc.util.Log;
-import arc.util.Time;
+import arc.util.*;
 import hexed.HexData.HexCaptureEvent;
 import hexed.HexData.HexMoveEvent;
 import hexed.HexData.HexTeam;
@@ -61,6 +57,7 @@ public class Main extends Plugin {
 
     public static HexedGenerator.Mode mode;
     public static HexData data;
+
     public static boolean restarting = false;
     public static float counter = 0f;
 
@@ -84,7 +81,7 @@ public class Main extends Plugin {
         rules.bannedBlocks.add(Blocks.ripple);
         rules.modeName = "Hexed";
 
-        start = Schematics.readBase64("bXNjaAF4nE2SX3LbIBDGFyQh/sh2fINcQCfK5IHItPWMIjSS3DRvuUqu0Jnew71OX5JdPs80wuYDdvmxu0CBjhXVU3xOFH6kX+l0v25x2Sic0jos53k754mIzBif0rjS/uH6fv3z9+36W/rHHYUhz3Na+pc4jnT8MunHuHxPZIc8/UyveaF2HeK2pYXCmtnWz3FKI1VxGah9KpZXOn4x3QDmOU0n3mUv05ijjLohL6mfLsOYLiv5Ob/wkVM+cQbxvPTf4rBlZhEl/pMqP9Lc+KshDcSQFm2pTC3EUfk8JEA6UHaYHcRRYaxkUHFXY7EwFZgKTAWmEmbNEiAdFm+wO9Lqf3DcGMTcEnphajA1mBpMLcyW/TrSsm8vKC1My4vsVpE07bhrGjZqz3wryVbsrCXsUogSvWVpMNvLvEZwtQRnEJc4VBDeElgaK5UwZRxk/PGvmDt47bC1BNaAZ1A5I5UzkhzplpOoJUxDQcLk3S3t1K2+LZXracXTsYiLK+sHSdvidi3qVPxELMTBVmpvcZ+3K3Z4HA55OQlApDwOB5gDzAHmAHOAOVykw0U6SVHkAJc7EY9X4lFeD7QH2gPtgfZAe7w7jzg90B7vzuMELyd8Ao5MVAI=");
+        start = Schematics.readBase64("bXNjaAF4nE2SW1LDMAxFZSd2/EgpXUhWxPBhUgOdSeNM0vLYOj8g+ZaBpOm1LOlYlk2RDg21czpnMq/5Ix8pHvM2rqflciozEdkpPeVpI/3wuKM4lmXJ6/CepokO/4xhSutLJjeW+S1/lpW6bUyXS14pboV9w5LmPFGT1pG6p+r5pMM/1y/gOk8lHTmvH8uah/k6Tvm6kT3nWWbDUt55ybkcM8V0WofnNF4Ks4gyf6TqjzS//LQQA7GkRTuqpoN4qk+AREgPyg7WXgIVxkoGDf+1mKxMBaYCU4GphNmyREiPyRvsnrT6K45fBjG3ll6ZGkwNpgZTC7PjuJ605N0JSgvT8qSWyuTlnIaMYaf2zHey9QbBLRpRqw8sBtad2C2Ka6U4i7oCS0M1jlMii3HSCVvHUcbfX1rcPYJ3wjNYy4Bn0TkrnbOyOdIdb4J5jq0oZXJ2Rzt162+H8E6SHYuE+Dq/l207nK5DnySgioN4+GrvHc7zdsQel0MCuGIvBYjUy+EB84B5wDxgHjCPg/Q4SC9bFNkj5B4NVbhLt/YaSEUHoAPQAeiAexdQZwA64N4FrBBkhR8RWUj7");
 
         Bundle.load();
         Statistics.load();
@@ -97,7 +94,7 @@ public class Main extends Plugin {
             Groups.player.each(player -> {
                 if (player.team() != Team.derelict && player.team().data().noCores()) {
                     killPlayer(player);
-                    sendToChat("events.player-lost", player.coloredName());
+                    sendToChat("events.player-lost", player.name);
                     Call.infoMessage(player.con, format("events.you-lost", findLocale(player)));
                 }
 
@@ -105,7 +102,7 @@ public class Main extends Plugin {
                     player.clearUnit();
                 }
 
-                if (data.getControlled(player).size >= data.hexes().size * winCapturePercent) {
+                if (data.getControlledSize(player) >= data.hexes().size * winCapturePercent) {
                     endGame();
                 }
             });
@@ -130,7 +127,7 @@ public class Main extends Plugin {
                     hex.updateController();
                     hex.spawnTime.reset();
 
-                    Call.effect(Fx.reactorExplosion, hex.wx, hex.wy, Mathf.random(360f), Color.white);
+                    Call.effect(Fx.reactorExplosion, hex.wx, hex.wy, Mathf.random(360f), Tmp.c1.rand());
                     Groups.player.each(this::updateText);
                 }
             }
@@ -145,12 +142,12 @@ public class Main extends Plugin {
 
         Events.on(PlayerJoin.class, event -> {
             PlayerData data = Statistics.getData(event.player.uuid());
-            data.name = event.player.coloredName();
+            data.name = event.player.name;
             Statistics.save();
 
             if (event.player.team() != Team.derelict) {
                 Team team = leftPlayers.remove(event.player.uuid());
-                if (team != null && !team.cores().isEmpty()) return;
+                if (team != null && !team.data().noCores()) return;
 
                 spawn(event.player);
             }
@@ -171,14 +168,16 @@ public class Main extends Plugin {
         netServer.assigner = (player, players) -> {
             if (leftPlayers.containsKey(player.uuid())) return leftPlayers.get(player.uuid());
 
-            Seq<Team> teams = Seq.with(Team.all).filter(team -> team.id > 5 && !team.active() && !data.data(team).dying && !data.data(team).chosen && !leftPlayers.containsValue(team, true));
+            Seq<Team> teams = Seq.with(Team.all);
+            teams.filter(team -> team != Team.derelict && !team.active() && !data.data(team).dying && !data.data(team).chosen && !leftPlayers.containsValue(team, true));
+            
             return teams.any() ? teams.random() : Team.derelict;
         };
 
         netServer.chatFormatter = (player, message) -> {
             if (player != null) {
                 int wins = Statistics.getData(player.uuid()).wins;
-                return ("[coral][[[cyan]" + wins + " [sky]#[white] " + player.coloredName() + "[coral]]: [white]" + message);
+                return ("[coral][[[cyan]" + wins + " [sky]#[white] " + player.name + "[coral]]: [white]" + message);
             }
 
             return message;
@@ -191,10 +190,12 @@ public class Main extends Plugin {
             StringBuilder players = new StringBuilder();
             Seq<PlayerData> leaders = Statistics.getLeaders();
 
-            for (int i = 0; i < Math.min(leaders.size, 10); i++) {
-                players.append("[accent]").append(i + 1).append(". ")
-                        .append(leaders.get(i).name).append("[accent]: [cyan]")
-                        .append(leaders.get(i).wins)
+            for (int i = 0; i < Math.min(leaders.size, 10);) {
+                PlayerData leader = leaders.get(i);
+
+                players.append("[accent]").append(++i).append(". ")
+                        .append(leader.name).append("[accent]: [cyan]")
+                        .append(getForm("decl.wins", findLocale(player), leader.wins))
                         .append("\n");
             }
 
@@ -229,13 +230,13 @@ public class Main extends Plugin {
             hex.updateController();
             StringBuilder status = new StringBuilder(format("commands.hexstatus.hex", findLocale(player), hex.id))
                     .append("\n")
-                    .append(format("commands.hexstatus.owner", findLocale(player), hex.controller != null && data.getPlayer(hex.controller) != null ? data.getPlayer(hex.controller).coloredName() : format("commands.hexstatus.owner.none", findLocale(player))))
+                    .append(format("commands.hexstatus.owner", findLocale(player), hex.controller != null && data.getPlayer(hex.controller) != null ? data.getPlayer(hex.controller).name : format("commands.hexstatus.owner.none", findLocale(player))))
                     .append("\n");
 
             for (TeamData teamData : state.teams.getActive()) {
                 if (hex.getProgressPercent(teamData.team) > 0 && hex.getProgressPercent(teamData.team) <= 100) {
                     status.append("[white]|> [accent]")
-                            .append(data.getPlayer(teamData.team).coloredName())
+                            .append(data.getPlayer(teamData.team).name)
                             .append("[lightgray]: [accent]")
                             .append(format("commands.hexstatus.captured", findLocale(player), (int) hex.getProgressPercent(teamData.team)))
                             .append("\n");
@@ -289,7 +290,7 @@ public class Main extends Plugin {
         } else if (team.location.controller == player.team()) {
             message.append(format("hud.hex.captured", findLocale(player)));
         } else if (team.location.controller != null && data.getPlayer(team.location.controller) != null) {
-            message.append("[#").append(team.location.controller.color).append("]").append(format("hud.hex.captured-by-player", findLocale(player), data.getPlayer(team.location.controller).coloredName()));
+            message.append("[#").append(team.location.controller.color).append("]").append(format("hud.hex.captured-by-player", findLocale(player), data.getPlayer(team.location.controller).name));
         } else {
             message.append(format("hud.hex.unknown", findLocale(player)));
         }
@@ -325,11 +326,11 @@ public class Main extends Plugin {
         StringBuilder scores = new StringBuilder();
 
         if (players.any()) {
-            for (int i = 0; i < players.size; i++) {
-                scores.append("[yellow]")
-                        .append(i + 1).append(".[white] ")
-                        .append(players.get(i).coloredName())
-                        .append("[lightgray] (x").append(data.getControlled(players.get(i)).size).append(")[]")
+            for (int i = 0; i < players.size;) {
+                Player player = players.get(i);
+                scores.append("[yellow]").append(++i).append(".[white] ")
+                        .append(player.name)
+                        .append("[lightgray] (").append(getForm("decl.hexes", findLocale(player), data.getControlledSize(player))).append(")")
                         .append("\n");
             }
 
@@ -338,9 +339,9 @@ public class Main extends Plugin {
                 StringBuilder endGameMessage = new StringBuilder(format("restart.header", findLocale(player)));
 
                 if (player == winner) {
-                    endGameMessage.append(format("restart.you-won", findLocale(player), data.getControlled(player).size));
+                    endGameMessage.append(format("restart.you-won", findLocale(player), getForm("decl.hexes", findLocale(player), data.getControlledSize(player))));
                 } else {
-                    endGameMessage.append(format("restart.player-won", findLocale(player), winner.coloredName(), data.getControlled(winner).size));
+                    endGameMessage.append(format("restart.player-won", findLocale(player), winner.name, getForm("decl.hexes", findLocale(player), data.getControlledSize(winner))));
                 }
 
                 endGameMessage.append(format("restart.final-score", findLocale(player), scores.toString()));
@@ -385,8 +386,13 @@ public class Main extends Plugin {
     public String getLeaderboard(Player player) {
         Seq<Player> players = data.getLeaderboard();
         StringBuilder leaders = new StringBuilder(format("leaderboard.header", findLocale(player), (int) (roundTime - counter) / 60 / 60));
-        for (int i = 0; i < Math.min(3, players.size); i++) {
-            leaders.append("[yellow]").append(i + 1).append(".[white] ").append(players.get(i).coloredName()).append(format("leaderboard.hexes", findLocale(player), data.getControlled(players.get(i)).size));
+        for (int i = 0; i < Math.min(players.size, 4); i++) {
+            Player p = players.get(i);
+            leaders.append("[orange]")
+                    .append(i + 1).append(".[white] ")
+                    .append(p.name)
+                    .append("[orange] (").append(getForm("decl.hexes", findLocale(player), data.getControlledSize(p))).append(")")
+                    .append("\n");
         }
         return leaders.toString();
     }

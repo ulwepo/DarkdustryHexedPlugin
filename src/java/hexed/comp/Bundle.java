@@ -84,6 +84,11 @@ public class Bundle {
         return properties;
     }
 
+    public static Locale findLocale(Player player) {
+        Locale locale = Structs.find(supportedLocales, l -> player.locale.equals(l.toString()) || player.locale.startsWith(l.toString()));
+        return locale != null ? locale : defaultLocale();
+    }
+
     public static void bundled(Player player, String key, Object... values) {
         player.sendMessage(format(key, findLocale(player), values));
     }
@@ -92,12 +97,8 @@ public class Bundle {
         Groups.player.each(p -> bundled(p, key, values));
     }
 
-    public static Locale findLocale(Player player) {
-        return findLocale(player.locale);
-    }
-
-    public static Locale findLocale(String language) {
-        Locale locale = Structs.find(supportedLocales, l -> l.toString().equals(language) || language.startsWith(l.toString()));
-        return locale != null ? locale : defaultLocale();
+    public static String getForm(String key, Locale locale, int value) {
+        String[] words = get(key, locale).split("\\|");
+        return value + " " + words[(value % 10 == 1 && value % 100 != 11) ? 0 : value % 10 >= 2 && value % 10 <= 4 && (value % 100 < 10 || value % 100 >= 20) ? 1 : 2];
     }
 }
