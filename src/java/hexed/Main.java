@@ -12,18 +12,14 @@ import hexed.HexData.HexMoveEvent;
 import hexed.HexData.HexTeam;
 import hexed.HexData.ProgressIncreaseEvent;
 import hexed.comp.Bundle;
-import hexed.comp.NoPauseRules;
 import hexed.comp.PlayerData;
 import hexed.comp.Statistics;
 import mindustry.content.Blocks;
 import mindustry.content.Fx;
 import mindustry.content.Items;
 import mindustry.game.EventType.*;
-import mindustry.game.Rules;
-import mindustry.game.Schematic;
+import mindustry.game.*;
 import mindustry.game.Schematic.Stile;
-import mindustry.game.Schematics;
-import mindustry.game.Team;
 import mindustry.game.Teams.TeamData;
 import mindustry.gen.Call;
 import mindustry.gen.Groups;
@@ -43,20 +39,25 @@ public class Main extends Plugin {
     public static final float spawnDelay = 60 * 6f;
     public static final float winCapturePercent = 0.75f;
 
-    public static final int roundTime = 60 * 60 * 90;
-    public static final int leaderboardTime = 60 * 60 * 2;
-    public static final int updateTime = 60 * 2;
+    public static final float roundTime = 60 * 60 * 90f;
+    public static final float leaderboardTime = 60 * 60 * 3f;
+    public static final float updateTime = 60 * 1f;
 
     public static final int itemRequirement = 2560;
 
     public static final int leaderboardTimer = 0, updateTimer = 1;
 
-    public static final Rules rules = new NoPauseRules();
+    public static final Rules rules = new Rules() {
+        @Override
+        public Gamemode mode() {
+            return Gamemode.pvp;
+        }
+    };
+
     public static final Interval interval = new Interval(2);
     public static final ObjectMap<String, Team> leftPlayers = new ObjectMap<>();
 
     public static Schematic start;
-
     public static HexedGenerator.Mode mode;
     public static HexData data;
 
@@ -109,17 +110,17 @@ public class Main extends Plugin {
                 }
             });
 
-            if (interval.get(leaderboardTimer, leaderboardTime)) {
-                Groups.player.each(player -> Call.infoToast(player.con, getLeaderboard(player), 12f));
-            }
-
             if (interval.get(updateTimer, updateTime)) {
                 data.updateControl();
             }
 
-            counter += Time.delta;
+            if (interval.get(leaderboardTimer, leaderboardTime)) {
+                Groups.player.each(player -> Call.infoToast(player.con, getLeaderboard(player), 10f));
+            }
 
-            if (counter > roundTime) endGame();
+            counter -= Time.delta;
+
+            if (counter <= 0) endGame();
         });
 
         Events.on(BlockDestroyEvent.class, event -> {
@@ -168,11 +169,11 @@ public class Main extends Plugin {
             }
         });
 
-        Events.on(ProgressIncreaseEvent.class, event -> updateText(event.player));
+        Events.on(ProgressIncreaseEvent.class, event -> updateText(event.player()));
 
-        Events.on(HexMoveEvent.class, event -> updateText(event.player));
+        Events.on(HexMoveEvent.class, event -> updateText(event.player()));
 
-        Events.on(HexCaptureEvent.class, event -> updateText(event.player));
+        Events.on(HexCaptureEvent.class, event -> updateText(event.player()));
 
         netServer.assigner = (player, players) -> {
             if (leftPlayers.containsKey(player.uuid())) return leftPlayers.get(player.uuid());
@@ -230,7 +231,7 @@ public class Main extends Plugin {
 
         handler.<Player>register("lb", "Посмотреть текущий список лидеров.", (args, player) -> Call.infoMessage(player.con, getLeaderboard(player)));
 
-        handler.<Player>register("time", "Посмотреть время, оставшееся до конца раунда.", (args, player) -> bundled(player, "commands.time", (int) (roundTime - counter) / 60 / 60));
+        handler.<Player>register("time", "Посмотреть время, оставшееся до конца раунда.", (args, player) -> bundled(player, "commands.time", (int) counter / 60 / 60));
 
         handler.<Player>register("hexstatus", "Посмотреть статус хекса на своем местоположении.", (args, player) -> {
             Hex hex = data.data(player).location;
@@ -287,7 +288,7 @@ public class Main extends Plugin {
             endGame();
         });
 
-        handler.register("time", "Посмотреть время, оставшееся до конца раунда.", args -> Log.info("Время до конца раунда: '@' минут", (int) (roundTime - counter) / 60 / 60));
+        handler.register("time", "Посмотреть время, оставшееся до конца раунда.", args -> Log.info("Время до конца раунда: '@' минут", (int) counter / 60 / 60));
     }
 
     public void updateText(Player player) {
@@ -410,7 +411,7 @@ public class Main extends Plugin {
 
         leftPlayers.clear();
 
-        counter = 0f;
+        counter = roundTime;
         restarting = false;
     }
 
@@ -419,7 +420,7 @@ public class Main extends Plugin {
         players.setSize(Math.min(4, players.size));
 
         Locale locale = findLocale(player);
-        StringBuilder leaders = new StringBuilder(format("leaderboard.header", locale, (int) (roundTime - counter) / 60 / 60));
+        StringBuilder leaders = new StringBuilder(format("leaderboard.header", locale, (int) counter / 60 / 60));
 
         for (int i = 0; i < players.size;) {
             Player p = players.get(i);

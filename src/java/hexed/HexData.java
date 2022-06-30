@@ -133,33 +133,9 @@ public class HexData {
         public boolean lastCaptured;
     }
 
-    public static class HexCaptureEvent {
-        public final Player player;
-        public final Hex hex;
+    public record HexCaptureEvent(Player player, Hex hex) {}
 
-        public HexCaptureEvent(Player player, Hex hex) {
-            this.player = player;
-            this.hex = hex;
-        }
-    }
+    public record HexMoveEvent(Player player, Hex hex) {}
 
-    public static class HexMoveEvent {
-        public final Player player;
-        public final Hex hex;
-
-        public HexMoveEvent(Player player, Hex hex) {
-            this.player = player;
-            this.hex = hex;
-        }
-    }
-
-    public static class ProgressIncreaseEvent {
-        public final Player player;
-        public final float percent;
-
-        public ProgressIncreaseEvent(Player player, float percent) {
-            this.player = player;
-            this.percent = percent;
-        }
-    }
+    public record ProgressIncreaseEvent(Player player, float percent) {}
 }
