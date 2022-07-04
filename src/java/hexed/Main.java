@@ -7,6 +7,7 @@ import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.struct.Seq.SeqIterable;
 import arc.util.*;
+import arc.util.Timer.Task;
 import hexed.HexData.HexCaptureEvent;
 import hexed.HexData.HexMoveEvent;
 import hexed.HexData.HexTeam;
@@ -42,6 +43,7 @@ public class Main extends Plugin {
     public static final float roundTime = 60 * 60 * 90f;
     public static final float leaderboardTime = 60 * 60 * 3f;
     public static final float updateTime = 60 * 1f;
+    public static final float leftTeamDestroyTime = 20f;
 
     public static final int itemRequirement = 2560;
 
@@ -56,13 +58,14 @@ public class Main extends Plugin {
 
     public static final Interval interval = new Interval(2);
     public static final ObjectMap<String, Team> leftPlayers = new ObjectMap<>();
+    public static final ObjectMap<Team, Task> leftPlayerTeams = new ObjectMap<>();
 
     public static Schematic start;
     public static HexedGenerator.Mode mode;
     public static HexData data;
 
     public static boolean restarting = false;
-    public static float counter = 0f;
+    public static float counter = roundTime;
 
     @Override
     public void init() {
@@ -95,12 +98,6 @@ public class Main extends Plugin {
             data.updateStats();
 
             Groups.player.each(player -> {
-                if (player.team() != Team.derelict && player.team().data().noCores()) {
-                    killPlayer(player);
-                    sendToChat("events.player-lost", player.name);
-                    Call.infoMessage(player.con, format("events.you-lost", findLocale(player)));
-                }
-
                 if (player.team() == Team.derelict) {
                     player.clearUnit();
                 }
@@ -112,6 +109,7 @@ public class Main extends Plugin {
 
             if (interval.get(updateTimer, updateTime)) {
                 data.updateControl();
+                Groups.player.each(this::updateText);
             }
 
             if (interval.get(leaderboardTimer, leaderboardTime)) {
@@ -131,7 +129,20 @@ public class Main extends Plugin {
                     hex.spawnTime.reset();
 
                     Call.effect(Fx.reactorExplosion, hex.wx, hex.wy, Mathf.random(360f), Tmp.c1.rand());
-                    Groups.player.each(this::updateText);
+                }
+
+                Team team = event.tile.team();
+                Player player = data.getPlayer(team);
+
+                if (team.cores().size <= 1) {
+                    if (player != null) {
+                        killPlayer(player);
+                        sendToChat("events.player-lost", player.name);
+                        Call.infoMessage(player.con, format("events.you-lost", findLocale(player)));
+                    } else {
+                        killTeam(team);
+                        sendToChat("events.team-lost", team.color, team.name);
+                    }
                 }
             }
         });
@@ -156,8 +167,12 @@ public class Main extends Plugin {
             Statistics.save();
 
             if (event.player.team() != Team.derelict) {
-                Team team = leftPlayers.remove(event.player.uuid());
-                if (team != null && !team.data().noCores()) return;
+                Team team = leftPlayers.get(event.player.uuid());
+                if (team != null && !team.data().noCores()) {
+                    leftPlayers.remove(event.player.uuid());
+                    leftPlayerTeams.remove(team).cancel();
+                    return;
+                }
 
                 spawn(event.player);
             }
@@ -166,6 +181,11 @@ public class Main extends Plugin {
         Events.on(PlayerLeave.class, event -> {
             if (event.player.team() != Team.derelict && !restarting) {
                 leftPlayers.put(event.player.uuid(), event.player.team());
+                leftPlayerTeams.put(event.player.team(), Timer.schedule(() -> {
+                    killTeam(event.player.team());
+                    leftPlayers.remove(event.player.uuid());
+                    leftPlayerTeams.remove(event.player.team());
+                }, leftTeamDestroyTime));
             }
         });
 
@@ -179,7 +199,7 @@ public class Main extends Plugin {
             if (leftPlayers.containsKey(player.uuid())) return leftPlayers.get(player.uuid());
 
             Seq<Team> teams = Seq.with(Team.all);
-            teams.filter(team -> team != Team.derelict && !team.active() && !data.data(team).dying && !data.data(team).chosen && !leftPlayers.containsValue(team, true));
+            teams.filter(team -> team != Team.derelict && !team.active() && !data.data(team).dying && !data.data(team).chosen && !leftPlayerTeams.containsKey(team));
             
             return teams.any() ? teams.random() : Team.derelict;
         };
@@ -410,6 +430,7 @@ public class Main extends Plugin {
         for (int i = 0; i < interval.getTimes().length; i++) interval.reset(i, 0f);
 
         leftPlayers.clear();
+        leftPlayerTeams.clear();
 
         counter = roundTime;
         restarting = false;
@@ -441,7 +462,7 @@ public class Main extends Plugin {
     }
 
     public void killTeam(Team team) {
-        if (team == Team.derelict) return;
+        if (team == Team.derelict || team.data().noCores()) return;
 
         data.data(team).dying = true;
         Time.runTask(8f, () -> data.data(team).dying = false);
