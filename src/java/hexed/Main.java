@@ -43,7 +43,7 @@ public class Main extends Plugin {
     public static final float roundTime = 60 * 60 * 90f;
     public static final float leaderboardTime = 60 * 60 * 3f;
     public static final float updateTime = 60 * 1f;
-    public static final float leftTeamDestroyTime = 20f;
+    public static final float leftTeamDestroyTime = 90f;
 
     public static final int itemRequirement = 2560;
 
