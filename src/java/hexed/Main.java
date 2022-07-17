@@ -32,7 +32,7 @@ import mindustry.world.blocks.storage.CoreBlock;
 
 import java.util.Locale;
 
-import static hexed.comp.Bundle.*;
+import static hexed.comp.Bundle.format;
 import static mindustry.Vars.*;
 
 public class Main extends Plugin {
@@ -505,5 +505,23 @@ public class Main extends Plugin {
                 }
             }
         });
+    }
+
+    public static Locale findLocale(Player player) {
+        Locale locale = Structs.find(Bundle.supportedLocales, l -> player.locale.equals(l.toString()) || player.locale.startsWith(l.toString()));
+        return locale != null ? locale : Bundle.defaultLocale;
+    }
+
+    public static void bundled(Player player, String key, Object... values) {
+        player.sendMessage(format(key, findLocale(player), values));
+    }
+
+    public static void sendToChat(String key, Object... values) {
+        Groups.player.each(p -> bundled(p, key, values));
+    }
+
+    public static String getForm(String key, Locale locale, int value) {
+        String[] words = Bundle.get(key, locale).split("\\|");
+        return value + " " + words[(value % 10 == 1 && value % 100 != 11) ? 0 : value % 10 >= 2 && value % 10 <= 4 && (value % 100 < 10 || value % 100 >= 20) ? 1 : 2];
     }
 }

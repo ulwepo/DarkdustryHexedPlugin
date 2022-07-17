@@ -1,8 +1,8 @@
 package hexed;
 
 import arc.func.Cons;
+import arc.func.Floatc;
 import arc.graphics.Color;
-import arc.math.Angles;
 import arc.math.Mathf;
 import arc.math.geom.Bresenham2;
 import arc.math.geom.Geometry;
@@ -93,7 +93,7 @@ public class HexedGenerator implements Cons<Tiles> {
                 }
             });
 
-            Angles.circle(3, 360f / 3 / 2f - 90, f -> {
+            circle(3, 360f / 3 / 2f - 90, f -> {
                 Tmp.v1.trnsExact(f, Hex.spacing + 12);
                 if (Structs.inBounds(x + (int) Tmp.v1.x, y + (int) Tmp.v1.y, width, height)) {
                     Tmp.v1.trnsExact(f, Hex.spacing / 2f + 7);
@@ -184,6 +184,12 @@ public class HexedGenerator implements Cons<Tiles> {
             }
         }
         return array;
+    }
+
+    public void circle(int points, float offset, Floatc cons) {
+        for (int i = 0; i < points; i++) {
+            cons.get(offset + i * 360f / points);
+        }
     }
 
     public enum Mode {
@@ -309,7 +315,6 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.sporeWall, Blocks.shaleWall, Blocks.sandWall, Blocks.sporeWall}
         }, rules -> {
             rules.lighting = true;
-            rules.enemyLights = false;
             rules.ambientLight = new Color(0.01f, 0.01f, 0.04f, 0.3f);
 
             rules.weather.add(new WeatherEntry() {{
@@ -339,7 +344,6 @@ public class HexedGenerator implements Cons<Tiles> {
             rules.bannedBlocks.addAll(Blocks.microProcessor, Blocks.logicProcessor, Blocks.hyperProcessor);
 
             rules.lighting = true;
-            rules.enemyLights = false;
             rules.ambientLight = new Color(0.01f, 0.01f, 0.04f, 0.6f);
 
             rules.weather.add(new WeatherEntry() {{
