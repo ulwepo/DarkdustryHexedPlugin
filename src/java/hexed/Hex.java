@@ -12,6 +12,7 @@ import mindustry.world.blocks.storage.CoreBlock;
 
 import java.util.Arrays;
 
+import static hexed.Main.mode;
 import static mindustry.Vars.*;
 
 public class Hex {
@@ -68,7 +69,7 @@ public class Hex {
 
         TeamData data = state.teams.getActive().max(t -> progress[t.team.id]);
         if (data != null && data.team != Team.derelict && progress[data.team.id] >= Main.itemRequirement) {
-            world.tile(x, y).setNet(Blocks.coreShard, data.team, 0);
+            world.tile(x, y).setNet(mode.defaultCore, data.team, 0);
             return data.team;
         }
         return null;

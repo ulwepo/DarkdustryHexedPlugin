@@ -60,7 +60,7 @@ public class Main extends Plugin {
     public static final ObjectMap<String, Team> leftPlayers = new ObjectMap<>();
     public static final ObjectMap<Team, Task> leftPlayerTeams = new ObjectMap<>();
 
-    public static Schematic start;
+    public static Schematic serpuloStart, erekirStart;
     public static HexedGenerator.Mode mode;
     public static HexData data;
 
@@ -87,7 +87,8 @@ public class Main extends Plugin {
         rules.bannedBlocks.add(Blocks.ripple);
         rules.modeName = "Hexed";
 
-        start = Schematics.readBase64("bXNjaAF4nE2SW1LDMAxFZSd2/EgpXUhWxPBhUgOdSeNM0vLYOj8g+ZaBpOm1LOlYlk2RDg21czpnMq/5Ix8pHvM2rqflciozEdkpPeVpI/3wuKM4lmXJ6/CepokO/4xhSutLJjeW+S1/lpW6bUyXS14pboV9w5LmPFGT1pG6p+r5pMM/1y/gOk8lHTmvH8uah/k6Tvm6kT3nWWbDUt55ybkcM8V0WofnNF4Ks4gyf6TqjzS//LQQA7GkRTuqpoN4qk+AREgPyg7WXgIVxkoGDf+1mKxMBaYCU4GphNmyREiPyRvsnrT6K45fBjG3ll6ZGkwNpgZTC7PjuJ605N0JSgvT8qSWyuTlnIaMYaf2zHey9QbBLRpRqw8sBtad2C2Ka6U4i7oCS0M1jlMii3HSCVvHUcbfX1rcPYJ3wjNYy4Bn0TkrnbOyOdIdb4J5jq0oZXJ2Rzt162+H8E6SHYuE+Dq/l207nK5DnySgioN4+GrvHc7zdsQel0MCuGIvBYjUy+EB84B5wDxgHjCPg/Q4SC9bFNkj5B4NVbhLt/YaSEUHoAPQAeiAexdQZwA64N4FrBBkhR8RWUj7");
+        serpuloStart = Schematics.readBase64("bXNjaAF4nE2SW1LDMAxFZSd2/EgpXUhWxPBhUgOdSeNM0vLYOj8g+ZaBpOm1LOlYlk2RDg21czpnMq/5Ix8pHvM2rqflciozEdkpPeVpI/3wuKM4lmXJ6/CepokO/4xhSutLJjeW+S1/lpW6bUyXS14pboV9w5LmPFGT1pG6p+r5pMM/1y/gOk8lHTmvH8uah/k6Tvm6kT3nWWbDUt55ybkcM8V0WofnNF4Ks4gyf6TqjzS//LQQA7GkRTuqpoN4qk+AREgPyg7WXgIVxkoGDf+1mKxMBaYCU4GphNmyREiPyRvsnrT6K45fBjG3ll6ZGkwNpgZTC7PjuJ605N0JSgvT8qSWyuTlnIaMYaf2zHey9QbBLRpRqw8sBtad2C2Ka6U4i7oCS0M1jlMii3HSCVvHUcbfX1rcPYJ3wjNYy4Bn0TkrnbOyOdIdb4J5jq0oZXJ2Rzt162+H8E6SHYuE+Dq/l207nK5DnySgioN4+GrvHc7zdsQel0MCuGIvBYjUy+EB84B5wDxgHjCPg/Q4SC9bFNkj5B4NVbhLt/YaSEUHoAPQAeiAexdQZwA64N4FrBBkhR8RWUj7");
+        erekirStart = Schematics.readBase64("bXNjaAF4nGNgZWBlZmDJS8xNZWC72HCx+WI7A3dKanFyUWZBSWZ+HgMDA1tOYlJqTjEDU3QsIwNPcn5Rqm5yZkliSmoOUJKRgYEJCBkA4IsSVg==");
 
         Bundle.load();
         Statistics.load();
@@ -289,12 +290,20 @@ public class Main extends Plugin {
         handler.removeCommand("host");
         handler.removeCommand("gameover");
 
-        handler.register("hexed", "Запустить сервер в режиме Hexed.", args -> {
+        handler.register("hexed", "[режим_генерации]", "Запустить сервер в режиме Hexed.", args -> {
             if (!state.isMenu()) {
                 Log.err("Сервер уже запущен. Используй 'stop', чтобы остановить его.");
                 return;
             }
 
+            HexedGenerator.Mode custom = args.length > 0 ? Structs.find(HexedGenerator.Mode.values(), m -> m.name().equalsIgnoreCase(args[0])) : Seq.with(HexedGenerator.Mode.values()).random(mode);
+            if (custom == null) {
+                Log.err("Режим генерации с таким названием не найден!");
+                return;
+            }
+
+            mode = custom;
+            data = new HexData();
             startGame();
             netServer.openServer();
         });
@@ -338,9 +347,6 @@ public class Main extends Plugin {
     }
 
     public void startGame() {
-        mode = Seq.with(HexedGenerator.Mode.values()).random(mode);
-        data = new HexData();
-
         logic.reset();
         Call.worldDataBegin();
 
@@ -355,7 +361,7 @@ public class Main extends Plugin {
         state.rules = mode.applyRules(rules.copy());
         logic.play();
 
-        Call.sendMessage(mode.displayName + "[white] by " + mode.author);
+        Call.sendMessage(mode.displayName);
     }
 
     public void endGame() {
@@ -412,6 +418,8 @@ public class Main extends Plugin {
     public void reload() {
         Seq<Player> players = Groups.player.copy(new Seq<>());
 
+        mode = Seq.with(HexedGenerator.Mode.values()).random(mode);
+        data = new HexData();
         startGame();
 
         players.each(player -> {
@@ -489,17 +497,19 @@ public class Main extends Plugin {
     }
 
     public void loadout(Player player, int x, int y) {
+        Schematic start = mode.startScheme;
         Stile coreTile = start.tiles.find(s -> s.block instanceof CoreBlock);
-        int ox = x - coreTile.x, oy = y - coreTile.y;
-        start.tiles.each(st -> {
-            Tile tile = world.tile(st.x + ox, st.y + oy);
+        int sx = x - coreTile.x, sy = y - coreTile.y;
+
+        start.tiles.each(stile -> {
+            Tile tile = world.tile(stile.x + sx, stile.y + sy);
             if (tile == null) return;
-            tile.setNet(st.block, player.team(), st.rotation);
+            tile.setNet(stile.block, player.team(), stile.rotation);
             tile.getLinkedTiles(new Seq<>()).each(t -> t.floor().isDeep(), t -> t.setFloorNet(Blocks.darkPanel3));
 
-            if (st.config != null) tile.build.configureAny(st.config);
+            if (stile.config != null) tile.build.configureAny(stile.config);
 
-            if (st == coreTile) {
+            if (stile == coreTile) {
                 for (ItemStack stack : state.rules.loadout) {
                     Call.setItem(tile.build, stack.item, stack.amount);
                 }
