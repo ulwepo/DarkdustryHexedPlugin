@@ -32,7 +32,8 @@ import mindustry.world.Tile;
 import mindustry.world.Tiles;
 
 import static hexed.Main.*;
-import static mindustry.Vars.*;
+import static mindustry.Vars.maps;
+import static mindustry.Vars.state;
 
 public class HexedGenerator implements Cons<Tiles> {
 
@@ -40,24 +41,14 @@ public class HexedGenerator implements Cons<Tiles> {
 
     @Override
     public void get(Tiles tiles) {
-        Seq<GenerateFilter> ores = new Seq<>();
-        maps.addDefaultOres(ores);
-        ores.each(o -> {
-            ((OreFilter) o).threshold -= 0.05f;
-            ((OreFilter) o).scl += 10f;
-        });
-
-        ores.insert(0, new OreFilter() {{
-            ore = Blocks.oreScrap;
-            scl += 2 / 2.1f;
-        }});
-
-        ores.each(GenerateFilter::randomize);
         GenerateInput in = new GenerateInput();
         IntSeq hex = getHex();
 
-        int s1 = Mathf.random(0, 10000);
-        int s2 = Mathf.random(0, 10000);
+        Seq<OreFilter> ores = getOres();
+        ores.each(GenerateFilter::randomize);
+
+        int s1 = Mathf.random(10000);
+        int s2 = Mathf.random(10000);
 
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
@@ -69,14 +60,10 @@ public class HexedGenerator implements Cons<Tiles> {
                 Block ore = Blocks.air;
 
                 for (GenerateFilter filter : ores) {
-                    in.floor = Blocks.stone;
-                    in.block = wall;
-                    in.overlay = ore;
-                    in.x = x;
-                    in.y = y;
-                    in.width = in.height = Hex.size;
+                    in.set(x, y, wall, Blocks.stone, ore);
+                    in.begin(width, height, null);
                     filter.apply(in);
-                    if (in.overlay != Blocks.air && !floor.asFloor().isLiquid) {
+                    if (in.overlay != Blocks.air) {
                         ore = in.overlay;
                     }
                 }
@@ -103,19 +90,7 @@ public class HexedGenerator implements Cons<Tiles> {
             });
         }
 
-        Seq<GenerateFilter> filters = Seq.with(mode.filters);
-
-        // Why doesnt work?
-        for (Block block : content.blocks()) {
-            if (block.isFloor() && block.asFloor().decoration != null) {
-                filters.add(new ScatterFilter() {{
-                    flooronto = block;
-                    floor = block;
-                    block = block.asFloor().decoration;
-                }});
-            }
-        }
-
+        Seq<GenerateFilter> filters = Seq.with(mode.filters).addAll(maps.readFilters(null));
         for (GenerateFilter filter : filters) {
             filter.randomize();
             in.begin(width, height, tiles::getn);
@@ -136,6 +111,20 @@ public class HexedGenerator implements Cons<Tiles> {
         }
 
         state.map = new Map(StringMap.of("name", mode.displayName, "author", "[cyan]\uE810 [royal]Darkness [cyan]\uE810", "description", "A map for Darkdustry Hexed. Automatically generated."));
+    }
+
+    public Seq<OreFilter> getOres() {
+        Seq<Block> ores = mode.planet == Planets.serpulo ? serpuloOres : erekirOres;
+        Seq<OreFilter> filters = new Seq<>();
+        for (Block block : ores) {
+            filters.add(new OreFilter() {{
+                threshold = block.asFloor().oreThreshold;
+                scl = block.asFloor().oreScale;
+                ore = block;
+            }});
+        }
+
+        return filters;
     }
 
     public IntSeq getHex() {
@@ -174,9 +163,7 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.stoneWall, Blocks.stoneWall, Blocks.duneWall, Blocks.duneWall, Blocks.pine, Blocks.pine},
                 {Blocks.sporeWall, Blocks.sporeWall, Blocks.sporePine, Blocks.sporeWall, Blocks.sporeWall, Blocks.stoneWall},
                 {Blocks.iceWall, Blocks.snowWall, Blocks.snowWall, Blocks.snowWall, Blocks.stoneWall, Blocks.duneWall}
-        }, new GenerateFilter[] {
-
-        }, Planets.serpulo, serpuloStart),
+        }, new GenerateFilter[] {}, Planets.serpulo, serpuloStart),
 
         oilFlats("[white]\uF826 [accent]Oil Flats", new Block[][] {
                 {Blocks.sand, Blocks.darksand, Blocks.sand, Blocks.shale, Blocks.sand},
@@ -190,9 +177,7 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.duneWall, Blocks.sandWall, Blocks.sandWall, Blocks.sandWall, Blocks.duneWall},
                 {Blocks.sandWall, Blocks.sandWall, Blocks.shaleWall, Blocks.duneWall, Blocks.sandWall},
                 {Blocks.duneWall, Blocks.shaleWall, Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall}
-        }, new GenerateFilter[] {
-
-        }, Planets.serpulo, serpuloStart, rules -> {
+        }, new GenerateFilter[] {}, Planets.serpulo, serpuloStart, rules -> {
             rules.weather.add(new WeatherEntry() {{
                 weather = Weathers.sandstorm;
                 minFrequency = 14f;
@@ -278,9 +263,7 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.sandWall, Blocks.daciteWall, Blocks.shaleWall, Blocks.sandWall, Blocks.sandWall},
                 {Blocks.daciteWall, Blocks.stoneWall, Blocks.daciteWall, Blocks.sandWall, Blocks.sandWall},
                 {Blocks.duneWall, Blocks.shaleWall, Blocks.duneWall, Blocks.sandWall, Blocks.duneWall}
-        }, new GenerateFilter[] {
-
-        }, Planets.serpulo, serpuloStart),
+        }, new GenerateFilter[] {}, Planets.serpulo, serpuloStart),
 
         spores("[white]\uF82B [purple]Spores", new Block[][] {
                 {Blocks.moss, Blocks.sporeMoss, Blocks.sand, Blocks.moss},
@@ -294,9 +277,7 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.duneWall, Blocks.sporeWall, Blocks.duneWall, Blocks.sporeWall},
                 {Blocks.duneWall, Blocks.sandWall, Blocks.sporeWall, Blocks.sandWall},
                 {Blocks.sporeWall, Blocks.shaleWall, Blocks.sandWall, Blocks.sporeWall}
-        }, new GenerateFilter[] {
-
-        }, Planets.serpulo, serpuloStart, rules -> {
+        }, new GenerateFilter[] {}, Planets.serpulo, serpuloStart, rules -> {
             rules.lighting = true;
             rules.ambientLight = new Color(0.01f, 0.01f, 0.04f, 0.3f);
 
@@ -342,7 +323,7 @@ public class HexedGenerator implements Cons<Tiles> {
 
         // Внизу кал
 
-        swamp("[white]\uF706 [forest]Swamp", new Block[][] {
+        erekir("[white]\uF75C [#b8510d]Erekir", new Block[][] {
                 {Blocks.rhyolite, Blocks.beryllicStone, Blocks.arkyicStone, Blocks.rhyolite},
                 {Blocks.crystallineStone, Blocks.rhyolite, Blocks.arkyicStone, Blocks.carbonStone},
                 {Blocks.beryllicStone, Blocks.carbonStone, Blocks.rhyoliteCrater, Blocks.carbonVent},
