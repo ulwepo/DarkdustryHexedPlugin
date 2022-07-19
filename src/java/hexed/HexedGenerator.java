@@ -32,8 +32,7 @@ import mindustry.world.Tile;
 import mindustry.world.Tiles;
 
 import static hexed.Main.*;
-import static mindustry.Vars.maps;
-import static mindustry.Vars.state;
+import static mindustry.Vars.*;
 
 public class HexedGenerator implements Cons<Tiles> {
 
@@ -41,12 +40,6 @@ public class HexedGenerator implements Cons<Tiles> {
 
     @Override
     public void get(Tiles tiles) {
-        GenerateInput in = new GenerateInput();
-        IntSeq hex = getHex();
-
-        Seq<OreFilter> ores = getOres();
-        ores.each(GenerateFilter::randomize);
-
         int s1 = Mathf.random(10000);
         int s2 = Mathf.random(10000);
 
@@ -59,22 +52,17 @@ public class HexedGenerator implements Cons<Tiles> {
                 Block wall = mode.blocks[temp][elev];
                 Block ore = Blocks.air;
 
-                for (GenerateFilter filter : ores) {
-                    in.set(x, y, wall, Blocks.stone, ore);
-                    in.begin(width, height, null);
-                    filter.apply(in);
-                    if (in.overlay != Blocks.air) {
-                        ore = in.overlay;
-                    }
-                }
-
                 tiles.set(x, y, new Tile(x, y, floor.id, ore.id, wall.id));
             }
         }
 
-        for (int i = 0; i < hex.size; i++) {
-            int x = Point2.x(hex.get(i));
-            int y = Point2.y(hex.get(i));
+        IntSeq hexes = getHexes();
+        GenerateInput in = new GenerateInput();
+
+        for (int i = 0; i < hexes.size; i++) {
+            int x = Point2.x(hexes.get(i));
+            int y = Point2.y(hexes.get(i));
+
             Geometry.circle(x, y, width, height, Hex.diameter, (cx, cy) -> {
                 if (Intersector.isInsideHexagon(x, y, Hex.diameter, cx, cy)) {
                     tiles.getn(cx, cy).remove();
@@ -90,16 +78,16 @@ public class HexedGenerator implements Cons<Tiles> {
             });
         }
 
-        Seq<GenerateFilter> filters = Seq.with(mode.filters).addAll(maps.readFilters(null));
+        Seq<GenerateFilter> filters = getOres().addAll(getFilters()).addAll(mode.filters);
         for (GenerateFilter filter : filters) {
             filter.randomize();
             in.begin(width, height, tiles::getn);
             filter.apply(tiles, in);
         }
 
-        for (int i = 0; i < hex.size; i++) {
-            int offsetX = Point2.x(hex.get(i)) - 2;
-            int offsetY = Point2.y(hex.get(i)) - 2;
+        for (int i = 0; i < hexes.size; i++) {
+            int offsetX = Point2.x(hexes.get(i)) - 2;
+            int offsetY = Point2.y(hexes.get(i)) - 2;
 
             for (int x = offsetX; x < offsetX + 5; x++) {
                 for (int y = offsetY; y < offsetY + 5; y++) {
@@ -113,21 +101,7 @@ public class HexedGenerator implements Cons<Tiles> {
         state.map = new Map(StringMap.of("name", mode.displayName, "author", "[cyan]\uE810 [royal]Darkness [cyan]\uE810", "description", "A map for Darkdustry Hexed. Automatically generated."));
     }
 
-    public Seq<OreFilter> getOres() {
-        Seq<Block> ores = mode.planet == Planets.serpulo ? serpuloOres : erekirOres;
-        Seq<OreFilter> filters = new Seq<>();
-        for (Block block : ores) {
-            filters.add(new OreFilter() {{
-                threshold = block.asFloor().oreThreshold;
-                scl = block.asFloor().oreScale;
-                ore = block;
-            }});
-        }
-
-        return filters;
-    }
-
-    public IntSeq getHex() {
+    public IntSeq getHexes() {
         IntSeq array = new IntSeq();
         float h = Mathf.sqrt3 * Hex.spacing / 2;
         for (int x = 0; x < width / Hex.spacing - 2; x++) {
@@ -138,6 +112,34 @@ public class HexedGenerator implements Cons<Tiles> {
             }
         }
         return array;
+    }
+
+    public Seq<GenerateFilter> getOres() {
+        Seq<Block> ores = mode.planet == Planets.serpulo ? serpuloOres : erekirOres;
+        Seq<GenerateFilter> filters = new Seq<>();
+        for (Block block : ores) {
+            filters.add(new OreFilter() {{
+                threshold = block.asFloor().oreThreshold - 0.04f;
+                scl = block.asFloor().oreScale + 8f;
+                ore = block;
+            }});
+        }
+
+        return filters;
+    }
+
+    public Seq<GenerateFilter> getFilters() {
+        Seq<GenerateFilter> filters = new Seq<>();
+        for (Block block : content.blocks()) {
+            if (block.isFloor() && block.inEditor && block.asFloor().decoration != Blocks.air) {
+                var filter = new ScatterFilter();
+                filter.flooronto = block.asFloor();
+                filter.block = block.asFloor().decoration;
+                filters.add(filter);
+            }
+        }
+
+        return filters;
     }
 
     public void circle(int points, float offset, Floatc cons) {
@@ -321,8 +323,6 @@ public class HexedGenerator implements Cons<Tiles> {
             }});
         }),
 
-        // Внизу кал
-
         erekir("[white]\uF75C [#b8510d]Erekir", new Block[][] {
                 {Blocks.rhyolite, Blocks.beryllicStone, Blocks.arkyicStone, Blocks.rhyolite},
                 {Blocks.crystallineStone, Blocks.rhyolite, Blocks.arkyicStone, Blocks.carbonStone},
@@ -331,13 +331,11 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.beryllicStone, Blocks.redIce, Blocks.ferricStone, Blocks.carbonStone}
         }, new Block[][] {
                 {Blocks.rhyoliteWall, Blocks.beryllicStoneWall, Blocks.arkyicWall, Blocks.rhyoliteWall},
-                {Blocks.crystallineStoneWall, Blocks.rhyoliteWall, Blocks.arkyicWall, Blocks.carbonWall},
-                {Blocks.beryllicStoneWall, Blocks.carbonWall, Blocks.rhyoliteWall, Blocks.carbonWall},
+                {Blocks.crystallineStoneWall, Blocks.rhyoliteWall, Blocks.arkyicWall, Blocks.graphiticWall},
+                {Blocks.beryllicStoneWall, Blocks.graphiticWall, Blocks.rhyoliteWall, Blocks.carbonWall},
                 {Blocks.ferricStoneWall, Blocks.arkyicWall, Blocks.crystallineStoneWall, Blocks.ferricStoneWall},
                 {Blocks.beryllicStoneWall, Blocks.redIceWall, Blocks.ferricStoneWall, Blocks.carbonWall}
-        }, new GenerateFilter[] {
-
-        }, Planets.erekir, erekirStart, rules -> {
+        }, new GenerateFilter[] {}, Planets.erekir, erekirStart, rules -> {
 
         });
 
