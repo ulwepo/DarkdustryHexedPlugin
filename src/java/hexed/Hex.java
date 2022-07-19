@@ -68,7 +68,7 @@ public class Hex {
 
         TeamData data = state.teams.getActive().max(t -> progress[t.team.id]);
         if (data != null && data.team != Team.derelict && progress[data.team.id] >= Main.itemRequirement) {
-            world.tile(x, y).setNet(mode.defaultCore, data.team, 0);
+            world.tile(x, y).setNet(mode.planet.defaultCore, data.team, 0);
             return data.team;
         }
         return null;

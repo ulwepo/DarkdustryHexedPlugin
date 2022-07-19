@@ -3,7 +3,7 @@ package hexed.comp;
 import arc.files.Fi;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
-import arc.util.serialization.Json;
+import mindustry.io.JsonIO;
 
 import static mindustry.Vars.*;
 
@@ -11,13 +11,12 @@ public class Statistics {
 
     public static ObjectMap<String, PlayerData> datas;
 
-    public static Json json = new Json();
-    public static Fi file = dataDirectory.child("statistics.json");
+    public static Fi statistics = dataDirectory.child("statistics.json");
 
     @SuppressWarnings("unchecked")
     public static void load() {
-        json.addClassTag("hexed.comp.PlayerData", PlayerData.class); // rly important thing
-        datas = file.exists() ? json.fromJson(ObjectMap.class, file) : new ObjectMap<>();
+        JsonIO.json.addClassTag("hexed.comp.PlayerData", PlayerData.class); // rly important thing
+        datas = statistics.exists() ? JsonIO.json.fromJson(ObjectMap.class, statistics) : new ObjectMap<>();
     }
 
     public static PlayerData getData(String uuid) {
@@ -25,7 +24,7 @@ public class Statistics {
     }
 
     public static void save() {
-        json.toJson(datas, file);
+        JsonIO.json.toJson(datas, statistics);
     }
 
     public static Seq<PlayerData> getLeaders() {

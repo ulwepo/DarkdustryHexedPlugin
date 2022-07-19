@@ -1,7 +1,6 @@
 package hexed;
 
 import arc.func.Cons;
-import arc.func.Cons4;
 import arc.func.Floatc;
 import arc.graphics.Color;
 import arc.math.Mathf;
@@ -12,7 +11,6 @@ import arc.math.geom.Point2;
 import arc.struct.IntSeq;
 import arc.struct.Seq;
 import arc.struct.StringMap;
-import arc.util.Reflect;
 import arc.util.Structs;
 import arc.util.Tmp;
 import arc.util.noise.Simplex;
@@ -34,8 +32,7 @@ import mindustry.world.Tile;
 import mindustry.world.Tiles;
 
 import static hexed.Main.*;
-import static mindustry.Vars.maps;
-import static mindustry.Vars.state;
+import static mindustry.Vars.*;
 
 public class HexedGenerator implements Cons<Tiles> {
 
@@ -106,105 +103,34 @@ public class HexedGenerator implements Cons<Tiles> {
             });
         }
 
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                Tile tile = tiles.getn(x, y);
-                Block floor = tile.floor();
-                Block wall = tile.block();
+        Seq<GenerateFilter> filters = Seq.with(mode.filters);
 
-                if (wall == Blocks.air && Mathf.chance(0.02f)) {
-                    if (floor == Blocks.moss) wall = Blocks.sporeCluster;
-                    else if (floor.asFloor().decoration != null) wall = floor.asFloor().decoration;
-                }
-
-                tile.setBlock(wall);
+        // Why doesnt work?
+        for (Block block : content.blocks()) {
+            if (block.isFloor() && block.asFloor().decoration != null) {
+                filters.add(new ScatterFilter() {{
+                    flooronto = block;
+                    floor = block;
+                    block = block.asFloor().decoration;
+                }});
             }
         }
 
-        if (mode == Mode.winter) {
-            RiverNoiseFilter riverNoise = new RiverNoiseFilter();
-            Reflect.set(riverNoise, "floor", Blocks.darksand);
-            Reflect.set(riverNoise, "floor2", Blocks.darksandWater);
-
-            riverNoise.randomize();
+        for (GenerateFilter filter : filters) {
+            filter.randomize();
             in.begin(width, height, tiles::getn);
-            riverNoise.apply(tiles, in);
-            for (Tile tile : tiles) {
-                if (tile.floor().isLiquid) tile.remove();
-            }
-        }
-
-        if (mode == Mode.rivers) {
-            RiverNoiseFilter riverNoise = new RiverNoiseFilter();
-            Reflect.set(riverNoise, "floor", Blocks.sand);
-            Reflect.set(riverNoise, "floor2", Blocks.water);
-
-            riverNoise.randomize();
-            in.begin(width, height, tiles::getn);
-            riverNoise.apply(tiles, in);
-            for (Tile tile : tiles) {
-                if (tile.floor().isLiquid) tile.remove();
-            }
-        }
-
-        if (mode == Mode.nuclear) {
-            ScatterFilter scatter = new ScatterFilter() {{
-                flooronto = Blocks.snow;
-                floor = Blocks.ice;
-                block = Blocks.whiteTreeDead;
-            }};
-
-            scatter.randomize();
-            in.begin(width, height, tiles::getn);
-            scatter.apply(tiles, in);
-        }
-
-        if(mode == Mode.swamp) {
-            RiverNoiseFilter riverNoise = new RiverNoiseFilter();
-            Reflect.set(riverNoise, "block", Blocks.arkyicWall);
-            Reflect.set(riverNoise, "floor", Blocks.arkyicStone);
-            Reflect.set(riverNoise, "floor2", Blocks.arkyciteFloor);
-
-            riverNoise.scl = 90f;
-            riverNoise.threshold = .12f;
-            riverNoise.threshold2 = .22f;
-            riverNoise.randomize();
-            in.begin(width, height, tiles::getn);
-            riverNoise.apply(tiles, in);
-            for (Tile tile : tiles) {
-                if (tile.floor().isLiquid) tile.remove();
-            }
-
-            Cons4<Block, Block, Block, Float> scatter = (onto, flur, blok, chance) -> {
-                ScatterFilter orbs = new ScatterFilter() {{
-                    flooronto = onto;
-                    floor = flur;
-                    block = blok;
-                }};
-
-                orbs.chance = chance;
-                orbs.randomize();
-                in.begin(width, height, tiles::getn);
-                orbs.apply(tiles, in);
-            };
-
-            scatter.get(Blocks.beryllicStone, Blocks.beryllicStone, Blocks.crystalOrbs, .001f);
-            scatter.get(Blocks.arkyicStone, Blocks.arkyicVent, Blocks.air, .55f);
-            scatter.get(Blocks.rhyolite, Blocks.rhyoliteVent, Blocks.air, .5f);
-            scatter.get(Blocks.yellowStone, Blocks.yellowStone, Blocks.crystalBlocks, .001f);
+            filter.apply(tiles, in);
         }
 
         for (int i = 0; i < hex.size; i++) {
-            int x = Point2.x(hex.get(i));
-            int y = Point2.y(hex.get(i));
+            int offsetX = Point2.x(hex.get(i)) - 2;
+            int offsetY = Point2.y(hex.get(i)) - 2;
 
-            int offsetX = x - 2;
-            int offsetY = y - 2;
-            for (int x5 = offsetX; x5 < offsetX + 5; x5++) {
-                for (int y5 = offsetY; y5 < offsetY + 5; y5++) {
-                    Tile tile = tiles.getn(x5, y5);
+            for (int x = offsetX; x < offsetX + 5; x++) {
+                for (int y = offsetY; y < offsetY + 5; y++) {
+                    Tile tile = tiles.getn(x, y);
                     tile.remove();
-                    tile.setFloor(tile.floor() == Blocks.water ? Blocks.darksandWater.asFloor() : tile.floor() == Blocks.darksandWater ? Blocks.darksandTaintedWater.asFloor() : Blocks.metalFloor5.asFloor());
+                    tile.setFloor(Blocks.coreZone.asFloor());
                 }
             }
         }
@@ -248,7 +174,9 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.stoneWall, Blocks.stoneWall, Blocks.duneWall, Blocks.duneWall, Blocks.pine, Blocks.pine},
                 {Blocks.sporeWall, Blocks.sporeWall, Blocks.sporePine, Blocks.sporeWall, Blocks.sporeWall, Blocks.stoneWall},
                 {Blocks.iceWall, Blocks.snowWall, Blocks.snowWall, Blocks.snowWall, Blocks.stoneWall, Blocks.duneWall}
-        }, Planets.serpulo, serpuloStart, Blocks.coreShard),
+        }, new GenerateFilter[] {
+
+        }, Planets.serpulo, serpuloStart),
 
         oilFlats("[white]\uF826 [accent]Oil Flats", new Block[][] {
                 {Blocks.sand, Blocks.darksand, Blocks.sand, Blocks.shale, Blocks.sand},
@@ -262,7 +190,9 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.duneWall, Blocks.sandWall, Blocks.sandWall, Blocks.sandWall, Blocks.duneWall},
                 {Blocks.sandWall, Blocks.sandWall, Blocks.shaleWall, Blocks.duneWall, Blocks.sandWall},
                 {Blocks.duneWall, Blocks.shaleWall, Blocks.sandWall, Blocks.shaleWall, Blocks.sandWall}
-        }, Planets.serpulo, serpuloStart, Blocks.coreShard, rules -> {
+        }, new GenerateFilter[] {
+
+        }, Planets.serpulo, serpuloStart, rules -> {
             rules.weather.add(new WeatherEntry() {{
                 weather = Weathers.sandstorm;
                 minFrequency = 14f;
@@ -286,7 +216,12 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.snowPine, Blocks.snowWall, Blocks.snowPine, Blocks.iceWall, Blocks.duneWall, Blocks.snowWall},
                 {Blocks.iceWall, Blocks.snowWall, Blocks.snowWall, Blocks.snowPine, Blocks.snowWall, Blocks.iceWall},
                 {Blocks.iceWall, Blocks.duneWall, Blocks.snowWall, Blocks.pine, Blocks.snowPine, Blocks.duneWall}
-        }, Planets.serpulo, serpuloStart, Blocks.coreShard, rules -> {
+        }, new GenerateFilter[] {
+                new RiverNoiseFilter() {{
+                    floor = Blocks.darksand;
+                    floor2 = Blocks.darksandWater;
+                }}
+        }, Planets.serpulo, serpuloStart, rules -> {
             rules.weather.add(new WeatherEntry() {{
                 weather = Weathers.snow;
                 minFrequency = 20f;
@@ -310,7 +245,12 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.stoneWall, Blocks.duneWall, Blocks.duneWall, Blocks.duneWall, Blocks.sandWall, Blocks.pine},
                 {Blocks.stoneWall, Blocks.dirtWall, Blocks.duneWall, Blocks.sandWall, Blocks.duneWall, Blocks.stoneWall},
                 {Blocks.dirtWall, Blocks.sandWall, Blocks.stoneWall, Blocks.sandWall, Blocks.pine, Blocks.pine}
-        }, Planets.serpulo, serpuloStart, Blocks.coreShard, rules -> {
+        }, new GenerateFilter[] {
+                new RiverNoiseFilter() {{
+                    floor = Blocks.sand;
+                    floor2 = Blocks.water;
+                }}
+        }, Planets.serpulo, serpuloStart, rules -> {
             rules.weather.add(new WeatherEntry() {{
                 weather = Weathers.rain;
                 minFrequency = 20f;
@@ -338,7 +278,9 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.sandWall, Blocks.daciteWall, Blocks.shaleWall, Blocks.sandWall, Blocks.sandWall},
                 {Blocks.daciteWall, Blocks.stoneWall, Blocks.daciteWall, Blocks.sandWall, Blocks.sandWall},
                 {Blocks.duneWall, Blocks.shaleWall, Blocks.duneWall, Blocks.sandWall, Blocks.duneWall}
-        }, Planets.serpulo, serpuloStart, Blocks.coreShard),
+        }, new GenerateFilter[] {
+
+        }, Planets.serpulo, serpuloStart),
 
         spores("[white]\uF82B [purple]Spores", new Block[][] {
                 {Blocks.moss, Blocks.sporeMoss, Blocks.sand, Blocks.moss},
@@ -352,7 +294,9 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.duneWall, Blocks.sporeWall, Blocks.duneWall, Blocks.sporeWall},
                 {Blocks.duneWall, Blocks.sandWall, Blocks.sporeWall, Blocks.sandWall},
                 {Blocks.sporeWall, Blocks.shaleWall, Blocks.sandWall, Blocks.sporeWall}
-        }, Planets.serpulo, serpuloStart, Blocks.coreShard, rules -> {
+        }, new GenerateFilter[] {
+
+        }, Planets.serpulo, serpuloStart, rules -> {
             rules.lighting = true;
             rules.ambientLight = new Color(0.01f, 0.01f, 0.04f, 0.3f);
 
@@ -379,7 +323,13 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.shaleWall, Blocks.sandWall, Blocks.stoneWall, Blocks.sandWall},
                 {Blocks.darkMetal, Blocks.sporePine, Blocks.darkMetal, Blocks.snowWall},
                 {Blocks.shaleWall, Blocks.stoneWall, Blocks.dirtWall, Blocks.duneWall}
-        }, Planets.serpulo, serpuloStart, Blocks.coreShard, rules -> {
+        }, new GenerateFilter[] {
+                new ScatterFilter() {{
+                    flooronto = Blocks.snow;
+                    floor = Blocks.ice;
+                    block = Blocks.whiteTreeDead;
+                }}
+        }, Planets.serpulo, serpuloStart, rules -> {
             rules.lighting = true;
             rules.ambientLight = new Color(0.01f, 0.01f, 0.04f, 0.6f);
 
@@ -390,15 +340,24 @@ public class HexedGenerator implements Cons<Tiles> {
             }});
         }),
 
+        // Внизу кал
+
         swamp("[white]\uF706 [forest]Swamp", new Block[][] {
-                {Blocks.beryllicStone, Blocks.arkyicStone, Blocks.rhyolite},
-                {Blocks.rhyolite, Blocks.regolith, Blocks.yellowStone}
+                {Blocks.rhyolite, Blocks.beryllicStone, Blocks.arkyicStone, Blocks.rhyolite},
+                {Blocks.crystallineStone, Blocks.rhyolite, Blocks.arkyicStone, Blocks.carbonStone},
+                {Blocks.beryllicStone, Blocks.carbonStone, Blocks.rhyoliteCrater, Blocks.carbonVent},
+                {Blocks.ferricStone, Blocks.arkyicStone, Blocks.crystalFloor, Blocks.ferricStone},
+                {Blocks.beryllicStone, Blocks.redIce, Blocks.ferricStone, Blocks.carbonStone}
         }, new Block[][] {
-                {Blocks.beryllicStoneWall, Blocks.arkyicWall, Blocks.rhyoliteWall},
-                {Blocks.rhyoliteWall, Blocks.regolithWall, Blocks.yellowStoneWall}
-        }, Planets.erekir, erekirStart, Blocks.coreBastion, rules -> {
-            rules.lighting = true;
-            rules.ambientLight.a = .6f;
+                {Blocks.rhyoliteWall, Blocks.beryllicStoneWall, Blocks.arkyicWall, Blocks.rhyoliteWall},
+                {Blocks.crystallineStoneWall, Blocks.rhyoliteWall, Blocks.arkyicWall, Blocks.carbonWall},
+                {Blocks.beryllicStoneWall, Blocks.carbonWall, Blocks.rhyoliteWall, Blocks.carbonWall},
+                {Blocks.ferricStoneWall, Blocks.arkyicWall, Blocks.crystallineStoneWall, Blocks.ferricStoneWall},
+                {Blocks.beryllicStoneWall, Blocks.redIceWall, Blocks.ferricStoneWall, Blocks.carbonWall}
+        }, new GenerateFilter[] {
+
+        }, Planets.erekir, erekirStart, rules -> {
+
         });
 
         final String displayName;
@@ -406,24 +365,25 @@ public class HexedGenerator implements Cons<Tiles> {
         final Block[][] floors;
         final Block[][] blocks;
 
+        final GenerateFilter[] filters;
+
         final Planet planet;
         final Schematic startScheme;
-        final Block defaultCore;
 
         final Cons<Rules> customRules;
 
-        Mode(String displayName, Block[][] floors, Block[][] blocks, Planet planet, Schematic startScheme, Block defaultCore, Cons<Rules> customRules) {
+        Mode(String displayName, Block[][] floors, Block[][] blocks, GenerateFilter[] filters, Planet planet, Schematic startScheme, Cons<Rules> customRules) {
             this.displayName = displayName;
             this.floors = floors;
             this.blocks = blocks;
+            this.filters = filters;
             this.planet = planet;
             this.startScheme = startScheme;
-            this.defaultCore = defaultCore;
             this.customRules = customRules;
         }
 
-        Mode(String displayName, Block[][] floors, Block[][] blocks, Planet planet, Schematic startScheme, Block defaultCore) {
-            this(displayName, floors, blocks, planet, startScheme, defaultCore, rules -> {});
+        Mode(String displayName, Block[][] floors, Block[][] blocks, GenerateFilter[] filters, Planet planet, Schematic startScheme) {
+            this(displayName, floors, blocks, filters, planet, startScheme, rules -> {});
         }
 
         public Rules applyRules(Rules rules) {
