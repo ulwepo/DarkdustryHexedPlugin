@@ -1,6 +1,7 @@
 package hexed;
 
 import arc.func.Cons;
+import arc.func.Cons4;
 import arc.func.Floatc;
 import arc.graphics.Color;
 import arc.math.Mathf;
@@ -156,6 +157,41 @@ public class HexedGenerator implements Cons<Tiles> {
             scatter.randomize();
             in.begin(width, height, tiles::getn);
             scatter.apply(tiles, in);
+        }
+
+        if(mode == Mode.swamp) {
+            RiverNoiseFilter riverNoise = new RiverNoiseFilter();
+            Reflect.set(riverNoise, "block", Blocks.arkyicWall);
+            Reflect.set(riverNoise, "floor", Blocks.arkyicStone);
+            Reflect.set(riverNoise, "floor2", Blocks.arkyciteFloor);
+
+            riverNoise.scl = 90f;
+            riverNoise.threshold = .12f;
+            riverNoise.threshold2 = .22f;
+            riverNoise.randomize();
+            in.begin(width, height, tiles::getn);
+            riverNoise.apply(tiles, in);
+            for (Tile tile : tiles) {
+                if (tile.floor().isLiquid) tile.remove();
+            }
+
+            Cons4<Block, Block, Block, Float> scatter = (onto, flur, blok, chance) -> {
+                ScatterFilter orbs = new ScatterFilter() {{
+                    flooronto = onto;
+                    floor = flur;
+                    block = blok;
+                }};
+
+                orbs.chance = chance;
+                orbs.randomize();
+                in.begin(width, height, tiles::getn);
+                orbs.apply(tiles, in);
+            };
+
+            scatter.get(Blocks.beryllicStone, Blocks.beryllicStone, Blocks.crystalOrbs, .001f);
+            scatter.get(Blocks.arkyicStone, Blocks.arkyicVent, Blocks.air, .55f);
+            scatter.get(Blocks.rhyolite, Blocks.rhyoliteVent, Blocks.air, .5f);
+            scatter.get(Blocks.yellowStone, Blocks.yellowStone, Blocks.crystalBlocks, .001f);
         }
 
         for (int i = 0; i < hex.size; i++) {
@@ -354,22 +390,15 @@ public class HexedGenerator implements Cons<Tiles> {
             }});
         }),
 
-        // Внизу кал
-
         swamp("[white]\uF706 [forest]Swamp", new Block[][] {
-                {Blocks.rhyolite, Blocks.beryllicStone, Blocks.arkyicStone, Blocks.rhyolite},
-                {Blocks.crystallineStone, Blocks.rhyolite, Blocks.arkyicStone, Blocks.carbonStone},
-                {Blocks.beryllicStone, Blocks.carbonStone, Blocks.rhyoliteCrater, Blocks.carbonVent},
-                {Blocks.ferricStone, Blocks.arkyicStone, Blocks.crystalFloor, Blocks.ferricStone},
-                {Blocks.beryllicStone, Blocks.redIce, Blocks.ferricStone, Blocks.carbonStone}
+                {Blocks.beryllicStone, Blocks.arkyicStone, Blocks.rhyolite},
+                {Blocks.rhyolite, Blocks.regolith, Blocks.yellowStone}
         }, new Block[][] {
-                {Blocks.rhyoliteWall, Blocks.beryllicStoneWall, Blocks.arkyicWall, Blocks.rhyoliteWall},
-                {Blocks.crystallineStoneWall, Blocks.rhyoliteWall, Blocks.arkyicWall, Blocks.carbonWall},
-                {Blocks.beryllicStoneWall, Blocks.carbonWall, Blocks.rhyoliteWall, Blocks.carbonWall},
-                {Blocks.ferricStoneWall, Blocks.arkyicWall, Blocks.crystallineStoneWall, Blocks.ferricStoneWall},
-                {Blocks.beryllicStoneWall, Blocks.redIceWall, Blocks.ferricStoneWall, Blocks.carbonWall}
+                {Blocks.beryllicStoneWall, Blocks.arkyicWall, Blocks.rhyoliteWall},
+                {Blocks.rhyoliteWall, Blocks.regolithWall, Blocks.yellowStoneWall}
         }, Planets.erekir, erekirStart, Blocks.coreBastion, rules -> {
-
+            rules.lighting = true;
+            rules.ambientLight.a = .6f;
         });
 
         final String displayName;
