@@ -78,7 +78,7 @@ public class HexedGenerator implements Cons<Tiles> {
             });
         }
 
-        Seq<GenerateFilter> filters = getOres().addAll(getFilters()).addAll(mode.filters);
+        Seq<GenerateFilter> filters = getOres().addAll(getDefaultFilters()).addAll(mode.filters);
         for (GenerateFilter filter : filters) {
             filter.randomize();
             in.begin(width, height, tiles::getn);
@@ -86,12 +86,12 @@ public class HexedGenerator implements Cons<Tiles> {
         }
 
         for (int i = 0; i < hexes.size; i++) {
-            int offsetX = Point2.x(hexes.get(i)) - 2;
-            int offsetY = Point2.y(hexes.get(i)) - 2;
+            int x = Point2.x(hexes.get(i));
+            int y = Point2.y(hexes.get(i));
 
-            for (int x = offsetX; x < offsetX + 5; x++) {
-                for (int y = offsetY; y < offsetY + 5; y++) {
-                    Tile tile = tiles.getn(x, y);
+            for (int cx = x - 2; cx < x + 3; cx++) {
+                for (int cy = y - 2; cy < y + 3; cy++) {
+                    Tile tile = tiles.getn(cx, cy);
                     tile.remove();
                     tile.setFloor(Blocks.coreZone.asFloor());
                 }
@@ -128,7 +128,7 @@ public class HexedGenerator implements Cons<Tiles> {
         return filters;
     }
 
-    public Seq<GenerateFilter> getFilters() {
+    public Seq<GenerateFilter> getDefaultFilters() {
         Seq<GenerateFilter> filters = new Seq<>();
         for (Block block : content.blocks()) {
             if (block.isFloor() && block.inEditor && block.asFloor().decoration != Blocks.air) {
@@ -158,13 +158,15 @@ public class HexedGenerator implements Cons<Tiles> {
                 {Blocks.darksandWater, Blocks.darksand, Blocks.darksand, Blocks.darksand, Blocks.moss, Blocks.sand},
                 {Blocks.darksandWater, Blocks.darksand, Blocks.darksand, Blocks.darksand, Blocks.grass, Blocks.shale},
                 {Blocks.darksandTaintedWater, Blocks.darksandTaintedWater, Blocks.moss, Blocks.moss, Blocks.sporeMoss, Blocks.stone},
-                {Blocks.ice, Blocks.iceSnow, Blocks.snow, Blocks.dacite, Blocks.hotrock, Blocks.darksand}
+                {Blocks.ice, Blocks.iceSnow, Blocks.snow, Blocks.dacite, Blocks.hotrock, Blocks.darksand},
+                {Blocks.arkyicStone, Blocks.arkyicStone, Blocks.arkyicStone, Blocks.arkyicStone, Blocks.arkyicStone, Blocks.arkyicStone}
         }, new Block[][] {
                 {Blocks.stoneWall, Blocks.duneWall, Blocks.sandWall, Blocks.duneWall, Blocks.pine, Blocks.pine},
                 {Blocks.stoneWall, Blocks.stoneWall, Blocks.duneWall, Blocks.duneWall, Blocks.sporeWall, Blocks.sandWall},
                 {Blocks.stoneWall, Blocks.stoneWall, Blocks.duneWall, Blocks.duneWall, Blocks.pine, Blocks.pine},
                 {Blocks.sporeWall, Blocks.sporeWall, Blocks.sporePine, Blocks.sporeWall, Blocks.sporeWall, Blocks.stoneWall},
-                {Blocks.iceWall, Blocks.snowWall, Blocks.snowWall, Blocks.snowWall, Blocks.stoneWall, Blocks.duneWall}
+                {Blocks.iceWall, Blocks.snowWall, Blocks.snowWall, Blocks.snowWall, Blocks.stoneWall, Blocks.duneWall},
+                {Blocks.arkyicWall, Blocks.arkyicWall, Blocks.arkyicWall, Blocks.arkyicWall, Blocks.arkyicWall, Blocks.arkyicWall}
         }, new GenerateFilter[] {}, Planets.serpulo, serpuloStart),
 
         oilFlats("[white]\uF826 [accent]Oil Flats", new Block[][] {

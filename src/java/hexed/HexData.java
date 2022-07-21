@@ -24,18 +24,11 @@ public class HexData {
 
     public void updateStats() {
         teamMap.clear();
+        control.clear();
 
-        for (Player player : Groups.player) {
-            teamMap.put(player.team().id, player);
-        }
+        Groups.player.each(player -> teamMap.put(player.team().id, player));
 
-        for (Seq<Hex> arr : control.values()) {
-            arr.clear();
-        }
-
-        for (Player player : Groups.player) {
-            if (player.dead()) continue;
-
+        Groups.player.each(player -> !player.dead(), player -> {
             HexTeam team = data(player);
             Hex newHex = hexes.min(hex -> player.dst2(hex.wx, hex.wy));
             if (team.location != newHex) {
@@ -56,13 +49,9 @@ public class HexData {
                 team.lastCaptured = captured;
                 if (captured && !newHex.hasCore()) Events.fire(new HexCaptureEvent(player, newHex));
             }
-        }
+        });
 
-        for (Hex hex : hexes) {
-            if (hex.controller != null) {
-                control.get(hex.controller.id, Seq::new).add(hex);
-            }
-        }
+        hexes.each(hex -> hex.controller != null, hex -> control.get(hex.controller.id, Seq::new).add(hex));
     }
 
     public void updateControl() {
