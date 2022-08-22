@@ -7,6 +7,7 @@ import ml.darkdustry.hexed.HexedMain;
 
 import java.text.MessageFormat;
 import java.util.Locale;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 import static mindustry.Vars.mods;
@@ -42,6 +43,42 @@ public class Bundles {
         });
 
         HexedMain.info("Supported locales: @. Default locale: @.", supportedLocales.size, defaultLocale);
+    }
+
+    public static String get(String key, String defaultValue, Locale locale) {
+        try {
+            var bundle = bundles.get(locale, bundles.get(defaultLocale));
+            return bundle.getString(key);
+        } catch (MissingResourceException ignored) {
+            return defaultValue;
+        }
+    }
+
+    public static String get(String key, Locale locale) {
+        return get(key, key, locale);
+    }
+
+    public static String get(String key, String defaultValue) {
+        return get(key, defaultValue, defaultLocale);
+    }
+
+    public static String get(String key) {
+        return get(key, defaultLocale);
+    }
+
+    public static String format(String key, Locale locale, Object... values) {
+        String pattern = get(key, locale);
+        if (values.length == 0) {
+            return pattern;
+        }
+
+        var format = formats.get(locale, formats.get(defaultLocale));
+        format.applyPattern(pattern);
+        return format.format(values);
+    }
+
+    public static String format(String key, Object... values) {
+        return format(key, defaultLocale, values);
     }
 
     private static Fi getBundles() {
