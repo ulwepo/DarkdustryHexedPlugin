@@ -1,0 +1,11 @@
+{
+  "name": "hexed-plugin",
+  "displayName": "Hexed Plugin",
+  "description": "A special battle-royal-like gamemode.",
+  "author": "Skat, lucin, Darkness",
+  "main": "ml.darkdustry.hexed.HexedMain",
+  "hidden": false,
+  "java": true,
+  "version": "1.2.1",
+  "minGameVersion": 137
+}

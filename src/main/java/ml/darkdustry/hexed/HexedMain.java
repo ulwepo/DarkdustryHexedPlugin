@@ -1,11 +1,20 @@
 package ml.darkdustry.hexed;
 
+import arc.util.Log;
+import arc.util.Strings;
 import mindustry.content.Blocks;
 import mindustry.game.Gamemode;
 import mindustry.game.Rules;
 import mindustry.mod.Plugin;
+import ml.darkdustry.hexed.components.Bundles;
 
-public class Hexed extends Plugin {
+public class HexedMain extends Plugin {
+    @Override
+    public void init() {
+        updateRules();
+        Bundles.init();
+    }
+
     public static final Rules rules = new Rules() {
         @Override
         public Gamemode mode() {
@@ -13,8 +22,11 @@ public class Hexed extends Plugin {
         }
     };
 
-    @Override
-    public void init() {
+    public static void info(String message, Object... object) {
+        Log.infoTag("Hexed", Strings.format(message, object));
+    }
+
+    private void updateRules() {
         rules.buildCostMultiplier = 0.8f;
         rules.buildSpeedMultiplier = 2f;
         rules.blockHealthMultiplier = 1.5f;
