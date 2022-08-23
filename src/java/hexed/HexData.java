@@ -1,7 +1,7 @@
 package hexed;
 
-import arc.Events;
 import arc.math.geom.Point2;
+import arc.math.geom.Position;
 import arc.struct.IntMap;
 import arc.struct.IntSeq;
 import arc.struct.Seq;
@@ -12,119 +12,66 @@ import mindustry.gen.Player;
 public class HexData {
 
     /** All hexes on the map. No order. */
-    private final Seq<Hex> hexes = new Seq<>();
-    /** Maps world pos -> hex */
-    private final IntMap<Hex> hexPos = new IntMap<>();
+    private static final Seq<Hex> hexes = new Seq<>();
     /** Maps team ID -> player */
-    private final IntMap<Player> teamMap = new IntMap<>();
+    private static final IntMap<Player> teamMap = new IntMap<>();
     /** Maps team ID -> list of controlled hexes */
-    private final IntMap<Seq<Hex>> control = new IntMap<>();
-    /** Data of specific teams. */
-    private final HexTeam[] teamData = new HexTeam[256];
+    private static final IntMap<Seq<Hex>> control = new IntMap<>();
 
-    public void updateStats() {
+    public static void updateStats() {
         teamMap.clear();
         control.clear();
 
         Groups.player.each(player -> teamMap.put(player.team().id, player));
 
-        Groups.player.each(player -> !player.dead(), player -> {
-            HexTeam team = data(player);
-            Hex newHex = hexes.min(hex -> player.dst2(hex.wx, hex.wy));
-            if (team.location != newHex) {
-                team.location = newHex;
-                team.progressPercent = newHex.getProgressPercent(player.team());
-                team.lastCaptured = newHex.controller == player.team();
-                Events.fire(new HexMoveEvent(player, newHex));
-            }
-
-            float currPercent = newHex.getProgressPercent(player.team());
-            if (team.progressPercent != currPercent) {
-                team.progressPercent = currPercent;
-                Events.fire(new ProgressIncreaseEvent(player, currPercent));
-            }
-
-            boolean captured = newHex.controller == player.team();
-            if (team.lastCaptured != captured) {
-                team.lastCaptured = captured;
-                if (captured && !newHex.hasCore()) Events.fire(new HexCaptureEvent(player, newHex));
-            }
-        });
-
         hexes.each(hex -> hex.controller != null, hex -> control.get(hex.controller.id, Seq::new).add(hex));
     }
 
-    public void updateControl() {
+    public static void updateControl() {
         hexes.each(Hex::updateController);
     }
 
-    public Seq<Player> getLeaderboard() {
+    public static Seq<Player> getLeaderboard() {
         Seq<Player> players = Groups.player.copy(new Seq<>());
         return players.filter(p -> getControlled(p).size > 0).sort(p -> -getControlled(p).size);
     }
 
-    public Player getPlayer(Team team) {
+    public static Player getPlayer(Team team) {
         return teamMap.get(team.id);
     }
 
-    public Seq<Hex> getControlled(Player player) {
+    public static Seq<Hex> getControlled(Player player) {
         return getControlled(player.team());
     }
 
-    public Seq<Hex> getControlled(Team team) {
+    public static Seq<Hex> getControlled(Team team) {
         return control.get(team.id, Seq::new);
     }
 
-    public int getControlledSize(Player player) {
+    public static int getControlledSize(Player player) {
         return getControlledSize(player.team());
     }
 
-    public int getControlledSize(Team team) {
+    public static int getControlledSize(Team team) {
         return getControlled(team).size;
     }
 
-    public void initHexes(IntSeq ints) {
+    public static void initHexes(IntSeq ints) {
         for (int i = 0; i < ints.size; i++) {
             int pos = ints.get(i);
             hexes.add(new Hex(i, Point2.x(pos), Point2.y(pos)));
-            hexPos.put(pos, hexes.peek());
         }
     }
 
-    public Seq<Hex> hexes() {
-        return hexes;
+    public static int hexesAmount() {
+        return hexes.size;
     }
 
-    public Hex getSpawnHex() {
+    public static Hex getSpawnHex() {
         return hexes.copy().shuffle().find(hex -> hex.controller == null && hex.spawnTime.get());
     }
 
-    public Hex getHex(int position) {
-        return hexPos.get(position);
+    public static Hex getHex(Position position) {
+        return hexes.find(hex -> hex.contains(position));
     }
-
-    public HexTeam data(Team team) {
-        if (teamData[team.id] == null) teamData[team.id] = new HexTeam();
-        return teamData[team.id];
-    }
-
-    public HexTeam data(Player player) {
-        return data(player.team());
-    }
-
-    public static class HexTeam {
-        public boolean dying;
-        public boolean chosen;
-
-        public Hex location;
-
-        public float progressPercent;
-        public boolean lastCaptured;
-    }
-
-    public record HexCaptureEvent(Player player, Hex hex) {}
-
-    public record HexMoveEvent(Player player, Hex hex) {}
-
-    public record ProgressIncreaseEvent(Player player, float percent) {}
 }

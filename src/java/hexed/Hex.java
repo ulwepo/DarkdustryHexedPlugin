@@ -2,6 +2,7 @@ package hexed;
 
 import arc.math.Mathf;
 import arc.math.geom.Intersector;
+import arc.math.geom.Position;
 import arc.util.Timekeeper;
 import mindustry.game.Team;
 import mindustry.game.Teams.TeamData;
@@ -78,7 +79,7 @@ public class Hex {
         return Intersector.isInsideHexagon(wx, wy, rad * 2, x, y);
     }
 
-    public boolean contains(Tile tile) {
-        return tile != null && contains(tile.worldx(), tile.worldy());
+    public boolean contains(Position position) {
+        return contains(position.getX(), position.getY());
     }
 }
