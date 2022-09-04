@@ -28,6 +28,8 @@ public class Statistics {
     }
 
     public static Seq<PlayerData> getLeaders() {
-        return datas.values().toSeq().filter(data -> data.wins > 0).sort(data -> -data.wins);
+        return datas.values().toSeq()
+                .filter(data -> data.wins > 0)
+                .sort(data -> -data.wins);
     }
 }

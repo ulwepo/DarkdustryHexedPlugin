@@ -25,6 +25,7 @@ import mindustry.maps.filters.GenerateFilter.GenerateInput;
 import mindustry.maps.filters.OreFilter;
 import mindustry.maps.filters.RiverNoiseFilter;
 import mindustry.maps.filters.ScatterFilter;
+import mindustry.maps.generators.BasicGenerator;
 import mindustry.type.Planet;
 import mindustry.type.Weather.WeatherEntry;
 import mindustry.world.Block;
@@ -38,8 +39,14 @@ public class HexedGenerator implements Cons<Tiles> {
 
     public int width = Hex.size, height = Hex.size;
 
+    @Deprecated(since = "test")
+    public boolean testingBasicGenerator = true;
+
     @Override
     public void get(Tiles tiles) {
+
+        if (testingBasicGenerator) return;
+
         int s1 = Mathf.random(10000);
         int s2 = Mathf.random(10000);
 

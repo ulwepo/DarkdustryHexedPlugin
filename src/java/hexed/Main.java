@@ -24,7 +24,7 @@ import mindustry.world.blocks.storage.CoreBlock;
 
 import java.util.Locale;
 
-import static hexed.comp.Bundle.format;
+import static hexed.comp.Bundle.*;
 import static mindustry.Vars.*;
 
 public class Main extends Plugin {
@@ -491,19 +491,6 @@ public class Main extends Plugin {
                 }
             }
         });
-    }
-
-    public static Locale findLocale(Player player) {
-        var locale = Structs.find(Bundle.supportedLocales, l -> player.locale.equals(l.toString()) || player.locale.startsWith(l.toString()));
-        return locale != null ? locale : Bundle.defaultLocale;
-    }
-
-    public static void bundled(Player player, String key, Object... values) {
-        player.sendMessage(format(key, findLocale(player), values));
-    }
-
-    public static void sendToChat(String key, Object... values) {
-        Groups.player.each(p -> bundled(p, key, values));
     }
 
     public static String getForm(String key, Locale locale, int value) {

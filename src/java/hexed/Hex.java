@@ -5,7 +5,6 @@ import arc.math.geom.Intersector;
 import arc.math.geom.Position;
 import arc.util.Timekeeper;
 import mindustry.game.Team;
-import mindustry.game.Teams.TeamData;
 import mindustry.type.ItemStack;
 import mindustry.world.Tile;
 import mindustry.world.blocks.storage.CoreBlock;
@@ -67,8 +66,11 @@ public class Hex {
             }
         }
 
-        TeamData data = state.teams.getActive().max(t -> progress[t.team.id]);
-        if (data != null && data.team != Team.derelict && progress[data.team.id] >= Main.itemRequirement) {
+        var data = state.teams.getActive()
+                .filter(d -> d.team != Team.derelict)
+                .max(d -> progress[d.team.id]);
+
+        if (data != null && progress[data.team.id] >= Main.itemRequirement) {
             world.tile(x, y).setNet(mode.planet.defaultCore, data.team, 0);
             return data.team;
         }
