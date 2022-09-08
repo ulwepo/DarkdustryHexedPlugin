@@ -333,7 +333,7 @@ public class Main extends Plugin {
         Log.info("Создание локации по сценарию @...", mode);
 
         HexedGenerator generator = new HexedGenerator();
-        world.loadGenerator(Hex.size, Hex.size, generator);
+        world.loadGenerator(Hex.size, Hex.size, generator::generate);
         HexData.initHexes(generator.getHexes());
 
         Log.info("Локация сгенерирована.");

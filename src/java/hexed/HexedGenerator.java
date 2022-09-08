@@ -30,20 +30,61 @@ import mindustry.type.Planet;
 import mindustry.type.Weather.WeatherEntry;
 import mindustry.world.Block;
 import mindustry.world.Tile;
-import mindustry.world.Tiles;
 
 import static hexed.Main.*;
 import static mindustry.Vars.*;
 
-public class HexedGenerator implements Cons<Tiles> {
-
-    public int width = Hex.size, height = Hex.size;
+public class HexedGenerator extends BasicGenerator {
 
     @Deprecated(since = "test")
     public boolean testingBasicGenerator = true;
 
     @Override
-    public void get(Tiles tiles) {
+    protected float noise(float x, float y, double octaves, double falloff, double scl, double mag) {
+        return Simplex.noise2d(0, octaves, falloff, 1f / scl, x, y) * (float) mag;
+    }
+
+    @Override
+    protected void generate() {
+        width = height = Hex.size;
+        tiles.each((x, y) -> tiles.set(x, y, new Tile(x, y, Blocks.rhyolite, Blocks.air, Blocks.rhyoliteWall))); // TODO брать блоки из Mode
+
+        getHexes().each(packed -> {
+            int x = Point2.x(packed), y = Point2.y(packed);
+
+            // вырезаем хекс
+            Geometry.circle(x, y, width, height, Hex.diameter, (cx, cy) -> {
+                if (Intersector.isInsideHexagon(x, y, Hex.diameter, cx, cy)) tiles.getn(cx, cy).remove();
+            });
+
+            // вырезаем проходы
+            circle(3, 360f / 3 / 2f - 90, f -> { // что это ._.
+                Tmp.v1.trnsExact(f, Hex.spacing + 12);
+                if (!Structs.inBounds(x + (int) Tmp.v1.x, y + (int) Tmp.v1.y, width, height)) return;
+
+                Tmp.v1.trnsExact(f, Hex.spacing / 2f + 7);
+                Bresenham2.line(x, y, x + (int) Tmp.v1.x, y + (int) Tmp.v1.y, (cx, cy) -> Geometry.circle(cx, cy, width, height, 3, (c2x, c2y) -> tiles.getn(c2x, c2y).remove()));
+
+            });
+
+            // меняем пол в центре хексы
+            for (int cx = x - 2; cx <= x + 2; cx++)
+                for (int cy = y - 2; cy <= y + 2; cy++)
+                    tiles.getn(cx, cy).setFloor(Blocks.coreZone.asFloor());
+        });
+
+        GenerateInput input = new GenerateInput();
+        getOres().addAll(getDefaultFilters()).addAll(mode.filters).each(filter -> {
+            filter.randomize();
+            input.begin(width, height, tiles::getn);
+            filter.apply(tiles, input);
+        });
+
+        state.map = new Map(StringMap.of(
+                "name", mode.displayName,
+                "author", "[cyan]\uE810 [royal]Darkness [cyan]\uE810",
+                "description", "A map for Darkdustry Hexed. Automatically generated."
+        ));
 
         if (testingBasicGenerator) return;
 
@@ -122,9 +163,8 @@ public class HexedGenerator implements Cons<Tiles> {
     }
 
     public Seq<GenerateFilter> getOres() {
-        Seq<Block> ores = mode.planet == Planets.serpulo ? serpuloOres : erekirOres;
         Seq<GenerateFilter> filters = new Seq<>();
-        for (Block block : ores) {
+        for (Block block : mode.planet == Planets.serpulo ? serpuloOres : erekirOres) {
             filters.add(new OreFilter() {{
                 threshold = block.asFloor().oreThreshold - 0.04f;
                 scl = block.asFloor().oreScale + 8f;
@@ -137,14 +177,12 @@ public class HexedGenerator implements Cons<Tiles> {
 
     public Seq<GenerateFilter> getDefaultFilters() {
         Seq<GenerateFilter> filters = new Seq<>();
-        for (Block block : content.blocks()) {
-            if (block.isFloor() && block.inEditor && block.asFloor().decoration != Blocks.air) {
-                var filter = new ScatterFilter();
-                filter.flooronto = block.asFloor();
-                filter.block = block.asFloor().decoration;
-                filters.add(filter);
-            }
-        }
+        content.blocks().each(block -> block.isFloor() && block.inEditor && block.asFloor().decoration != Blocks.air, block -> {
+            var filter = new ScatterFilter();
+            filter.flooronto = block.asFloor();
+            filter.block = block.asFloor().decoration;
+            filters.add(filter);
+        });
 
         return filters;
     }
