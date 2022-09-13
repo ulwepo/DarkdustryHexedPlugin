@@ -1,4 +1,4 @@
-package hexed.comp;
+package hexed.components;
 
 import arc.struct.ObjectMap;
 import arc.struct.Seq;

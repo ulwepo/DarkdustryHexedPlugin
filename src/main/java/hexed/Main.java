@@ -7,8 +7,8 @@ import arc.struct.Seq;
 import arc.struct.Seq.SeqIterable;
 import arc.util.*;
 import arc.util.Timer.Task;
-import hexed.comp.Bundle;
-import hexed.comp.Statistics;
+import hexed.components.Bundle;
+import hexed.components.Statistics;
 import mindustry.content.Blocks;
 import mindustry.content.Fx;
 import mindustry.content.Items;
@@ -24,7 +24,7 @@ import mindustry.world.blocks.storage.CoreBlock;
 
 import java.util.Locale;
 
-import static hexed.comp.Bundle.*;
+import static hexed.components.Bundle.*;
 import static mindustry.Vars.*;
 
 public class Main extends Plugin {

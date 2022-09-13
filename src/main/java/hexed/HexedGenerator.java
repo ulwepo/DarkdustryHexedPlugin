@@ -14,6 +14,7 @@ import arc.struct.StringMap;
 import arc.util.Structs;
 import arc.util.Tmp;
 import arc.util.noise.Simplex;
+import hexed.generation.GenerationType;
 import mindustry.content.Blocks;
 import mindustry.content.Planets;
 import mindustry.content.Weathers;
@@ -47,7 +48,7 @@ public class HexedGenerator extends BasicGenerator {
     @Override
     protected void generate() {
         width = height = Hex.size;
-        tiles.each((x, y) -> tiles.set(x, y, new Tile(x, y, Blocks.rhyolite, Blocks.air, Blocks.rhyoliteWall))); // TODO брать блоки из Mode
+        tiles.each((x, y) -> tiles.set(x, y, new Tile(x, y, Blocks.stone, Blocks.air, Blocks.rhyoliteWall))); // TODO брать блоки из Mode
 
         getHexes().each(packed -> {
             int x = Point2.x(packed), y = Point2.y(packed);
@@ -64,10 +65,9 @@ public class HexedGenerator extends BasicGenerator {
 
                 Tmp.v1.trnsExact(f, Hex.spacing / 2f + 7);
                 Bresenham2.line(x, y, x + (int) Tmp.v1.x, y + (int) Tmp.v1.y, (cx, cy) -> Geometry.circle(cx, cy, width, height, 3, (c2x, c2y) -> tiles.getn(c2x, c2y).remove()));
-
             });
 
-            // меняем пол в центре хексы
+            // меняем пол в центре хексов
             for (int cx = x - 2; cx <= x + 2; cx++)
                 for (int cy = y - 2; cy <= y + 2; cy++)
                     tiles.getn(cx, cy).setFloor(Blocks.coreZone.asFloor());
@@ -85,6 +85,8 @@ public class HexedGenerator extends BasicGenerator {
                 "author", "[cyan]\uE810 [royal]Darkness [cyan]\uE810",
                 "description", "A map for Darkdustry Hexed. Automatically generated."
         ));
+
+        new GenerationType().apply(tiles);
 
         if (testingBasicGenerator) return;
 
