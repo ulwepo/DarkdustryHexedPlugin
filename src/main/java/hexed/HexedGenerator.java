@@ -21,11 +21,8 @@ import mindustry.content.Weathers;
 import mindustry.game.Rules;
 import mindustry.game.Schematic;
 import mindustry.maps.Map;
-import mindustry.maps.filters.GenerateFilter;
+import mindustry.maps.filters.*;
 import mindustry.maps.filters.GenerateFilter.GenerateInput;
-import mindustry.maps.filters.OreFilter;
-import mindustry.maps.filters.RiverNoiseFilter;
-import mindustry.maps.filters.ScatterFilter;
 import mindustry.maps.generators.BasicGenerator;
 import mindustry.type.Planet;
 import mindustry.type.Weather.WeatherEntry;
@@ -48,7 +45,7 @@ public class HexedGenerator extends BasicGenerator {
     @Override
     protected void generate() {
         width = height = Hex.size;
-        tiles.each((x, y) -> tiles.set(x, y, new Tile(x, y, Blocks.stone, Blocks.air, Blocks.rhyoliteWall))); // TODO брать блоки из Mode
+        tiles.each((x, y) -> tiles.set(x, y, new Tile(x, y, Blocks.stone, Blocks.air, Blocks.stoneWall))); // TODO брать блоки из Mode
 
         getHexes().each(packed -> {
             int x = Point2.x(packed), y = Point2.y(packed);
@@ -86,7 +83,33 @@ public class HexedGenerator extends BasicGenerator {
                 "description", "A map for Darkdustry Hexed. Automatically generated."
         ));
 
-        new GenerationType().apply(tiles);
+        var type = new GenerationType("default", Planets.serpulo, rules -> {
+            rules.modeName = "Hentai";
+            rules.lighting = true;
+            rules.ambientLight = Color.grays(0.9f);
+        }) {{
+            filters.addAll(
+                    new NoiseFilter() {{
+                        floor = Blocks.grass;
+                        block = Blocks.air;
+                    }},
+                    new NoiseFilter() {{
+                        floor = Blocks.sand;
+                        block = Blocks.air;
+                    }},
+                    new NoiseFilter() {{
+                        floor = Blocks.darksand;
+                        block = Blocks.air;
+                    }},
+
+                    new ClearFilter() {{
+                        target = Blocks.stone;
+                        replace = Blocks.moss;
+                    }}
+            );
+        }};
+
+        type.apply(tiles);
 
         if (testingBasicGenerator) return;
 
