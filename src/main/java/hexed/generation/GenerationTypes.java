@@ -17,9 +17,9 @@ public class GenerationTypes {
     public static void load() {
         beta = new GenerationType("[white]\uF7EA [accent]Beta", Planets.serpulo, Blocks.moss, Blocks.sporeWall, rules -> {
             rules.lighting = true;
-            rules.ambientLight = Color.grays(.9f);
+            rules.ambientLight = Color.black.cpy().a(.7f);
 
-            rules.weather.add(new WeatherEntry(Weathers.sporestorm, 10f, 30f, 1f, 2f) {{
+            rules.weather.add(new WeatherEntry(Weathers.sporestorm, 5f, 10f, 1f, 2f) {{
                 intensity = .25f;
             }});
         },
