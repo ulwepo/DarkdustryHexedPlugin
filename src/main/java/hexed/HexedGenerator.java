@@ -15,6 +15,7 @@ import arc.util.Structs;
 import arc.util.Tmp;
 import arc.util.noise.Simplex;
 import hexed.generation.GenerationType;
+import hexed.generation.GenerationTypes;
 import mindustry.content.Blocks;
 import mindustry.content.Planets;
 import mindustry.content.Weathers;
@@ -23,29 +24,25 @@ import mindustry.game.Schematic;
 import mindustry.maps.Map;
 import mindustry.maps.filters.*;
 import mindustry.maps.filters.GenerateFilter.GenerateInput;
-import mindustry.maps.generators.BasicGenerator;
 import mindustry.type.Planet;
 import mindustry.type.Weather.WeatherEntry;
 import mindustry.world.Block;
 import mindustry.world.Tile;
+import mindustry.world.Tiles;
 
 import static hexed.Main.*;
 import static mindustry.Vars.*;
 
-public class HexedGenerator extends BasicGenerator {
+public class HexedGenerator {
 
     @Deprecated(since = "test")
-    public boolean testingBasicGenerator = true;
+    public static boolean testingBasicGenerator = true;
 
-    @Override
-    protected float noise(float x, float y, double octaves, double falloff, double scl, double mag) {
-        return Simplex.noise2d(0, octaves, falloff, 1f / scl, x, y) * (float) mag;
-    }
+    public static void generate(Tiles tiles) {
+        GenerationType type = GenerationTypes.beta;
 
-    @Override
-    protected void generate() {
-        width = height = Hex.size;
-        tiles.each((x, y) -> tiles.set(x, y, new Tile(x, y, Blocks.stone, Blocks.air, Blocks.stoneWall))); // TODO брать блоки из Mode
+        int width = tiles.width, height = tiles.height;
+        tiles.each((x, y) -> tiles.set(x, y, new Tile(x, y, type.defaultFloor, Blocks.air, type.defaultBlock)));
 
         getHexes().each(packed -> {
             int x = Point2.x(packed), y = Point2.y(packed);
@@ -76,6 +73,8 @@ public class HexedGenerator extends BasicGenerator {
             input.begin(width, height, tiles::getn);
             filter.apply(tiles, input);
         });
+
+        type.apply(tiles);
 
         state.map = new Map(StringMap.of(
                 "name", mode.displayName,
@@ -146,11 +145,11 @@ public class HexedGenerator extends BasicGenerator {
         state.map = new Map(StringMap.of("name", mode.displayName, "author", "[cyan]\uE810 [royal]Darkness [cyan]\uE810", "description", "A map for Darkdustry Hexed. Automatically generated."));
     }
 
-    public IntSeq getHexes() {
+    public static IntSeq getHexes() {
         IntSeq array = new IntSeq();
         float h = Mathf.sqrt3 * Hex.spacing / 2;
-        for (int x = 0; x < width / Hex.spacing - 2; x++) {
-            for (int y = 0; y < height / (h / 2) - 2; y++) {
+        for (int x = 0; x < Hex.size / Hex.spacing - 2; x++) {
+            for (int y = 0; y < Hex.size / (h / 2) - 2; y++) {
                 int cx = (int) (x * Hex.spacing * 1.5 + (y % 2) * Hex.spacing * 3.0 / 4) + Hex.spacing / 2;
                 int cy = (int) (y * h / 2) + Hex.spacing / 2;
                 array.add(Point2.pack(cx, cy));
@@ -159,7 +158,7 @@ public class HexedGenerator extends BasicGenerator {
         return array;
     }
 
-    public Seq<GenerateFilter> getOres() {
+    public static Seq<GenerateFilter> getOres() {
         Seq<GenerateFilter> filters = new Seq<>();
         for (Block block : mode.planet == Planets.serpulo ? serpuloOres : erekirOres) {
             filters.add(new OreFilter() {{
@@ -172,7 +171,7 @@ public class HexedGenerator extends BasicGenerator {
         return filters;
     }
 
-    public Seq<GenerateFilter> getDefaultFilters() {
+    public static Seq<GenerateFilter> getDefaultFilters() {
         Seq<GenerateFilter> filters = new Seq<>();
         content.blocks().each(block -> block.isFloor() && block.inEditor && block.asFloor().decoration != Blocks.air, block -> {
             var filter = new ScatterFilter();
@@ -184,10 +183,9 @@ public class HexedGenerator extends BasicGenerator {
         return filters;
     }
 
-    public void circle(int points, float offset, Floatc cons) {
-        for (int i = 0; i < points; i++) {
+    public static void circle(int points, float offset, Floatc cons) {
+        for (int i = 0; i < points; i++)
             cons.get(offset + i * 360f / points);
-        }
     }
 
     public enum Mode {

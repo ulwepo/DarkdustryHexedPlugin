@@ -12,7 +12,7 @@ public class GenerationTypes {
     public static GenerationType beta;
 
     public static void load() {
-        beta = new GenerationType("beta", Planets.serpulo, rules -> {
+        beta = new GenerationType("beta", Planets.serpulo, Blocks.moss, Blocks.sporeWall, rules -> {
             rules.lighting = true;
             rules.ambientLight = Color.grays(.9f);
 
@@ -22,19 +22,15 @@ public class GenerationTypes {
         },
                 new NoiseFilter() {{
                     floor = Blocks.grass;
-                    block = Blocks.air;
+                    block = Blocks.shrubs;
                 }},
                 new NoiseFilter() {{
                     floor = Blocks.sand;
-                    block = Blocks.air;
+                    block = Blocks.sandWall;
                 }},
                 new NoiseFilter() {{
                     floor = Blocks.darksand;
-                    block = Blocks.air;
-                }},
-                new ClearFilter() {{
-                    target = Blocks.stone;
-                    replace = Blocks.moss;
+                    block = Blocks.duneWall;
                 }}
         );
     }
