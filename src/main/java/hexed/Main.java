@@ -119,78 +119,64 @@ public class Main extends Plugin {
         });
 
         Events.on(BlockDestroyEvent.class, event -> {
-            if (event.tile.block() instanceof CoreBlock) {
-                Hex hex = HexData.getHex(event.tile);
-                if (hex != null) {
-                    hex.updateController();
-                    hex.spawnTime.reset();
+            if (event.tile.block() instanceof CoreBlock == false) return;
 
-                    Call.effect(Fx.reactorExplosion, hex.wx, hex.wy, Mathf.random(360f), Tmp.c1.rand());
-                }
-
-                Team team = event.tile.team();
-                Player player = HexData.getPlayer(team);
-
-                if (team.cores().size <= 1) {
-                    if (player != null) {
-                        killPlayer(player);
-                        sendToChat("events.player-lost", player.name);
-                        Call.infoMessage(player.con, format("events.you-lost", findLocale(player)));
-                    } else {
-                        killTeam(team);
-                        sendToChat("events.team-lost", team.color, team.name);
-                    }
-                }
-            }
-        });
-
-        Events.on(BuildSelectEvent.class, event -> {
             Hex hex = HexData.getHex(event.tile);
             if (hex != null) {
                 hex.updateController();
+                hex.spawnTime.reset();
+
+                Call.effect(Fx.reactorExplosion, hex.wx, hex.wy, Mathf.random(360f), Tmp.c1.rand());
+            }
+
+            Team team = event.tile.team();
+            Player player = HexData.getPlayer(team);
+
+            if (team.cores().size <= 1) {
+                if (player != null) {
+                    killPlayer(player);
+                    sendToChat("events.player-lost", player.name);
+                    Call.infoMessage(player.con, format("events.you-lost", findLocale(player)));
+                } else {
+                    killTeam(team);
+                    sendToChat("events.team-lost", team.color, team.name);
+                }
             }
         });
 
         Events.on(BlockBuildEndEvent.class, event -> {
             Hex hex = HexData.getHex(event.tile);
-            if (hex != null) {
-                hex.updateController();
-            }
-        });
+            if (hex != null)  hex.updateController();
+        }); // чисто для красоты
 
         Events.on(PlayerJoin.class, event -> {
-            var statistic = Statistics.getData(event.player.uuid());
-            statistic.name = event.player.name;
+            Statistics.getData(event.player.uuid()).name = event.player.name;
             Statistics.save();
 
-            if (event.player.team() != Team.derelict) {
-                Team team = leftPlayers.get(event.player.uuid());
-                if (team != null && !team.data().noCores()) {
-                    leftPlayers.remove(event.player.uuid());
-                    leftPlayerTeams.remove(team).cancel();
-                    return;
-                }
+            if (event.player.team() == Team.derelict) return;
 
-                spawn(event.player);
-            }
+            Team team = leftPlayers.get(event.player.uuid());
+            if (team != null && !team.data().noCores()) {
+                leftPlayers.remove(event.player.uuid());
+                leftPlayerTeams.remove(team).cancel();
+            } else spawn(event.player);
         });
 
         Events.on(PlayerLeave.class, event -> {
-            if (event.player.team() != Team.derelict && !restarting) {
-                leftPlayers.put(event.player.uuid(), event.player.team());
-                leftPlayerTeams.put(event.player.team(), Timer.schedule(() -> {
-                    killTeam(event.player.team());
-                    leftPlayers.remove(event.player.uuid());
-                    leftPlayerTeams.remove(event.player.team());
-                }, leftTeamDestroyTime));
-            }
+            if (event.player.team() == Team.derelict || restarting) return;
+
+            leftPlayers.put(event.player.uuid(), event.player.team());
+            leftPlayerTeams.put(event.player.team(), Timer.schedule(() -> {
+                killTeam(event.player.team());
+                leftPlayers.remove(event.player.uuid());
+                leftPlayerTeams.remove(event.player.team());
+            }, leftTeamDestroyTime));
         });
 
         netServer.assigner = (player, players) -> {
             if (leftPlayers.containsKey(player.uuid())) return leftPlayers.get(player.uuid());
 
             var teams = Seq.with(Team.all).filter(team -> team != Team.derelict && !team.active() && !leftPlayerTeams.containsKey(team));
-
             return teams.any() ? teams.random() : Team.derelict;
         };
 
