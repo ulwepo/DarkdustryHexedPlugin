@@ -192,35 +192,31 @@ public class Main extends Plugin {
             var locale = findLocale(player);
             var players = new StringBuilder();
 
-            for (int i = 0; i < leaders.size;) {
+            if (leaders.isEmpty())
+                players.append(format("commands.top.none", locale));
+            else for (int i = 0; i < leaders.size;) {
                 var statistic = leaders.get(i);
 
                 players.append("[orange]").append(++i).append(". ")
                         .append(statistic.name).append("[accent]: [cyan]")
-                        .append(getForm("decl.wins", locale, statistic.wins))
-                        .append("\n");
-            }
-
-            if (leaders.isEmpty()) {
-                players.append(format("commands.top.none", locale));
+                        .append(getForm("decl.wins", locale, statistic.wins)).append("\n");
             }
 
             Call.infoMessage(player.con, format("commands.top.list", locale, players.toString()));
         });
 
         handler.<Player>register("spectator", "Перейти в режим наблюдателя.", (args, player) -> {
-            if (player.team() == Team.derelict) {
-                bundled(player, "commands.spectator.already");
-                return;
+            if (player.team() == Team.derelict)
+                bundled(player, "commands.spectator.already"); // почему оно не возвращает в игру?
+            else {
+                killPlayer(player);
+                bundled(player, "commands.spectator.success");
             }
-
-            killPlayer(player);
-            bundled(player, "commands.spectator.success");
         });
 
         handler.<Player>register("lb", "Посмотреть текущий список лидеров.", (args, player) -> Call.infoMessage(player.con, getLeaderboard(player)));
 
-        handler.<Player>register("time", "Посмотреть время, оставшееся до конца раунда.", (args, player) -> bundled(player, "commands.time", (int) counter / 60 / 60));
+        handler.<Player>register("time", "Посмотреть время, оставшееся до конца раунда.", (args, player) -> bundled(player, "commands.time", (int) counter / 3600));
 
         handler.<Player>register("hexstatus", "Посмотреть статус хекса на своем местоположении.", (args, player) -> {
             var hex = HexData.getHex(player);
@@ -240,13 +236,12 @@ public class Main extends Plugin {
                 status.append(format("commands.hexstatus.owner.none", locale)).append("\n");
 
                 for (var teamData : state.teams.getActive()) {
-                    if (hex.getProgressPercent(teamData.team) > 0 && HexData.getPlayer(teamData.team) != null) {
-                        status.append("[white]|> [accent]")
-                                .append(HexData.getPlayer(teamData.team).name)
-                                .append("[lightgray]: [accent]")
-                                .append(format("commands.hexstatus.progress", locale, Strings.autoFixed(hex.getProgressPercent(teamData.team), 4)))
-                                .append("\n");
-                    }
+                    if (hex.getProgressPercent(teamData.team) == 0 || HexData.getPlayer(teamData.team) == null) continue;
+                    status.append("[white]|> [accent]")
+                            .append(HexData.getPlayer(teamData.team).name)
+                            .append("[lightgray]: [accent]")
+                            .append(format("commands.hexstatus.progress", locale, Strings.autoFixed(hex.getProgressPercent(teamData.team), 4)))
+                            .append("\n");
                 }
             }
             player.sendMessage(status.toString());
@@ -284,7 +279,7 @@ public class Main extends Plugin {
             endGame();
         });
 
-        handler.register("time", "Посмотреть время, оставшееся до конца раунда.", args -> Log.info("Время до конца раунда: '@' минут", (int) counter / 60 / 60));
+        handler.register("time", "Посмотреть время, оставшееся до конца раунда.", args -> Log.info("Время до конца раунда: '@' минут", (int) counter / 3600));
     }
 
     public void updateText(Player player) {
