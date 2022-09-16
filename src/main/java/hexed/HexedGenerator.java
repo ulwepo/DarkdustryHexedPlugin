@@ -13,7 +13,6 @@ import arc.struct.Seq;
 import arc.struct.StringMap;
 import arc.util.Structs;
 import arc.util.Tmp;
-import arc.util.noise.Simplex;
 import hexed.generation.GenerationType;
 import hexed.generation.GenerationTypes;
 import mindustry.content.Blocks;
@@ -34,9 +33,6 @@ import static hexed.Main.*;
 import static mindustry.Vars.*;
 
 public class HexedGenerator {
-
-    @Deprecated(since = "test")
-    public static boolean testingBasicGenerator = true;
 
     public static void generate(Tiles tiles) {
         GenerationType type = GenerationTypes.beta;
@@ -67,6 +63,8 @@ public class HexedGenerator {
                     tiles.getn(cx, cy).setFloor(Blocks.coreZone.asFloor());
         });
 
+        type.apply(tiles);
+
         GenerateInput input = new GenerateInput();
         getOres().addAll(getDefaultFilters()).addAll(mode.filters).each(filter -> {
             filter.randomize();
@@ -74,75 +72,11 @@ public class HexedGenerator {
             filter.apply(tiles, input);
         });
 
-        type.apply(tiles);
-
         state.map = new Map(StringMap.of(
                 "name", mode.displayName,
                 "author", "[cyan]\uE810 [royal]Darkness [cyan]\uE810",
                 "description", "A map for Darkdustry Hexed. Automatically generated."
         ));
-
-        if (testingBasicGenerator) return;
-
-        int s1 = Mathf.random(10000);
-        int s2 = Mathf.random(10000);
-
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                int temp = Mathf.clamp((int) ((Simplex.noise2d(s1, 12, 0.6, 1.0 / 400, x, y) - 0.5) * 10 * mode.blocks.length), 0, mode.blocks.length - 1);
-                int elev = Mathf.clamp((int) (((Simplex.noise2d(s2, 12, 0.6, 1.0 / 700, x, y) - 0.5) * 10 + 0.15f) * mode.blocks[0].length), 0, mode.blocks[0].length - 1);
-
-                Block floor = mode.floors[temp][elev];
-                Block wall = mode.blocks[temp][elev];
-                Block ore = Blocks.air;
-
-                tiles.set(x, y, new Tile(x, y, floor.id, ore.id, wall.id));
-            }
-        }
-
-        IntSeq hexes = getHexes();
-        GenerateInput in = new GenerateInput();
-
-        for (int i = 0; i < hexes.size; i++) {
-            int x = Point2.x(hexes.get(i));
-            int y = Point2.y(hexes.get(i));
-
-            Geometry.circle(x, y, width, height, Hex.diameter, (cx, cy) -> {
-                if (Intersector.isInsideHexagon(x, y, Hex.diameter, cx, cy)) {
-                    tiles.getn(cx, cy).remove();
-                }
-            });
-
-            circle(3, 360f / 3 / 2f - 90, f -> {
-                Tmp.v1.trnsExact(f, Hex.spacing + 12);
-                if (Structs.inBounds(x + (int) Tmp.v1.x, y + (int) Tmp.v1.y, width, height)) {
-                    Tmp.v1.trnsExact(f, Hex.spacing / 2f + 7);
-                    Bresenham2.line(x, y, x + (int) Tmp.v1.x, y + (int) Tmp.v1.y, (cx, cy) -> Geometry.circle(cx, cy, width, height, 3, (c2x, c2y) -> tiles.getn(c2x, c2y).remove()));
-                }
-            });
-        }
-
-        Seq<GenerateFilter> filters = getOres().addAll(getDefaultFilters()).addAll(mode.filters);
-        for (GenerateFilter filter : filters) {
-            filter.randomize();
-            in.begin(width, height, tiles::getn);
-            filter.apply(tiles, in);
-        }
-
-        for (int i = 0; i < hexes.size; i++) {
-            int x = Point2.x(hexes.get(i));
-            int y = Point2.y(hexes.get(i));
-
-            for (int cx = x - 2; cx < x + 3; cx++) {
-                for (int cy = y - 2; cy < y + 3; cy++) {
-                    Tile tile = tiles.getn(cx, cy);
-                    tile.remove();
-                    tile.setFloor(Blocks.coreZone.asFloor());
-                }
-            }
-        }
-
-        state.map = new Map(StringMap.of("name", mode.displayName, "author", "[cyan]\uE810 [royal]Darkness [cyan]\uE810", "description", "A map for Darkdustry Hexed. Automatically generated."));
     }
 
     public static IntSeq getHexes() {
