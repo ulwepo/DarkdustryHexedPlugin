@@ -83,34 +83,6 @@ public class HexedGenerator extends BasicGenerator {
                 "description", "A map for Darkdustry Hexed. Automatically generated."
         ));
 
-        var type = new GenerationType("default", Planets.serpulo, rules -> {
-            rules.modeName = "Hentai";
-            rules.lighting = true;
-            rules.ambientLight = Color.grays(0.9f);
-        }) {{
-            filters.addAll(
-                    new NoiseFilter() {{
-                        floor = Blocks.grass;
-                        block = Blocks.air;
-                    }},
-                    new NoiseFilter() {{
-                        floor = Blocks.sand;
-                        block = Blocks.air;
-                    }},
-                    new NoiseFilter() {{
-                        floor = Blocks.darksand;
-                        block = Blocks.air;
-                    }},
-
-                    new ClearFilter() {{
-                        target = Blocks.stone;
-                        replace = Blocks.moss;
-                    }}
-            );
-        }};
-
-        type.apply(tiles);
-
         if (testingBasicGenerator) return;
 
         int s1 = Mathf.random(10000);

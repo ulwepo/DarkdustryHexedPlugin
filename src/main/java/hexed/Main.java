@@ -9,6 +9,7 @@ import arc.util.*;
 import arc.util.Timer.Task;
 import hexed.components.Bundle;
 import hexed.components.Statistics;
+import hexed.generation.GenerationTypes;
 import mindustry.content.Blocks;
 import mindustry.content.Fx;
 import mindustry.content.Items;
@@ -90,6 +91,7 @@ public class Main extends Plugin {
 
         Bundle.load();
         Statistics.load();
+        GenerationTypes.load();
 
         Events.run(Trigger.update, () -> {
             if (!state.isPlaying()) return;
