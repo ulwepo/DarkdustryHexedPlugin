@@ -45,7 +45,8 @@ public class GenerationType {
         });
     }
 
-    public void applyRules(Rules rules) {
+    public Rules applyRules(Rules rules) {
         ruleSetter.get(rules);
+        return rules;
     }
 }

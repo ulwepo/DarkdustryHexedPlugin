@@ -341,7 +341,7 @@ public class Main extends Plugin {
 
         Log.info("Локация сгенерирована.");
 
-        type.applyRules(state.rules);
+        state.rules = type.applyRules(rules.copy());
         logic.play();
 
         Call.sendMessage(type.name); // зачем это?!
