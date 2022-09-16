@@ -11,7 +11,7 @@ import mindustry.world.blocks.storage.CoreBlock;
 
 import java.util.Arrays;
 
-import static hexed.Main.mode;
+import static hexed.Main.type;
 import static mindustry.Vars.*;
 
 public class Hex {
@@ -71,7 +71,7 @@ public class Hex {
                 .max(d -> progress[d.team.id]);
 
         if (data != null && progress[data.team.id] >= Main.itemRequirement) {
-            world.tile(x, y).setNet(mode.planet.defaultCore, data.team, 0);
+            world.tile(x, y).setNet(type.planet.defaultCore, data.team, 0);
             return data.team;
         }
         return null;

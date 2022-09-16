@@ -1,18 +1,21 @@
 package hexed.generation;
 
 import arc.graphics.Color;
+import arc.struct.Seq;
 import mindustry.content.Blocks;
 import mindustry.content.Planets;
 import mindustry.content.Weathers;
 import mindustry.maps.filters.*;
 import mindustry.type.Weather.WeatherEntry;
 
+import static hexed.Main.*;
+
 public class GenerationTypes {
 
     public static GenerationType beta;
 
     public static void load() {
-        beta = new GenerationType("beta", Planets.serpulo, Blocks.moss, Blocks.sporeWall, rules -> {
+        beta = new GenerationType("[white]\uF7EA [accent]Beta", Planets.serpulo, Blocks.moss, Blocks.sporeWall, rules -> {
             rules.lighting = true;
             rules.ambientLight = Color.grays(.9f);
 
@@ -33,5 +36,13 @@ public class GenerationTypes {
                     block = Blocks.duneWall;
                 }}
         );
+    }
+
+    public static Seq<GenerationType> all() {
+        return Seq.with(beta);
+    }
+
+    public static GenerationType random() {
+        return all().random(type);
     }
 }

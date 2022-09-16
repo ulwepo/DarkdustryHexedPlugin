@@ -9,10 +9,12 @@ import arc.util.*;
 import arc.util.Timer.Task;
 import hexed.components.Bundle;
 import hexed.components.Statistics;
+import hexed.generation.GenerationType;
 import hexed.generation.GenerationTypes;
 import mindustry.content.Blocks;
 import mindustry.content.Fx;
 import mindustry.content.Items;
+import mindustry.content.Planets;
 import mindustry.game.EventType.*;
 import mindustry.game.*;
 import mindustry.gen.Call;
@@ -56,7 +58,7 @@ public class Main extends Plugin {
     public static Seq<Block> serpuloOres, erekirOres;
 
     public static Schematic serpuloStart, erekirStart;
-    public static HexedGenerator.Mode mode;
+    public static GenerationType type = GenerationTypes.beta;
 
     public static boolean restarting = false;
     public static float counter = roundTime;
@@ -279,13 +281,13 @@ public class Main extends Plugin {
                 return;
             }
 
-            var custom = args.length > 0 ? Structs.find(HexedGenerator.Mode.values(), m -> m.name().equalsIgnoreCase(args[0])) : Seq.with(HexedGenerator.Mode.values()).random(mode);
+            var custom = args.length > 0 ? GenerationTypes.all().find(t -> t.name.equalsIgnoreCase(args[0])) : GenerationTypes.random();
             if (custom == null) {
                 Log.err("Режим генерации с таким названием не найден!");
                 return;
             }
 
-            mode = custom;
+            type = custom;
             startGame();
             netServer.openServer();
         });
@@ -332,17 +334,17 @@ public class Main extends Plugin {
         logic.reset();
         Call.worldDataBegin();
 
-        Log.info("Создание локации по сценарию @...", mode);
+        Log.info("Создание локации по сценарию @...", type.name);
 
         world.loadGenerator(Hex.size, Hex.size, HexedGenerator::generate);
         HexData.initHexes(HexedGenerator.getHexes());
 
         Log.info("Локация сгенерирована.");
 
-        state.rules = mode.applyRules(rules.copy());
+        type.applyRules(state.rules);
         logic.play();
 
-        Call.sendMessage(mode.displayName);
+        Call.sendMessage(type.name); // зачем это?!
     }
 
     public void endGame() {
@@ -399,7 +401,7 @@ public class Main extends Plugin {
     public void reload() {
         var players = Groups.player.copy(new Seq<>());
 
-        mode = Seq.with(HexedGenerator.Mode.values()).random(mode);
+        type = GenerationTypes.random();
         startGame();
 
         players.each(player -> {
@@ -474,7 +476,7 @@ public class Main extends Plugin {
     }
 
     public void loadout(Player player, int x, int y) {
-        var start = mode.startScheme;
+        var start = type.planet == Planets.serpulo ? serpuloStart : erekirStart;
         var coreTile = start.tiles.find(s -> s.block instanceof CoreBlock);
         int sx = x - coreTile.x, sy = y - coreTile.y;
 

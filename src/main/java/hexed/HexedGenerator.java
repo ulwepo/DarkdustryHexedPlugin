@@ -1,8 +1,6 @@
 package hexed;
 
-import arc.func.Cons;
 import arc.func.Floatc;
-import arc.graphics.Color;
 import arc.math.Mathf;
 import arc.math.geom.Bresenham2;
 import arc.math.geom.Geometry;
@@ -13,18 +11,11 @@ import arc.struct.Seq;
 import arc.struct.StringMap;
 import arc.util.Structs;
 import arc.util.Tmp;
-import hexed.generation.GenerationType;
-import hexed.generation.GenerationTypes;
 import mindustry.content.Blocks;
 import mindustry.content.Planets;
-import mindustry.content.Weathers;
-import mindustry.game.Rules;
-import mindustry.game.Schematic;
 import mindustry.maps.Map;
 import mindustry.maps.filters.*;
 import mindustry.maps.filters.GenerateFilter.GenerateInput;
-import mindustry.type.Planet;
-import mindustry.type.Weather.WeatherEntry;
 import mindustry.world.Block;
 import mindustry.world.Tile;
 import mindustry.world.Tiles;
@@ -35,8 +26,6 @@ import static mindustry.Vars.*;
 public class HexedGenerator {
 
     public static void generate(Tiles tiles) {
-        GenerationType type = GenerationTypes.beta;
-
         int width = tiles.width, height = tiles.height;
         tiles.each((x, y) -> tiles.set(x, y, new Tile(x, y, type.defaultFloor, Blocks.air, type.defaultBlock)));
 
@@ -66,14 +55,14 @@ public class HexedGenerator {
         type.apply(tiles);
 
         GenerateInput input = new GenerateInput();
-        getOres().addAll(getDefaultFilters()).addAll(mode.filters).each(filter -> {
+        getOres().addAll(getDefaultFilters()).each(filter -> {
             filter.randomize();
             input.begin(width, height, tiles::getn);
             filter.apply(tiles, input);
         });
 
         state.map = new Map(StringMap.of(
-                "name", mode.displayName,
+                "name", type.name,
                 "author", "[cyan]\uE810 [royal]Darkness [cyan]\uE810",
                 "description", "A map for Darkdustry Hexed. Automatically generated."
         ));
@@ -94,7 +83,7 @@ public class HexedGenerator {
 
     public static Seq<GenerateFilter> getOres() {
         Seq<GenerateFilter> filters = new Seq<>();
-        for (Block block : mode.planet == Planets.serpulo ? serpuloOres : erekirOres) {
+        for (Block block : type.planet == Planets.serpulo ? serpuloOres : erekirOres) {
             filters.add(new OreFilter() {{
                 threshold = block.asFloor().oreThreshold - 0.04f;
                 scl = block.asFloor().oreScale + 8f;
