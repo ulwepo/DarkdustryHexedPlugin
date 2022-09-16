@@ -36,8 +36,8 @@ public class Main extends Plugin {
     public static final float winCapturePercent = 0.75f;
 
     public static final float roundTime = 60 * 60 * 90f;
-    public static final float leaderboardTime = 60 * 60 * 3f;
-    public static final float updateTime = 60 * 1f;
+    public static final float leaderboardTime = 60 * 3f;
+    public static final float updateTime = 1f;
     public static final float leftTeamDestroyTime = 90f;
 
     public static final int itemRequirement = 2560;
@@ -95,6 +95,11 @@ public class Main extends Plugin {
         Statistics.load();
         GenerationTypes.load();
 
+        Timer.schedule(HexData::updateControl, 0f, updateTime);
+        Timer.schedule(() -> {
+            if (state.isPlaying()) Groups.player.each(player -> Call.infoToast(player.con, getLeaderboard(player), 10f));
+        }, 0f, leaderboardTime);
+
         Events.run(Trigger.update, () -> {
             if (!state.isPlaying()) return;
 
@@ -107,14 +112,6 @@ public class Main extends Plugin {
 
                 if (HexData.getControlledSize(player) >= HexData.hexesAmount() * winCapturePercent) endGame();
             });
-
-            if (interval.get(updateTimer, updateTime)) {
-                HexData.updateControl();
-            }
-
-            if (interval.get(leaderboardTimer, leaderboardTime)) {
-                Groups.player.each(player -> Call.infoToast(player.con, getLeaderboard(player), 10f));
-            }
 
             counter -= Time.delta;
 
