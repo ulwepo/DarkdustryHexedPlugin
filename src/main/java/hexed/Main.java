@@ -207,8 +207,6 @@ public class Main extends Plugin {
         });
 
         handler.<Player>register("lb", "Посмотреть текущий список лидеров.", (args, player) -> Call.infoMessage(player.con, getLeaderboard(findLocale(player))));
-
-        handler.<Player>register("time", "Посмотреть время, оставшееся до конца раунда.", (args, player) -> bundled(player, "commands.time", (int) counter / 3600));
     }
 
     @Override
@@ -241,8 +239,6 @@ public class Main extends Plugin {
 
             endGame();
         });
-
-        handler.register("time", "Посмотреть время, оставшееся до конца раунда.", args -> Log.info("Время до конца раунда: '@' минут", (int) counter / 3600));
     }
 
     public void updateText(Player player) {
