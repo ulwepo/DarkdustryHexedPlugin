@@ -11,23 +11,31 @@ import mindustry.gen.Player;
 public class HexData {
 
     /** Data of all players, including not connected. */
-    private static final IntMap<PlayerData> datas = new IntMap<>();
+    public static final Seq<PlayerData> datas = new Seq<>();
     /** All hexes on the map. No order. */
-    private static final Seq<Hex> hexes = new Seq<>();
+    public static final Seq<Hex> hexes = new Seq<>();
+
+    /** Maps team ID -> player data */
+    private static final IntMap<PlayerData> teamData = new IntMap<>();
     /** Maps team ID -> player */
-    private static final IntMap<Player> teamMap = new IntMap<>();
+    private static final IntMap<Player> teamPlayer = new IntMap<>();
 
     public static void init() {
         datas.clear();
         hexes.clear();
 
         HexedGenerator.getHexes((x, y) -> hexes.add(new Hex(hexes.size, x, y)));
-        Groups.player.each(player -> new PlayerData(player));
+        Groups.player.each(player -> datas.add(new PlayerData(player)));
     }
 
-    public static void updateTeamMap() {
-        teamMap.clear();
-        Groups.player.each(player -> teamMap.put(player.team().id, player));
+    public static void updateTeamMaps() {
+        teamData.clear();
+        teamPlayer.clear();
+
+        Groups.player.each(player -> {
+            teamData.put(player.team().id, datas.find(data -> data.player == player));
+            teamPlayer.put(player.team().id, player);
+        });
     }
 
     public static void updateControl() {
@@ -35,19 +43,19 @@ public class HexData {
     }
 
     public static Seq<PlayerData> getLeaderboard() {
-        return datas.values().toArray().filter(data -> data.controls() > 0).sort(data -> -data.controls());
+        return datas.copy().filter(data -> data.controls() > 0).sort(data -> -data.controls());
     }
 
     public static Player getPlayer(Team team) {
-        return teamMap.get(team.id);
+        return teamPlayer.get(team.id);
     }
 
     public static PlayerData getData(Team team) {
-        return datas.get(getPlayer(team).id);
+        return teamData.get(getPlayer(team).team().id);
     }
 
     public static int getControlledSize(Player player) {
-        return datas.get(player.id).controls();
+        return teamData.get(player.team().id).controls();
     }
 
     public static int hexesAmount() {
@@ -70,13 +78,6 @@ public class HexData {
         public Task left;
 
         public PlayerData(Player player) {
-            this.setPlayer(player);
-        }
-
-        public void setPlayer(Player player) {
-            datas.remove(this.player.id);
-            datas.put(player.id, this);
-
             this.player = player;
         }
 

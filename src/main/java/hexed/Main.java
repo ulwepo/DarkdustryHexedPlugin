@@ -143,7 +143,7 @@ public class Main extends Plugin {
             Statistics.save();
 
             if (event.player.team() == Team.derelict || restarting) return;
-            HexData.updateTeamMap();
+            HexData.updateTeamMaps();
 
             Team team = leftPlayers.get(event.player.uuid());
             if (team != null && !team.data().noCores()) {
@@ -154,7 +154,7 @@ public class Main extends Plugin {
 
         Events.on(PlayerLeave.class, event -> {
             if (event.player.team() == Team.derelict || restarting) return;
-            HexData.updateTeamMap();
+            HexData.updateTeamMaps();
 
             leftPlayers.put(event.player.uuid(), event.player.team());
             leftPlayerTeams.put(event.player.team(), Timer.schedule(() -> {
