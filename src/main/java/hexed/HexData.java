@@ -35,7 +35,7 @@ public class HexData {
     }
 
     public static Seq<PlayerData> getLeaderboard() {
-        return datas.values().toArray().filter(data -> data.controlled.size > 0).sort(data -> -data.controlled.size);
+        return datas.values().toArray().filter(data -> data.controls() > 0).sort(data -> -data.controls());
     }
 
     public static Player getPlayer(Team team) {
@@ -47,7 +47,7 @@ public class HexData {
     }
 
     public static int getControlledSize(Player player) {
-        return datas.get(player.id).controlled.size;
+        return datas.get(player.id).controls();
     }
 
     public static int hexesAmount() {
@@ -78,6 +78,14 @@ public class HexData {
             datas.put(player.id, this);
 
             this.player = player;
+        }
+
+        public String name() {
+            return player.coloredName();
+        }
+
+        public int controls() {
+            return controlled.size;
         }
     }
 }

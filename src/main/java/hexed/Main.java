@@ -297,8 +297,8 @@ public class Main extends Plugin {
         for (int i = 0; i < datas.size; i++) { // TODO криво форматирует под разные языки
             var data = datas.get(i);
             scores.append("[orange]").append(i + 1).append(". ")
-                    .append(data.player.coloredName())
-                    .append("[lightgray] (").append(getForm("decl.hexes", findLocale(data.player), data.controlled.size)).append(")")
+                    .append(data.name())
+                    .append("[lightgray] (").append(getForm("decl.hexes", findLocale(data.player), data.controls())).append(")")
                     .append("\n");
         }
 
@@ -310,14 +310,14 @@ public class Main extends Plugin {
             var endGameMessage = new StringBuilder(format("restart.header", locale));
 
             if (player == winner.player) {
-                endGameMessage.append(format("restart.you-won", locale, getForm("decl.hexes", locale, winner.controlled.size)));
+                endGameMessage.append(format("restart.you-won", locale, getForm("decl.hexes", locale, winner.controls())));
             } else {
-                endGameMessage.append(format("restart.player-won", locale, winner.player.coloredName(), getForm("decl.hexes", locale, winner.controlled.size)));
+                endGameMessage.append(format("restart.player-won", locale, winner.name(), getForm("decl.hexes", locale, winner.controls())));
             }
 
             endGameMessage.append("\n\n");
 
-            endGameMessage.append(winner.player.coloredName()).append("[white]: [accent]")
+            endGameMessage.append(winner.name()).append("[white]: [accent]")
                     .append(getForm("decl.wins", locale, statistic.wins))
                     .append(" [lime]\uE803[accent] ")
                     .append(getForm("decl.wins", locale, statistic.wins + 1));
@@ -364,8 +364,8 @@ public class Main extends Plugin {
         for (int i = 0; i < datas.size; i++) {
             var data = datas.get(i);
             leaders.append("[orange]").append(i + 1).append(". ")
-                    .append(data.player.coloredName())
-                    .append("[orange] (").append(getForm("decl.hexes", locale, data.controlled.size)).append(")")
+                    .append(data.name())
+                    .append("[orange] (").append(getForm("decl.hexes", locale, data.controls())).append(")")
                     .append("\n");
         }
         return leaders.toString();
