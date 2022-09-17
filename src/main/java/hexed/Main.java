@@ -5,6 +5,7 @@ import arc.math.Mathf;
 import arc.struct.Seq;
 import arc.struct.Seq.SeqIterable;
 import arc.util.*;
+import hexed.HexData.PlayerData;
 import hexed.components.Bundle;
 import hexed.components.Statistics;
 import hexed.generation.GenerationType;
@@ -371,7 +372,9 @@ public class Main extends Plugin {
     public void killTeam(Team team) {
         if (team == Team.derelict || !team.data().active()) return;
 
-        HexData.datas.remove(data -> data.player.team() == team);
+        var data = HexData.datas.find(d -> d.player.team() == team);
+        if (data.left != null) data.left.cancel();
+        HexData.datas.remove(data);
         HexData.updateTeamMaps();
 
         world.tiles.eachTile(tile -> {
@@ -387,6 +390,7 @@ public class Main extends Plugin {
         if (hex != null) {
             HexedGenerator.loadout(player, hex);
             hex.findController();
+            HexData.datas.add(new PlayerData(player));
         } else {
             Call.infoMessage(player.con, format("events.no-empty-hex", findLocale(player)));
             player.clearUnit();
