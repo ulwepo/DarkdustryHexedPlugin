@@ -51,7 +51,7 @@ public class Main extends Plugin {
     public static Seq<Block> serpuloOres, erekirOres;
 
     public static Schematic serpuloStart, erekirStart;
-    public static GenerationType type = GenerationTypes.beta;
+    public static GenerationType type;
 
     public static boolean restarting = false;
     public static float counter = roundTime;

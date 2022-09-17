@@ -10,14 +10,14 @@ import static hexed.Main.type;
 
 public class GenerationTypes {
 
-    public static GenerationType beta;
+    public static GenerationType wasteland, rivers;
 
     public static void load() {
-        beta = new GenerationType("[white]\uF7EA [accent]Beta", Planets.serpulo, rules -> {
+        wasteland = new GenerationType("[#c58c45]Wasteland", Planets.erekir, rules -> {
             rules.lighting = true;
             rules.ambientLight = Color.black.cpy().a(.7f);
 
-            rules.weather.add(new WeatherEntry(Weathers.sporestorm, 5f, 10f, 1f, 2f) {{
+            rules.weather.add(new WeatherEntry(Weathers.sandstorm, 5f, 10f, 1f, 2f) {{
                 intensity = .25f;
             }});
         }, new NoiseFilter() {{
@@ -91,13 +91,45 @@ public class GenerationTypes {
             flooronto = Blocks.rhyolite;
             floor = Blocks.rhyoliteVent;
         }});
+
+        rivers = new GenerationType("[white]\uF828 [accent]Rivers", Planets.serpulo, rules -> {
+
+        }, new NoiseFilter() {{
+            scl = 39.92f;
+            octaves = 3.015f;
+            floor = Blocks.sand;
+            block = Blocks.sandWall;
+        }}, new NoiseFilter() {{
+            scl = 39.92f;
+            octaves = 3.015f;
+            floor = Blocks.darksand;
+            block = Blocks.duneWall;
+        }}, new NoiseFilter() {{
+            scl = 39.92f;
+            octaves = 3.015f;
+            floor = Blocks.grass;
+            block = Blocks.pine;
+        }}, new NoiseFilter() {{
+            scl = 498.99997f;
+            threshold = 0f;
+            octaves = 1f;
+            falloff = 0f;
+            tilt = -4f;
+            floor = Blocks.dacite;
+            block = Blocks.daciteWall;
+            target = Blocks.stone;
+        }}, new RiverNoiseFilter() {{
+            floor = Blocks.sandWater;
+            floor2 = Blocks.water;
+            block = Blocks.air;
+        }});
     }
 
     public static Seq<GenerationType> all() {
-        return Seq.with(beta);
+        return Seq.with(wasteland, rivers);
     }
 
     public static GenerationType random() {
-        return all().random(type);
+        return all().random();
     }
 }
