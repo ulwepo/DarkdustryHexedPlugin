@@ -126,15 +126,15 @@ public class Main extends Plugin {
             Team team = event.tile.team();
             Player player = HexData.getPlayer(team);
 
-            if (team.cores().size <= 1) {
-                if (player != null) {
-                    killPlayer(player);
-                    sendToChat("events.player-lost", player.coloredName());
-                    Call.infoMessage(player.con, format("events.you-lost", findLocale(player)));
-                } else {
-                    killTeam(team);
-                    sendToChat("events.team-lost", team.color, team.name);
-                }
+            if (team.cores().size > 1) return;
+
+            if (player != null) {
+                killPlayer(player);
+                sendToChat("events.player-lost", player.coloredName());
+                Call.infoMessage(player.con, format("events.you-lost", findLocale(player)));
+            } else {
+                killTeam(team);
+                sendToChat("events.team-lost", team.color, team.name);
             }
         });
 
