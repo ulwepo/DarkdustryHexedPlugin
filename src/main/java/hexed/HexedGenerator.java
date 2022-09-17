@@ -8,7 +8,6 @@ import arc.struct.Seq;
 import arc.struct.StringMap;
 import arc.util.Structs;
 import arc.util.Tmp;
-import hexed.generation.LegacyGenerator;
 import mindustry.content.Blocks;
 import mindustry.content.Planets;
 import mindustry.maps.Map;
@@ -25,8 +24,6 @@ public class HexedGenerator {
     public static void generate(Tiles tiles) {
         int width = tiles.width, height = tiles.height;
         tiles.each((x, y) -> tiles.set(x, y, new Tile(x, y, type.defaultFloor, Blocks.air, type.defaultBlock)));
-
-        LegacyGenerator.generate(tiles);
 
         getHexes((x, y) -> {
             // вырезаем хекс
