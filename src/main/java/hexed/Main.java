@@ -210,35 +210,6 @@ public class Main extends Plugin {
         handler.<Player>register("lb", "Посмотреть текущий список лидеров.", (args, player) -> Call.infoMessage(player.con, getLeaderboard(findLocale(player))));
 
         handler.<Player>register("time", "Посмотреть время, оставшееся до конца раунда.", (args, player) -> bundled(player, "commands.time", (int) counter / 3600));
-
-        handler.<Player>register("hexstatus", "Посмотреть статус хекса на своем местоположении.", (args, player) -> {
-            var hex = HexData.getHex(player);
-            if (hex == null) {
-                bundled(player, "commands.hexstatus.not-found");
-                return;
-            }
-
-            hex.updateController();
-
-            var locale = findLocale(player);
-            var status = new StringBuilder(format("commands.hexstatus.hex", locale, hex.id)).append("\n");
-
-            if (hex.controller != null && HexData.getPlayer(hex.controller) != null) {
-                status.append(format("commands.hexstatus.owner", locale, HexData.getPlayer(hex.controller).coloredName())).append("\n");
-            } else {
-                status.append(format("commands.hexstatus.owner.none", locale)).append("\n");
-
-                for (var data : state.teams.getActive()) {
-                    if (hex.getProgressPercent(data.team) == 0 || HexData.getPlayer(data.team) == null) continue;
-                    status.append("[white]|> [accent]")
-                            .append(HexData.getPlayer(data.team).coloredName())
-                            .append("[lightgray]: [accent]")
-                            .append(format("commands.hexstatus.progress", locale, Strings.autoFixed(hex.getProgressPercent(data.team), 4)))
-                            .append("\n");
-                }
-            }
-            player.sendMessage(status.toString());
-        });
     }
 
     @Override
