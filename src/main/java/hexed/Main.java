@@ -2,11 +2,9 @@ package hexed;
 
 import arc.Events;
 import arc.math.Mathf;
-import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.struct.Seq.SeqIterable;
 import arc.util.*;
-import arc.util.Timer.Task;
 import hexed.components.Bundle;
 import hexed.components.Statistics;
 import hexed.generation.GenerationType;
@@ -44,8 +42,6 @@ public class Main extends Plugin {
             return Gamemode.pvp;
         }
     };
-    public static final ObjectMap<String, Team> leftPlayers = new ObjectMap<>();
-    public static final ObjectMap<Team, Task> leftPlayerTeams = new ObjectMap<>();
 
     public static Seq<Block> serpuloOres, erekirOres;
     public static Schematic serpuloStart, erekirStart;
@@ -145,10 +141,10 @@ public class Main extends Plugin {
             if (event.player.team() == Team.derelict || restarting) return;
             HexData.updateTeamMaps();
 
-            Team team = leftPlayers.get(event.player.uuid());
-            if (team != null && !team.data().noCores()) {
-                leftPlayers.remove(event.player.uuid());
-                leftPlayerTeams.remove(team).cancel();
+            var old = HexData.getData(event.player.uuid());
+            if (old != null && !old.player.team().data().noCores()) {
+                old.player = player;
+                old.left.cancel();
             } else spawn(event.player);
         });
 
@@ -156,18 +152,14 @@ public class Main extends Plugin {
             if (event.player.team() == Team.derelict || restarting) return;
             HexData.updateTeamMaps();
 
-            leftPlayers.put(event.player.uuid(), event.player.team());
-            leftPlayerTeams.put(event.player.team(), Timer.schedule(() -> {
-                killTeam(event.player.team());
-                leftPlayers.remove(event.player.uuid());
-                leftPlayerTeams.remove(event.player.team());
-            }, leftTeamDestroyTime));
+            HexData.datas.get(event.player.team().id).left = Timer.schedule(() -> killTeam(event.player.team()), leftTeamDestroyTime);
         });
 
         netServer.assigner = (player, players) -> {
-            if (leftPlayers.containsKey(player.uuid())) return leftPlayers.get(player.uuid());
+            var data = HexData.getData(player.uuid());
+            if (data != null) return data.player.team();
 
-            var teams = Seq.with(Team.all).filter(team -> team != Team.derelict && !team.active() && !leftPlayerTeams.containsKey(team));
+            var teams = Seq.with(Team.all).filter(team -> team != Team.derelict && !team.active());
             return teams.any() ? teams.random() : Team.derelict;
         };
 
@@ -348,9 +340,6 @@ public class Main extends Plugin {
             netServer.sendWorldData(player);
         });
 
-        leftPlayers.clear();
-        leftPlayerTeams.clear();
-
         counter = roundTime;
         restarting = false;
     }
@@ -382,10 +371,12 @@ public class Main extends Plugin {
     public void killTeam(Team team) {
         if (team == Team.derelict || !team.data().active()) return;
 
+        HexData.datas.remove(data -> data.player.team() == team);
+        HexData.updateTeamMaps();
+
         world.tiles.eachTile(tile -> {
-            if (tile.build != null && tile.block() != Blocks.air && tile.team() == team) {
+            if (tile.build != null && tile.block() != Blocks.air && tile.team() == team)
                 Time.run(Mathf.random(360f), tile::removeNet);
-            }
         });
 
         Groups.unit.each(u -> u.team == team, unit -> Time.run(Mathf.random(360f), () -> Call.unitDespawn(unit)));

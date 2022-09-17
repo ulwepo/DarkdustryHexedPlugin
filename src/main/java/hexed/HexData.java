@@ -51,7 +51,11 @@ public class HexData {
     }
 
     public static PlayerData getData(Team team) {
-        return teamData.get(getPlayer(team).team().id);
+        return teamData.get(team.id);
+    }
+
+    public static PlayerData getData(String uuid) {
+        return datas.find(data -> data.player.uuid().equals(uuid));
     }
 
     public static int getControlledSize(Player player) {
