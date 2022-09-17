@@ -294,48 +294,48 @@ public class Main extends Plugin {
         Events.fire("HexedGameOver");
         Log.info("Раунд окончен.");
 
+        Time.runTask(60f * 15f, this::reload);
+
         var players = HexData.getLeaderboard();
         var scores = new StringBuilder();
 
-        if (players.any()) {
-            for (int i = 0; i < players.size; i++) {
-                var player = players.get(i);
-                scores.append("[orange]").append(i + 1).append(". ")
-                        .append(player.coloredName())
-                        .append("[lightgray] (").append(getForm("decl.hexes", findLocale(player), HexData.getControlledSize(player))).append(")")
-                        .append("\n");
-            }
+        if (players.isEmpty()) return;
 
-            var winner = players.first();
-            var statistic = Statistics.getData(winner.uuid());
-
-            Groups.player.each(player -> {
-                var locale = findLocale(player);
-                var endGameMessage = new StringBuilder(format("restart.header", locale));
-
-                if (player == winner) {
-                    endGameMessage.append(format("restart.you-won", locale, getForm("decl.hexes", locale, HexData.getControlledSize(player))));
-                } else {
-                    endGameMessage.append(format("restart.player-won", locale, winner.coloredName(), getForm("decl.hexes", locale, HexData.getControlledSize(winner))));
-                }
-
-                endGameMessage.append("\n\n");
-
-                endGameMessage.append(winner.coloredName()).append("[white]: [accent]")
-                        .append(getForm("decl.wins", locale, statistic.wins))
-                        .append(" [lime]\uE803[accent] ")
-                        .append(getForm("decl.wins", locale, statistic.wins + 1));
-
-                endGameMessage.append(format("restart.final-score", locale, scores.toString()));
-
-                Call.infoMessage(player.con, endGameMessage.toString());
-            });
-
-            statistic.wins++;
-            Statistics.save();
+        for (int i = 0; i < players.size; i++) { // TODO криво форматирует под разные языки
+            var player = players.get(i);
+            scores.append("[orange]").append(i + 1).append(". ")
+                    .append(player.coloredName())
+                    .append("[lightgray] (").append(getForm("decl.hexes", findLocale(player), HexData.getControlledSize(player))).append(")")
+                    .append("\n");
         }
 
-        Time.runTask(60f * 15f, this::reload);
+        var winner = players.first();
+        var statistic = Statistics.getData(winner.uuid());
+
+        Groups.player.each(player -> {
+            var locale = findLocale(player);
+            var endGameMessage = new StringBuilder(format("restart.header", locale));
+
+            if (player == winner) {
+                endGameMessage.append(format("restart.you-won", locale, getForm("decl.hexes", locale, HexData.getControlledSize(player))));
+            } else {
+                endGameMessage.append(format("restart.player-won", locale, winner.coloredName(), getForm("decl.hexes", locale, HexData.getControlledSize(winner))));
+            }
+
+            endGameMessage.append("\n\n");
+
+            endGameMessage.append(winner.coloredName()).append("[white]: [accent]")
+                    .append(getForm("decl.wins", locale, statistic.wins))
+                    .append(" [lime]\uE803[accent] ")
+                    .append(getForm("decl.wins", locale, statistic.wins + 1));
+
+            endGameMessage.append(format("restart.final-score", locale, scores.toString()));
+
+            Call.infoMessage(player.con, endGameMessage.toString());
+        });
+
+        statistic.wins++;
+        Statistics.save();
     }
 
     public void reload() {
@@ -401,7 +401,7 @@ public class Main extends Plugin {
     public void spawn(Player player) {
         Hex hex = HexData.getSpawnHex();
         if (hex != null) {
-            loadout(player, hex.x, hex.y);
+            HexedGenerator.loadout(player, hex);
             hex.findController();
         } else {
             Call.infoMessage(player.con, format("events.no-empty-hex", findLocale(player)));
