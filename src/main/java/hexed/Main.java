@@ -95,7 +95,7 @@ public class Main extends Plugin {
 
         Timer.schedule(HexData::updateControl, 0f, updateTime);
         Timer.schedule(() -> {
-            if (state.isPlaying()) Groups.player.each(player -> Call.infoToast(player.con, getLeaderboard(player), 10f));
+            if (state.isPlaying()) Groups.player.each(player -> Call.infoToast(player.con, getLeaderboard(findLocale(player)), 10f));
         }, 0f, leaderboardTime);
 
         Events.run(Trigger.update, () -> {
@@ -133,7 +133,7 @@ public class Main extends Plugin {
             if (team.cores().size <= 1) {
                 if (player != null) {
                     killPlayer(player);
-                    sendToChat("events.player-lost", player.name);
+                    sendToChat("events.player-lost", player.coloredName());
                     Call.infoMessage(player.con, format("events.you-lost", findLocale(player)));
                 } else {
                     killTeam(team);
@@ -145,7 +145,7 @@ public class Main extends Plugin {
         Events.on(BlockBuildEndEvent.class, event -> {
             Hex hex = HexData.getHex(event.tile);
             if (hex != null) hex.updateController();
-        }); // чисто для красоты
+        });
 
         Events.on(PlayerJoin.class, event -> {
             Statistics.getData(event.player.uuid()).name = event.player.name;
@@ -212,7 +212,7 @@ public class Main extends Plugin {
             }
         });
 
-        handler.<Player>register("lb", "Посмотреть текущий список лидеров.", (args, player) -> Call.infoMessage(player.con, getLeaderboard(player)));
+        handler.<Player>register("lb", "Посмотреть текущий список лидеров.", (args, player) -> Call.infoMessage(player.con, getLeaderboard(findLocale(player))));
 
         handler.<Player>register("time", "Посмотреть время, оставшееся до конца раунда.", (args, player) -> bundled(player, "commands.time", (int) counter / 3600));
 
@@ -229,16 +229,16 @@ public class Main extends Plugin {
             var status = new StringBuilder(format("commands.hexstatus.hex", locale, hex.id)).append("\n");
 
             if (hex.controller != null && HexData.getPlayer(hex.controller) != null) {
-                status.append(format("commands.hexstatus.owner", locale, HexData.getPlayer(hex.controller).name)).append("\n");
+                status.append(format("commands.hexstatus.owner", locale, HexData.getPlayer(hex.controller).coloredName())).append("\n");
             } else {
                 status.append(format("commands.hexstatus.owner.none", locale)).append("\n");
 
-                for (var teamData : state.teams.getActive()) {
-                    if (hex.getProgressPercent(teamData.team) == 0 || HexData.getPlayer(teamData.team) == null) continue;
+                for (var data : state.teams.getActive()) {
+                    if (hex.getProgressPercent(data.team) == 0 || HexData.getPlayer(data.team) == null) continue;
                     status.append("[white]|> [accent]")
-                            .append(HexData.getPlayer(teamData.team).name)
+                            .append(HexData.getPlayer(data.team).coloredName())
                             .append("[lightgray]: [accent]")
-                            .append(format("commands.hexstatus.progress", locale, Strings.autoFixed(hex.getProgressPercent(teamData.team), 4)))
+                            .append(format("commands.hexstatus.progress", locale, Strings.autoFixed(hex.getProgressPercent(data.team), 4)))
                             .append("\n");
                 }
             }
@@ -298,7 +298,7 @@ public class Main extends Plugin {
         } else if (hex.controller == player.team()) {
             message.append(format("hud.hex.captured", locale));
         } else if (hex.controller != null && HexData.getPlayer(hex.controller) != null) {
-            message.append("[#").append(hex.controller.color).append("]").append(format("hud.hex.captured-by-player", locale, HexData.getPlayer(hex.controller).name));
+            message.append("[#").append(hex.controller.color).append("]").append(format("hud.hex.captured-by-player", locale, HexData.getPlayer(hex.controller).coloredName()));
         } else {
             message.append(format("hud.hex.unknown", locale));
         }
@@ -319,8 +319,6 @@ public class Main extends Plugin {
 
         state.rules = type.applyRules(rules.copy());
         logic.play();
-
-        Call.sendMessage(type.name); // зачем это?!
     }
 
     public void endGame() {
@@ -334,10 +332,10 @@ public class Main extends Plugin {
         var scores = new StringBuilder();
 
         if (players.any()) {
-            for (int i = 0; i < players.size;) {
+            for (int i = 0; i < players.size; i++) {
                 var player = players.get(i);
-                scores.append("[orange]").append(++i).append(". ")
-                        .append(player.name)
+                scores.append("[orange]").append(i + 1).append(". ")
+                        .append(player.coloredName())
                         .append("[lightgray] (").append(getForm("decl.hexes", findLocale(player), HexData.getControlledSize(player))).append(")")
                         .append("\n");
             }
@@ -352,12 +350,12 @@ public class Main extends Plugin {
                 if (player == winner) {
                     endGameMessage.append(format("restart.you-won", locale, getForm("decl.hexes", locale, HexData.getControlledSize(player))));
                 } else {
-                    endGameMessage.append(format("restart.player-won", locale, winner.name, getForm("decl.hexes", locale, HexData.getControlledSize(winner))));
+                    endGameMessage.append(format("restart.player-won", locale, winner.coloredName(), getForm("decl.hexes", locale, HexData.getControlledSize(winner))));
                 }
 
                 endGameMessage.append("\n\n");
 
-                endGameMessage.append(winner.name).append("[white]: [accent]")
+                endGameMessage.append(winner.coloredName()).append("[white]: [accent]")
                         .append(getForm("decl.wins", locale, statistic.wins))
                         .append(" [lime]\uE803[accent] ")
                         .append(getForm("decl.wins", locale, statistic.wins + 1));
@@ -386,9 +384,7 @@ public class Main extends Plugin {
             player.admin = admin;
             player.team(netServer.assignTeam(player, new SeqIterable<>(players)));
 
-            if (player.team() != Team.derelict) {
-                spawn(player);
-            }
+            spawn(player);
 
             netServer.sendWorldData(player);
         });
@@ -402,18 +398,17 @@ public class Main extends Plugin {
         restarting = false;
     }
 
-    public String getLeaderboard(Player player) {
+    public String getLeaderboard(Locale locale) {
         var players = HexData.getLeaderboard();
         players.setSize(Math.min(4, players.size));
 
-        var locale = findLocale(player);
         var leaders = new StringBuilder(format("leaderboard.header", locale, (int) counter / 60 / 60));
 
-        for (int i = 0; i < players.size;) {
-            var p = players.get(i);
-            leaders.append("[orange]").append(++i).append(". ")
-                    .append(p.name)
-                    .append("[orange] (").append(getForm("decl.hexes", locale, HexData.getControlledSize(p))).append(")")
+        for (int i = 0; i < players.size; i++) {
+            var player = players.get(i);
+            leaders.append("[orange]").append(i + 1).append(". ")
+                    .append(player.coloredName())
+                    .append("[orange] (").append(getForm("decl.hexes", locale, HexData.getControlledSize(player))).append(")")
                     .append("\n");
         }
         return leaders.toString();
