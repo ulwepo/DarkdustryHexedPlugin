@@ -13,10 +13,9 @@ import mindustry.content.Planets;
 import mindustry.gen.Call;
 import mindustry.gen.Player;
 import mindustry.maps.Map;
-import mindustry.maps.filters.*;
-import mindustry.maps.filters.GenerateFilter.GenerateInput;
 import mindustry.type.ItemStack;
-import mindustry.world.*;
+import mindustry.world.Tile;
+import mindustry.world.Tiles;
 import mindustry.world.blocks.storage.CoreBlock;
 
 import static hexed.Hex.*;
@@ -27,7 +26,7 @@ public class HexedGenerator {
 
     public static void generate(Tiles tiles) {
         int width = tiles.width, height = tiles.height;
-        tiles.each((x, y) -> tiles.set(x, y, new Tile(x, y, type.defaultFloor, Blocks.air, type.defaultBlock)));
+        tiles.each((x, y) -> tiles.set(x, y, new Tile(x, y, Blocks.stone, Blocks.air, Blocks.stoneWall)));
 
         type.apply(tiles);
 
@@ -52,13 +51,6 @@ public class HexedGenerator {
                     tiles.getn(cx, cy).setFloor(Blocks.coreZone.asFloor());
         });
 
-        GenerateInput input = new GenerateInput();
-        getOres().addAll(getDefaultFilters()).each(filter -> {
-            filter.randomize();
-            input.begin(width, height, tiles::getn);
-            filter.apply(tiles, input);
-        });
-
         state.map = new Map(StringMap.of(
                 "name", type.name,
                 "author", "[cyan]\uE810 [royal]Darkness [cyan]\uE810",
@@ -76,31 +68,6 @@ public class HexedGenerator {
                 intc.get(cx, cy);
             }
         }
-    }
-
-    public static Seq<GenerateFilter> getOres() {
-        var filters = new Seq<GenerateFilter>();
-        for (var block : type.planet == Planets.serpulo ? serpuloOres : erekirOres) {
-            filters.add(new OreFilter() {{
-                threshold = block.asFloor().oreThreshold - 0.04f;
-                scl = block.asFloor().oreScale + 8f;
-                ore = block;
-            }});
-        }
-
-        return filters;
-    }
-
-    public static Seq<GenerateFilter> getDefaultFilters() {
-        var filters = new Seq<GenerateFilter>();
-        content.blocks().each(block -> block.isFloor() && block.inEditor && block.asFloor().decoration != Blocks.air, block -> {
-            var filter = new ScatterFilter();
-            filter.flooronto = block.asFloor();
-            filter.block = block.asFloor().decoration;
-            filters.add(filter);
-        });
-
-        return filters;
     }
 
     public static void circle(int points, float offset, Floatc cons) {
