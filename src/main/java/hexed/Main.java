@@ -48,12 +48,11 @@ public class Main extends Plugin {
     public static final ObjectMap<Team, Task> leftPlayerTeams = new ObjectMap<>();
 
     public static Seq<Block> serpuloOres, erekirOres;
-
     public static Schematic serpuloStart, erekirStart;
-    public static GenerationType type;
 
     public static boolean restarting = false;
     public static float counter = roundTime;
+    public static GenerationType type;
 
     @Override
     public void init() {
@@ -83,7 +82,6 @@ public class Main extends Plugin {
 
         Blocks.grass.asFloor().wall = Blocks.pine;
         Blocks.sand.asFloor().wall = Blocks.sandWall;
-
         Blocks.moss.asFloor().decoration = Blocks.sporeMoss.asFloor().decoration = Blocks.sporeCluster;
 
         Bundle.load();
@@ -97,8 +95,6 @@ public class Main extends Plugin {
 
         Events.run(Trigger.update, () -> {
             if (!state.isPlaying()) return;
-
-            HexData.updateStats();
 
             Groups.player.each(player -> {
                 updateText(player);
@@ -146,7 +142,8 @@ public class Main extends Plugin {
             Statistics.getData(event.player.uuid()).name = event.player.name;
             Statistics.save();
 
-            if (event.player.team() == Team.derelict) return;
+            if (event.player.team() == Team.derelict || restarting) return;
+            HexData.updateTeamMap();
 
             Team team = leftPlayers.get(event.player.uuid());
             if (team != null && !team.data().noCores()) {
@@ -157,6 +154,7 @@ public class Main extends Plugin {
 
         Events.on(PlayerLeave.class, event -> {
             if (event.player.team() == Team.derelict || restarting) return;
+            HexData.updateTeamMap();
 
             leftPlayers.put(event.player.uuid(), event.player.team());
             leftPlayerTeams.put(event.player.team(), Timer.schedule(() -> {
@@ -274,7 +272,7 @@ public class Main extends Plugin {
         Log.info("Generating location for scenario @...", type.name);
 
         world.loadGenerator(Hex.size, Hex.size, HexedGenerator::generate);
-        HexData.initHexes();
+        HexData.init();
 
         Log.info("Location generated.");
 
@@ -291,35 +289,35 @@ public class Main extends Plugin {
 
         Time.runTask(60f * 15f, this::reload);
 
-        var players = HexData.getLeaderboard();
+        var datas = HexData.getLeaderboard();
         var scores = new StringBuilder();
 
-        if (players.isEmpty()) return;
+        if (datas.isEmpty()) return;
 
-        for (int i = 0; i < players.size; i++) { // TODO криво форматирует под разные языки
-            var player = players.get(i);
+        for (int i = 0; i < datas.size; i++) { // TODO криво форматирует под разные языки
+            var data = datas.get(i);
             scores.append("[orange]").append(i + 1).append(". ")
-                    .append(player.coloredName())
-                    .append("[lightgray] (").append(getForm("decl.hexes", findLocale(player), HexData.getControlledSize(player))).append(")")
+                    .append(data.player.coloredName())
+                    .append("[lightgray] (").append(getForm("decl.hexes", findLocale(data.player), data.controlled.size)).append(")")
                     .append("\n");
         }
 
-        var winner = players.first();
-        var statistic = Statistics.getData(winner.uuid());
+        var winner = datas.first();
+        var statistic = Statistics.getData(winner.player.uuid());
 
         Groups.player.each(player -> {
             var locale = findLocale(player);
             var endGameMessage = new StringBuilder(format("restart.header", locale));
 
-            if (player == winner) {
-                endGameMessage.append(format("restart.you-won", locale, getForm("decl.hexes", locale, HexData.getControlledSize(player))));
+            if (player == winner.player) {
+                endGameMessage.append(format("restart.you-won", locale, getForm("decl.hexes", locale, winner.controlled.size)));
             } else {
-                endGameMessage.append(format("restart.player-won", locale, winner.coloredName(), getForm("decl.hexes", locale, HexData.getControlledSize(winner))));
+                endGameMessage.append(format("restart.player-won", locale, winner.player.coloredName(), getForm("decl.hexes", locale, winner.controlled.size)));
             }
 
             endGameMessage.append("\n\n");
 
-            endGameMessage.append(winner.coloredName()).append("[white]: [accent]")
+            endGameMessage.append(winner.player.coloredName()).append("[white]: [accent]")
                     .append(getForm("decl.wins", locale, statistic.wins))
                     .append(" [lime]\uE803[accent] ")
                     .append(getForm("decl.wins", locale, statistic.wins + 1));
@@ -358,16 +356,16 @@ public class Main extends Plugin {
     }
 
     public String getLeaderboard(Locale locale) {
-        var players = HexData.getLeaderboard();
-        players.setSize(Math.min(4, players.size));
+        var datas = HexData.getLeaderboard();
+        datas.setSize(Math.min(4, datas.size));
 
         var leaders = new StringBuilder(format("leaderboard.header", locale, (int) counter / 60 / 60));
 
-        for (int i = 0; i < players.size; i++) {
-            var player = players.get(i);
+        for (int i = 0; i < datas.size; i++) {
+            var data = datas.get(i);
             leaders.append("[orange]").append(i + 1).append(". ")
-                    .append(player.coloredName())
-                    .append("[orange] (").append(getForm("decl.hexes", locale, HexData.getControlledSize(player))).append(")")
+                    .append(data.player.coloredName())
+                    .append("[orange] (").append(getForm("decl.hexes", locale, data.controlled.size)).append(")")
                     .append("\n");
         }
         return leaders.toString();

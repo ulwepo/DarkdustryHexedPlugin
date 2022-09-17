@@ -37,7 +37,12 @@ public class Hex {
     }
 
     public void updateController() {
-        controller = findController();
+        Team finded = findController();
+        if (finded == controller) return;
+
+        if (controller != null) HexData.getData(controller).controlled.remove(this);
+        HexData.getData(finded).controlled.add(this);
+        controller = finded;
     }
 
     public float getProgressPercent(Team team) {
