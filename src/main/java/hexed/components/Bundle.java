@@ -2,7 +2,6 @@ package hexed.components;
 
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
-import hexed.Main;
 import mindustry.gen.Groups;
 import mindustry.gen.Player;
 

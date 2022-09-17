@@ -1,9 +1,7 @@
 package hexed;
 
-import arc.math.geom.Point2;
 import arc.math.geom.Position;
 import arc.struct.IntMap;
-import arc.struct.IntSeq;
 import arc.struct.Seq;
 import mindustry.game.Team;
 import mindustry.gen.Groups;
