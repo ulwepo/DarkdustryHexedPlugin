@@ -1,12 +1,9 @@
 package hexed;
 
 import arc.func.Floatc;
+import arc.func.Intc2;
 import arc.math.Mathf;
-import arc.math.geom.Bresenham2;
-import arc.math.geom.Geometry;
-import arc.math.geom.Intersector;
-import arc.math.geom.Point2;
-import arc.struct.IntSeq;
+import arc.math.geom.*;
 import arc.struct.Seq;
 import arc.struct.StringMap;
 import arc.util.Structs;
@@ -16,10 +13,9 @@ import mindustry.content.Planets;
 import mindustry.maps.Map;
 import mindustry.maps.filters.*;
 import mindustry.maps.filters.GenerateFilter.GenerateInput;
-import mindustry.world.Block;
-import mindustry.world.Tile;
-import mindustry.world.Tiles;
+import mindustry.world.*;
 
+import static hexed.Hex.*;
 import static hexed.Main.*;
 import static mindustry.Vars.*;
 
@@ -29,9 +25,7 @@ public class HexedGenerator {
         int width = tiles.width, height = tiles.height;
         tiles.each((x, y) -> tiles.set(x, y, new Tile(x, y, type.defaultFloor, Blocks.air, type.defaultBlock)));
 
-        getHexes().each(packed -> {
-            int x = Point2.x(packed), y = Point2.y(packed);
-
+        getHexes((x, y) -> {
             // вырезаем хекс
             Geometry.circle(x, y, width, height, Hex.diameter, (cx, cy) -> {
                 if (Intersector.isInsideHexagon(x, y, Hex.diameter, cx, cy)) tiles.getn(cx, cy).remove();
@@ -39,10 +33,10 @@ public class HexedGenerator {
 
             // вырезаем проходы
             circle(3, 360f / 3 / 2f - 90, f -> { // что это ._.
-                Tmp.v1.trnsExact(f, Hex.spacing + 12);
+                Tmp.v1.trnsExact(f, spacing + 12);
                 if (!Structs.inBounds(x + (int) Tmp.v1.x, y + (int) Tmp.v1.y, width, height)) return;
 
-                Tmp.v1.trnsExact(f, Hex.spacing / 2f + 7);
+                Tmp.v1.trnsExact(f, spacing / 2f + 7);
                 Bresenham2.line(x, y, x + (int) Tmp.v1.x, y + (int) Tmp.v1.y, (cx, cy) -> Geometry.circle(cx, cy, width, height, 3, (c2x, c2y) -> tiles.getn(c2x, c2y).remove()));
             });
 
@@ -68,22 +62,21 @@ public class HexedGenerator {
         ));
     }
 
-    public static IntSeq getHexes() {
-        IntSeq array = new IntSeq();
-        float h = Mathf.sqrt3 * Hex.spacing / 2;
-        for (int x = 0; x < Hex.size / Hex.spacing - 2; x++) {
-            for (int y = 0; y < Hex.size / (h / 2) - 2; y++) {
-                int cx = (int) (x * Hex.spacing * 1.5 + (y % 2) * Hex.spacing * 3.0 / 4) + Hex.spacing / 2;
-                int cy = (int) (y * h / 2) + Hex.spacing / 2;
-                array.add(Point2.pack(cx, cy));
+    public static void getHexes(Intc2 intc) {
+        float h = Mathf.sqrt3 * spacing / 2;
+        for (int x = 0; x < size / spacing - 2; x++) {
+            for (int y = 0; y < size / (h / 2) - 2; y++) {
+                int cx = (int) (x * spacing * 1.5 + (y % 2) * spacing * 3.0 / 4) + spacing / 2;
+                int cy = (int) (y * h / 2) + spacing / 2;
+
+                intc.get(cx, cy);
             }
         }
-        return array;
     }
 
     public static Seq<GenerateFilter> getOres() {
-        Seq<GenerateFilter> filters = new Seq<>();
-        for (Block block : type.planet == Planets.serpulo ? serpuloOres : erekirOres) {
+        var filters = new Seq<GenerateFilter>();
+        for (var block : type.planet == Planets.serpulo ? serpuloOres : erekirOres) {
             filters.add(new OreFilter() {{
                 threshold = block.asFloor().oreThreshold - 0.04f;
                 scl = block.asFloor().oreScale + 8f;
@@ -95,7 +88,7 @@ public class HexedGenerator {
     }
 
     public static Seq<GenerateFilter> getDefaultFilters() {
-        Seq<GenerateFilter> filters = new Seq<>();
+        var filters = new Seq<GenerateFilter>();
         content.blocks().each(block -> block.isFloor() && block.inEditor && block.asFloor().decoration != Blocks.air, block -> {
             var filter = new ScatterFilter();
             filter.flooronto = block.asFloor();

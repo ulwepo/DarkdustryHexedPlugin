@@ -32,12 +32,9 @@ import static mindustry.Vars.*;
 
 public class Main extends Plugin {
 
-    public static final float spawnDelay = 60 * 6f;
     public static final float winCapturePercent = 0.75f;
 
     public static final float roundTime = 60 * 60 * 90f;
-    public static final float leaderboardTime = 60 * 3f;
-    public static final float updateTime = 1f;
     public static final float leftTeamDestroyTime = 90f;
 
     public static final int itemRequirement = 2560;
@@ -48,8 +45,6 @@ public class Main extends Plugin {
             return Gamemode.pvp;
         }
     };
-
-    public static final Interval interval = new Interval(2);
     public static final ObjectMap<String, Team> leftPlayers = new ObjectMap<>();
     public static final ObjectMap<Team, Task> leftPlayerTeams = new ObjectMap<>();
 
@@ -93,10 +88,10 @@ public class Main extends Plugin {
         Statistics.load();
         GenerationTypes.load();
 
-        Timer.schedule(HexData::updateControl, 0f, updateTime);
+        Timer.schedule(HexData::updateControl, 0f, 1f);
         Timer.schedule(() -> {
             if (state.isPlaying()) Groups.player.each(player -> Call.infoToast(player.con, getLeaderboard(findLocale(player)), 10f));
-        }, 0f, leaderboardTime);
+        }, 0f, 180f);
 
         Events.run(Trigger.update, () -> {
             if (!state.isPlaying()) return;
@@ -122,8 +117,6 @@ public class Main extends Plugin {
             Hex hex = HexData.getHex(event.tile);
             if (hex != null) {
                 hex.updateController();
-                hex.spawnTime.reset();
-
                 Call.effect(Fx.reactorExplosion, hex.wx, hex.wy, Mathf.random(360f), Tmp.c1.rand());
             }
 
@@ -192,10 +185,9 @@ public class Main extends Plugin {
 
             if (leaders.isEmpty())
                 players.append(format("commands.top.none", locale));
-            else for (int i = 0; i < leaders.size;) {
+            else for (int i = 0; i < leaders.size; i++) {
                 var statistic = leaders.get(i);
-
-                players.append("[orange]").append(++i).append(". ")
+                players.append("[orange]").append(i + 1).append(". ")
                         .append(statistic.name).append("[accent]: [cyan]")
                         .append(getForm("decl.wins", locale, statistic.wins)).append("\n");
             }
@@ -313,7 +305,7 @@ public class Main extends Plugin {
         Log.info("Создание локации по сценарию @...", type.name);
 
         world.loadGenerator(Hex.size, Hex.size, HexedGenerator::generate);
-        HexData.initHexes(HexedGenerator.getHexes());
+        HexData.initHexes();
 
         Log.info("Локация сгенерирована.");
 
@@ -388,8 +380,6 @@ public class Main extends Plugin {
 
             netServer.sendWorldData(player);
         });
-
-        for (int i = 0; i < interval.getTimes().length; i++) interval.reset(i, 0f);
 
         leftPlayers.clear();
         leftPlayerTeams.clear();

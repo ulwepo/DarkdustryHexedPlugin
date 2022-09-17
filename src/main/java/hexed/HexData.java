@@ -56,11 +56,8 @@ public class HexData {
         return getControlled(team).size;
     }
 
-    public static void initHexes(IntSeq ints) {
-        for (int i = 0; i < ints.size; i++) {
-            int pos = ints.get(i);
-            hexes.add(new Hex(i, Point2.x(pos), Point2.y(pos)));
-        }
+    public static void initHexes() {
+        HexedGenerator.getHexes((x, y) -> hexes.add(new Hex(hexes.size, x, y)));
     }
 
     public static int hexesAmount() {
@@ -68,7 +65,7 @@ public class HexData {
     }
 
     public static Hex getSpawnHex() {
-        return hexes.copy().shuffle().find(hex -> hex.controller == null && hex.spawnTime.get());
+        return hexes.copy().shuffle().find(hex -> hex.controller == null);
     }
 
     public static Hex getHex(Position position) {

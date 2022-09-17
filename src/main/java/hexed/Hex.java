@@ -3,7 +3,6 @@ package hexed;
 import arc.math.Mathf;
 import arc.math.geom.Intersector;
 import arc.math.geom.Position;
-import arc.util.Timekeeper;
 import mindustry.game.Team;
 import mindustry.type.ItemStack;
 import mindustry.world.Tile;
@@ -28,7 +27,6 @@ public class Hex {
     public final float[] progress = new float[256];
 
     public Team controller;
-    public Timekeeper spawnTime = new Timekeeper(Main.spawnDelay);
 
     public Hex(int id, int x, int y) {
         this.id = id;
