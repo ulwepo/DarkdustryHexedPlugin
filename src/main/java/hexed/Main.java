@@ -143,7 +143,7 @@ public class Main extends Plugin {
         Events.on(BlockBuildEndEvent.class, event -> {
             Hex hex = HexData.getHex(event.tile);
             if (hex != null) hex.updateController();
-        });
+        }); // чисто для красоты
 
         Events.on(PlayerJoin.class, event -> {
             Statistics.getData(event.player.uuid()).name = event.player.name;
