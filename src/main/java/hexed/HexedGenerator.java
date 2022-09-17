@@ -10,10 +10,14 @@ import arc.util.Structs;
 import arc.util.Tmp;
 import mindustry.content.Blocks;
 import mindustry.content.Planets;
+import mindustry.gen.Call;
+import mindustry.gen.Player;
 import mindustry.maps.Map;
 import mindustry.maps.filters.*;
 import mindustry.maps.filters.GenerateFilter.GenerateInput;
+import mindustry.type.ItemStack;
 import mindustry.world.*;
+import mindustry.world.blocks.storage.CoreBlock;
 
 import static hexed.Hex.*;
 import static hexed.Main.*;
@@ -100,7 +104,26 @@ public class HexedGenerator {
     }
 
     public static void circle(int points, float offset, Floatc cons) {
-        for (int i = 0; i < points; i++)
-            cons.get(offset + i * 360f / points);
+        for (int i = 0; i < points; i++) cons.get(offset + i * 360f / points);
+    }
+
+    public static void loadout(Player player, Hex hex) {
+        var start = type.planet == Planets.serpulo ? serpuloStart : erekirStart;
+        var coreTile = start.tiles.find(s -> s.block instanceof CoreBlock);
+        int sx = hex.x - coreTile.x, sy = hex.y - coreTile.y;
+
+        start.tiles.each(stile -> {
+            var tile = world.tile(stile.x + sx, stile.y + sy);
+            if (tile == null) return;
+
+            tile.setNet(stile.block, player.team(), stile.rotation);
+            tile.getLinkedTiles(new Seq<>()).each(t -> t.floor().isDeep(), t -> t.setFloorNet(Blocks.darkPanel3));
+
+            if (stile.config != null) tile.build.configureAny(stile.config);
+
+            if (stile == coreTile) for (ItemStack stack : state.rules.loadout) {
+                Call.setItem(tile.build, stack.item, stack.amount);
+            }
+        });
     }
 }

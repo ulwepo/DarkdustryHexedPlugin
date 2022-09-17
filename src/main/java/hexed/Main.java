@@ -14,7 +14,6 @@ import hexed.generation.GenerationTypes;
 import mindustry.content.Blocks;
 import mindustry.content.Fx;
 import mindustry.content.Items;
-import mindustry.content.Planets;
 import mindustry.game.EventType.*;
 import mindustry.game.*;
 import mindustry.gen.Call;
@@ -408,27 +407,6 @@ public class Main extends Plugin {
             player.clearUnit();
             player.team(Team.derelict);
         }
-    }
-
-    public void loadout(Player player, int x, int y) {
-        var start = type.planet == Planets.serpulo ? serpuloStart : erekirStart;
-        var coreTile = start.tiles.find(s -> s.block instanceof CoreBlock);
-        int sx = x - coreTile.x, sy = y - coreTile.y;
-
-        start.tiles.each(stile -> {
-            var tile = world.tile(stile.x + sx, stile.y + sy);
-            if (tile == null) return;
-            tile.setNet(stile.block, player.team(), stile.rotation);
-            tile.getLinkedTiles(new Seq<>()).each(t -> t.floor().isDeep(), t -> t.setFloorNet(Blocks.darkPanel3));
-
-            if (stile.config != null) tile.build.configureAny(stile.config);
-
-            if (stile == coreTile) {
-                for (ItemStack stack : state.rules.loadout) {
-                    Call.setItem(tile.build, stack.item, stack.amount);
-                }
-            }
-        });
     }
 
     public static String getForm(String key, Locale locale, int value) {
