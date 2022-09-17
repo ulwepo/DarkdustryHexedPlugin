@@ -214,15 +214,15 @@ public class Main extends Plugin {
         handler.removeCommand("host");
         handler.removeCommand("gameover");
 
-        handler.register("hexed", "[режим_генерации]", "Запустить сервер в режиме Hexed.", args -> {
+        handler.register("hexed", "[generation_mode]", "Open the server in hexed mode.", args -> {
             if (!state.isMenu()) {
-                Log.err("Сервер уже запущен. Используй 'stop', чтобы остановить его.");
+                Log.err("Already hosting. Type 'stop' to stop hosting first.");
                 return;
             }
 
             var custom = args.length > 0 ? GenerationTypes.all().find(t -> t.name.equalsIgnoreCase(args[0])) : GenerationTypes.random();
             if (custom == null) {
-                Log.err("Режим генерации с таким названием не найден!");
+                Log.err("No generation mode with this name found!");
                 return;
             }
 
@@ -231,9 +231,9 @@ public class Main extends Plugin {
             netServer.openServer();
         });
 
-        handler.register("end", "Завершить раунд.", args -> {
+        handler.register("end", "Finish the round.", args -> {
             if (state.isMenu()) {
-                Log.err("Сервер не запущен. Используй 'hexed', чтобы запустить его.");
+                Log.err("The server is not running. Use 'hexed' to run it.");
                 return;
             }
 
@@ -271,12 +271,12 @@ public class Main extends Plugin {
         logic.reset();
         Call.worldDataBegin();
 
-        Log.info("Создание локации по сценарию @...", type.name);
+        Log.info("Generating location for scenario @...", type.name);
 
         world.loadGenerator(Hex.size, Hex.size, HexedGenerator::generate);
         HexData.initHexes();
 
-        Log.info("Локация сгенерирована.");
+        Log.info("Location generated.");
 
         state.rules = type.applyRules(rules.copy());
         logic.play();
@@ -287,7 +287,7 @@ public class Main extends Plugin {
         restarting = true;
 
         Events.fire("HexedGameOver");
-        Log.info("Раунд окончен.");
+        Log.info("The round is over.");
 
         Time.runTask(60f * 15f, this::reload);
 
