@@ -33,7 +33,8 @@ public class Main extends Plugin {
 
     public static final float winCapturePercent = 0.75f;
 
-    public static final float roundTime = 60 * 60 * 90f;
+    // public static final float roundTime = 60 * 60 * 90f;
+    public static final float roundTime = 60 * 20f;
     public static final float leftTeamDestroyTime = 90f;
 
     public static final int itemRequirement = 2560;

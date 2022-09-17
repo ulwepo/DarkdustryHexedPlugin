@@ -29,6 +29,8 @@ public class HexedGenerator {
         int width = tiles.width, height = tiles.height;
         tiles.each((x, y) -> tiles.set(x, y, new Tile(x, y, type.defaultFloor, Blocks.air, type.defaultBlock)));
 
+        type.apply(tiles);
+
         getHexes((x, y) -> {
             // вырезаем хекс
             Geometry.circle(x, y, width, height, Hex.diameter, (cx, cy) -> {
@@ -49,8 +51,6 @@ public class HexedGenerator {
                 for (int cy = y - 2; cy <= y + 2; cy++)
                     tiles.getn(cx, cy).setFloor(Blocks.coreZone.asFloor());
         });
-
-        type.apply(tiles);
 
         GenerateInput input = new GenerateInput();
         getOres().addAll(getDefaultFilters()).each(filter -> {
