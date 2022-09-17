@@ -42,8 +42,6 @@ public class Main extends Plugin {
 
     public static final int itemRequirement = 2560;
 
-    public static final int leaderboardTimer = 0, updateTimer = 1;
-
     public static final Rules rules = new Rules() {
         @Override
         public Gamemode mode() {
@@ -119,7 +117,7 @@ public class Main extends Plugin {
         });
 
         Events.on(BlockDestroyEvent.class, event -> {
-            if (event.tile.block() instanceof CoreBlock == false) return;
+            if (!(event.tile.block() instanceof CoreBlock)) return;
 
             Hex hex = HexData.getHex(event.tile);
             if (hex != null) {
@@ -146,7 +144,7 @@ public class Main extends Plugin {
 
         Events.on(BlockBuildEndEvent.class, event -> {
             Hex hex = HexData.getHex(event.tile);
-            if (hex != null)  hex.updateController();
+            if (hex != null) hex.updateController();
         }); // чисто для красоты
 
         Events.on(PlayerJoin.class, event -> {

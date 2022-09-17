@@ -20,7 +20,7 @@ public class Bundle {
     private static final ObjectMap<Locale, MessageFormat> formats = new ObjectMap<>();
 
     public static void load() {
-        var files = mods.getMod(Main.class)
+        var files = mods.getMod("hexed-plugin")
                 .root.child("bundles").seq()
                 .filter(fi -> fi.extEquals("properties"));
 

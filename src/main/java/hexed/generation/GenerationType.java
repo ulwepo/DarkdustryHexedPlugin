@@ -2,7 +2,6 @@ package hexed.generation;
 
 import arc.func.Cons;
 import arc.struct.Seq;
-import mindustry.content.Blocks;
 import mindustry.game.Rules;
 import mindustry.maps.filters.GenerateFilter;
 import mindustry.maps.filters.GenerateFilter.GenerateInput;
@@ -30,10 +29,6 @@ public class GenerationType {
 
         this.ruleSetter = ruleSetter;
         this.filters.addAll(filters);
-    }
-
-    public GenerationType(String name, Planet planet, Cons<Rules> ruleSetter, GenerateFilter... filters) {
-        this(name, planet, Blocks.stone, Blocks.stoneWall, ruleSetter, filters);
     }
 
     public void apply(Tiles tiles) {
