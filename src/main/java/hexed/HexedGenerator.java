@@ -45,7 +45,7 @@ public class HexedGenerator {
                 Bresenham2.line(x, y, x + (int) Tmp.v1.x, y + (int) Tmp.v1.y, (cx, cy) -> Geometry.circle(cx, cy, width, height, 3, (c2x, c2y) -> tiles.getn(c2x, c2y).remove()));
             });
 
-            // меняем пол в центре хексов
+            // меняем пол в центре хекса
             for (int cx = x - 2; cx <= x + 2; cx++)
                 for (int cy = y - 2; cy <= y + 2; cy++)
                     tiles.getn(cx, cy).setFloor(Blocks.coreZone.asFloor());

@@ -130,6 +130,6 @@ public class GenerationTypes {
     }
 
     public static GenerationType random() {
-        return all().random();
+        return all().random(type); // выбираем случайную карту из всех кроме текущей
     }
 }

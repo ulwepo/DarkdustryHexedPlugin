@@ -6,7 +6,6 @@ import mindustry.game.Rules;
 import mindustry.maps.filters.GenerateFilter;
 import mindustry.maps.filters.GenerateFilter.GenerateInput;
 import mindustry.type.Planet;
-import mindustry.world.Block;
 import mindustry.world.Tiles;
 
 public class GenerationType {
