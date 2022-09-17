@@ -22,19 +22,19 @@ public class GenerationTypes {
             rules.weather.add(new WeatherEntry(Weathers.sporestorm, 5f, 10f, 1f, 2f) {{
                 intensity = .25f;
             }});
-        },
-                new NoiseFilter() {{
-                    floor = Blocks.grass;
-                    block = Blocks.shrubs;
-                }},
-                new NoiseFilter() {{
-                    floor = Blocks.sand;
-                    block = Blocks.sandWall;
-                }},
-                new NoiseFilter() {{
-                    floor = Blocks.darksand;
-                    block = Blocks.duneWall;
-                }}
+        }
+                //new NoiseFilter() {{
+                //    floor = Blocks.grass;
+                //    block = Blocks.shrubs;
+                //}},
+                //new NoiseFilter() {{
+                //    floor = Blocks.sand;
+                //    block = Blocks.sandWall;
+                //}},
+                //new NoiseFilter() {{
+                //    floor = Blocks.darksand;
+                //    block = Blocks.duneWall;
+                //}}
         );
     }
 
