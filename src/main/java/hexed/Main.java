@@ -235,20 +235,20 @@ public class Main extends Plugin {
         if (hex == null) return;
 
         var locale = findLocale(player);
-        var message = new StringBuilder(format("hud.hex", locale, hex.id)).append("\n");
+        var message = new StringBuilder(format("hex", locale, hex.id)).append("\n");
 
         if (hex.controller == null)
             if (hex.getProgressPercent(player.team()) > 0) {
-                message.append(format("hud.hex.capture-progress", locale, Strings.autoFixed(hex.getProgressPercent(player.team()), 4)));
+                message.append(format("hex.capture-progress", locale, Strings.autoFixed(hex.getProgressPercent(player.team()), 4)));
             } else {
-                message.append(format("hud.hex.empty", locale));
+                message.append(format("hex.empty", locale));
             }
         else if (hex.controller == player.team())
-            message.append(format("hud.hex.captured", locale));
+            message.append(format("hex.captured", locale));
         else if (HexData.getPlayer(hex.controller) != null) 
-            message.append("[#").append(hex.controller.color).append("]").append(format("hud.hex.captured-by-player", locale, HexData.getPlayer(hex.controller).coloredName()));
+            message.append("[#").append(hex.controller.color).append("]").append(format("hex.captured-by-player", locale, HexData.getPlayer(hex.controller).coloredName()));
         else
-            message.append(format("hud.hex.unknown", locale));
+            message.append(format("hex.unknown", locale));
 
         Call.setHudText(player.con, message.toString());
     }
