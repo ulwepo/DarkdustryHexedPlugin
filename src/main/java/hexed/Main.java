@@ -87,7 +87,7 @@ public class Main extends Plugin {
 
         Timer.schedule(HexData::updateControl, 0f, 1f);
         Timer.schedule(() -> {
-            if (state.isPlaying()) Groups.player.each(player -> Call.infoToast(player.con, getLeaderboard(findLocale(player)), 10f));
+            if (state.isPlaying()) Groups.player.each(player -> Call.infoToast(player.con, getLeaderboard(findLocale(player), false), 10f));
         }, 0f, 180f);
 
         Events.run(Trigger.update, () -> {
@@ -197,7 +197,7 @@ public class Main extends Plugin {
             }
         });
 
-        handler.<Player>register("lb", "Посмотреть текущий список лидеров.", (args, player) -> Call.infoMessage(player.con, getLeaderboard(findLocale(player))));
+        handler.<Player>register("lb", "Посмотреть текущий список лидеров.", (args, player) -> Call.infoMessage(player.con, getLeaderboard(findLocale(player), false)));
     }
 
     @Override
@@ -283,17 +283,7 @@ public class Main extends Plugin {
         Time.runTask(60f * 15f, this::reload);
 
         var datas = HexData.getLeaderboard();
-        var scores = new StringBuilder();
-
         if (datas.isEmpty()) return;
-
-        for (int i = 0; i < datas.size; i++) { // TODO криво форматирует под разные языки
-            var data = datas.get(i);
-            scores.append("[orange]").append(i + 1).append(". ")
-                    .append(data.name())
-                    .append("[lightgray] (").append(getForm("decl.hexes", findLocale(data.player), data.controls())).append(")")
-                    .append("\n");
-        }
 
         var winner = datas.first();
         var statistic = Statistics.getData(winner.player.uuid());
@@ -302,11 +292,10 @@ public class Main extends Plugin {
             var locale = findLocale(player);
             var endGameMessage = new StringBuilder(format("restart.header", locale));
 
-            if (player == winner.player) {
+            if (player == winner.player)
                 endGameMessage.append(format("restart.you-won", locale, getForm("decl.hexes", locale, winner.controls())));
-            } else {
+            else
                 endGameMessage.append(format("restart.player-won", locale, winner.name(), getForm("decl.hexes", locale, winner.controls())));
-            }
 
             endGameMessage.append("\n\n");
 
@@ -315,7 +304,7 @@ public class Main extends Plugin {
                     .append(" [lime]\uE803[accent] ")
                     .append(getForm("decl.wins", locale, statistic.wins + 1));
 
-            endGameMessage.append(format("restart.final-score", locale, scores.toString()));
+            endGameMessage.append(format("restart.final-score", locale, getLeaderboard(locale, true)));
 
             Call.infoMessage(player.con, endGameMessage.toString());
         });
@@ -345,16 +334,18 @@ public class Main extends Plugin {
         restarting = false;
     }
 
-    public String getLeaderboard(Locale locale) {
+    public String getLeaderboard(Locale locale, boolean endGame) {
         var datas = HexData.getLeaderboard();
-        datas.setSize(Math.min(4, datas.size));
+        var leaders = new StringBuilder();
 
-        var leaders = new StringBuilder(format("leaderboard.header", locale, (int) counter / 60 / 60));
+        if (!endGame) {
+            datas.setSize(Math.min(4, datas.size));
+            leaders.append(format("leaderboard.header", locale, (int) counter / 60 / 60));
+        }
 
         for (int i = 0; i < datas.size; i++) {
             var data = datas.get(i);
-            leaders.append("[orange]").append(i + 1).append(". ")
-                    .append(data.name())
+            leaders.append("[orange]").append(i + 1).append(". ").append(data.name())
                     .append("[orange] (").append(getForm("decl.hexes", locale, data.controls())).append(")")
                     .append("\n");
         }
