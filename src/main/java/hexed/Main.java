@@ -93,16 +93,13 @@ public class Main extends Plugin {
         Events.run(Trigger.update, () -> {
             if (!state.isPlaying()) return;
 
-            Groups.player.each(player -> {
+            Groups.player.each(player -> player.team() != Team.derelict, player -> {
                 updateText(player);
-
-                if (player.team() == Team.derelict) player.clearUnit();
 
                 if (HexData.getControlledSize(player) >= HexData.hexesAmount() * winCapturePercent) endGame();
             });
 
             counter -= Time.delta;
-
             if (counter <= 0) endGame();
         });
 
@@ -234,27 +231,24 @@ public class Main extends Plugin {
     }
 
     public void updateText(Player player) {
-        if (player.team() == Team.derelict) return;
-
         var hex = HexData.getHex(player);
         if (hex == null) return;
 
         var locale = findLocale(player);
         var message = new StringBuilder(format("hud.hex", locale, hex.id)).append("\n");
 
-        if (hex.controller == null) {
+        if (hex.controller == null)
             if (hex.getProgressPercent(player.team()) > 0) {
                 message.append(format("hud.hex.capture-progress", locale, Strings.autoFixed(hex.getProgressPercent(player.team()), 4)));
             } else {
                 message.append(format("hud.hex.empty", locale));
             }
-        } else if (hex.controller == player.team()) {
+        else if (hex.controller == player.team())
             message.append(format("hud.hex.captured", locale));
-        } else if (hex.controller != null && HexData.getPlayer(hex.controller) != null) {
+        else if (HexData.getPlayer(hex.controller) != null) 
             message.append("[#").append(hex.controller.color).append("]").append(format("hud.hex.captured-by-player", locale, HexData.getPlayer(hex.controller).coloredName()));
-        } else {
+        else
             message.append(format("hud.hex.unknown", locale));
-        }
 
         Call.setHudText(player.con, message.toString());
     }
