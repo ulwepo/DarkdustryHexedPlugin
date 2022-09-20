@@ -32,8 +32,8 @@ public class HexedGenerator {
 
         getHexes((x, y) -> {
             // вырезаем хекс
-            Geometry.circle(x, y, width, height, Hex.diameter, (cx, cy) -> {
-                if (Intersector.isInsideHexagon(x, y, Hex.diameter, cx, cy)) tiles.getn(cx, cy).remove();
+            Geometry.circle(x, y, width, height, Hex.radius * 2, (cx, cy) -> {
+                if (Intersector.isInsideHexagon(x, y, Hex.radius * 2, cx, cy)) tiles.getn(cx, cy).remove();
             });
 
             // вырезаем проходы

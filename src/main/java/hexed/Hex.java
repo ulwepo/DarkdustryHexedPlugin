@@ -16,14 +16,12 @@ import static mindustry.Vars.*;
 public class Hex {
 
     public static final int size = 516;
-    public static final int diameter = 74;
-    public static final int radius = diameter / 2;
+    public static final int radius = 37;
     public static final int spacing = 78;
 
     public final int id;
     public final int x, y;
     public final float wx, wy;
-    public final float rad = radius * tilesize;
     public final float[] progress = new float[256];
 
     public Team controller;
@@ -46,11 +44,11 @@ public class Hex {
     }
 
     public float getProgressPercent(Team team) {
-        return (progress[team.id] / Main.itemRequirement * 100);
+        return progress[team.id] / Main.itemRequirement * 100;
     }
 
     public boolean hasCore() {
-        return (world.tile(x, y).team() != Team.derelict && world.tile(x, y).block() instanceof CoreBlock);
+        return world.tile(x, y).team() != Team.derelict && world.tile(x, y).block() instanceof CoreBlock;
     }
 
     public Team findController() {
@@ -81,7 +79,7 @@ public class Hex {
     }
 
     public boolean contains(float x, float y) {
-        return Intersector.isInsideHexagon(wx, wy, rad * 2, x, y);
+        return Intersector.isInsideHexagon(wx, wy, radius * 2 * tilesize, x, y);
     }
 
     public boolean contains(Position position) {

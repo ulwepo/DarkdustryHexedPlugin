@@ -58,7 +58,7 @@ public class Main extends Plugin {
         rules.buildSpeedMultiplier = 2f;
         rules.blockHealthMultiplier = 1.5f;
         rules.unitBuildSpeedMultiplier = 1.25f;
-        rules.enemyCoreBuildRadius = Hex.diameter * tilesize / 2f;
+        rules.enemyCoreBuildRadius = Hex.radius * tilesize;
         rules.unitDamageMultiplier = 1.25f;
         rules.logicUnitBuild = true;
         rules.pvp = false;
@@ -153,7 +153,7 @@ public class Main extends Plugin {
             if (event.player.team() == Team.derelict || restarting) return;
             HexData.updateTeamMaps();
 
-            HexData.datas.get(event.player.team().id).left = Timer.schedule(() -> killTeam(event.player.team()), leftTeamDestroyTime);
+            HexData.getData(event.player.uuid()).left = Timer.schedule(() -> killTeam(event.player.team()), leftTeamDestroyTime);
         });
 
         netServer.assigner = (player, players) -> {
@@ -396,6 +396,7 @@ public class Main extends Plugin {
             player.clearUnit();
             player.team(Team.derelict);
         }
+        HexData.updateTeamMaps();
     }
 
     public static String getForm(String key, Locale locale, int value) {
