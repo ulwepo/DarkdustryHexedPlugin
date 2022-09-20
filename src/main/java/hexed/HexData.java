@@ -30,10 +30,12 @@ public class HexData {
 
     public static void updateTeamMaps() {
         teamData.clear();
-        teamPlayer.clear();
+        datas.each(data -> {
+            teamData.put(data.player.team().id, data);
+        });
 
+        teamPlayer.clear();
         Groups.player.each(player -> {
-            teamData.put(player.team().id, datas.find(data -> data.player == player));
             teamPlayer.put(player.team().id, player);
         });
     }

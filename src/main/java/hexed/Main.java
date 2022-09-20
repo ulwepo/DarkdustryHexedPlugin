@@ -140,20 +140,21 @@ public class Main extends Plugin {
             Statistics.save();
 
             if (event.player.team() == Team.derelict || restarting) return;
-            HexData.updateTeamMaps();
 
             var old = HexData.getData(event.player.uuid());
             if (old != null && !old.player.team().data().noCores()) {
                 old.player = player;
                 old.left.cancel();
             } else spawn(event.player);
+
+            HexData.updateTeamMaps();
         });
 
         Events.on(PlayerLeave.class, event -> {
             if (event.player.team() == Team.derelict || restarting) return;
+            
+            HexData.getData(event.player.team()).left = Timer.schedule(() -> killTeam(event.player.team()), leftTeamDestroyTime);
             HexData.updateTeamMaps();
-
-            HexData.getData(event.player.uuid()).left = Timer.schedule(() -> killTeam(event.player.team()), leftTeamDestroyTime);
         });
 
         netServer.assigner = (player, players) -> {
@@ -387,7 +388,6 @@ public class Main extends Plugin {
             player.clearUnit();
             player.team(Team.derelict);
         }
-        HexData.updateTeamMaps();
     }
 
     public static String getForm(String key, Locale locale, int value) {
