@@ -22,22 +22,18 @@ public class HexData {
 
     public static void init() {
         datas.clear();
-        hexes.clear();
-
-        HexedGenerator.getHexes((x, y) -> hexes.add(new Hex(hexes.size, x, y)));
         Groups.player.each(player -> datas.add(new PlayerData(player)));
+
+        hexes.clear();
+        HexedGenerator.getHexes((x, y) -> hexes.add(new Hex(hexes.size, x, y)));
     }
 
     public static void updateTeamMaps() {
         teamData.clear();
-        datas.each(data -> {
-            teamData.put(data.player.team().id, data);
-        });
+        datas.each(data -> teamData.put(data.player.team().id, data));
 
         teamPlayer.clear();
-        Groups.player.each(player -> {
-            teamPlayer.put(player.team().id, player);
-        });
+        Groups.player.each(player -> teamPlayer.put(player.team().id, player));
     }
 
     public static void updateControl() {
@@ -72,14 +68,13 @@ public class HexData {
         return hexes.copy().shuffle().find(hex -> hex.controller == null);
     }
 
-    public static Hex getHex(Position position) {
+    public static Hex getClosestHex(Position position) {
         return hexes.find(hex -> hex.contains(position));
     }
 
     public static class PlayerData {
 
         public Player player;
-        public Seq<Hex> controlled = new Seq<>();
 
         public Task left;
 
@@ -92,7 +87,7 @@ public class HexData {
         }
 
         public int controls() {
-            return controlled.size;
+            return hexes.count(hex -> hex.controller == player.team());
         }
     }
 }

@@ -3,21 +3,16 @@ package hexed;
 import arc.Events;
 import arc.math.Mathf;
 import arc.struct.Seq;
-import arc.struct.Seq.SeqIterable;
 import arc.util.*;
 import hexed.HexData.PlayerData;
 import hexed.components.Bundle;
 import hexed.components.Statistics;
 import hexed.generation.GenerationType;
 import hexed.generation.GenerationTypes;
-import mindustry.content.Blocks;
-import mindustry.content.Fx;
-import mindustry.content.Items;
+import mindustry.content.*;
 import mindustry.game.EventType.*;
 import mindustry.game.*;
-import mindustry.gen.Call;
-import mindustry.gen.Groups;
-import mindustry.gen.Player;
+import mindustry.gen.*;
 import mindustry.mod.Plugin;
 import mindustry.type.ItemStack;
 import mindustry.world.Block;
@@ -26,6 +21,7 @@ import mindustry.world.blocks.storage.CoreBlock;
 import java.util.Locale;
 
 import static hexed.components.Bundle.*;
+import static hexed.generation.GenerationType.*;
 import static mindustry.Vars.*;
 
 public class Main extends Plugin {
@@ -95,7 +91,6 @@ public class Main extends Plugin {
 
             Groups.player.each(player -> player.team() != Team.derelict, player -> {
                 updateText(player);
-
                 if (HexData.getControlledSize(player) >= HexData.hexesAmount() * winCapturePercent) endGame();
             });
 
@@ -106,14 +101,14 @@ public class Main extends Plugin {
         Events.on(BlockDestroyEvent.class, event -> {
             if (!(event.tile.block() instanceof CoreBlock)) return;
 
-            Hex hex = HexData.getHex(event.tile);
+            var hex = HexData.getClosestHex(event.tile);
             if (hex != null) {
                 hex.updateController();
                 Call.effect(Fx.reactorExplosion, hex.wx, hex.wy, Mathf.random(360f), Tmp.c1.rand());
             }
 
-            Team team = event.tile.team();
-            Player player = HexData.getPlayer(team);
+            var team = event.tile.team();
+            var player = HexData.getPlayer(team);
 
             if (team.cores().size > 1) return;
 
@@ -128,7 +123,7 @@ public class Main extends Plugin {
         });
 
         Events.on(BlockBuildEndEvent.class, event -> {
-            Hex hex = HexData.getHex(event.tile);
+            var hex = HexData.getClosestHex(event.tile);
             if (hex != null) hex.updateController();
         }); // чисто для красоты
 
@@ -209,7 +204,7 @@ public class Main extends Plugin {
                 return;
             }
 
-            var custom = args.length > 0 ? GenerationTypes.all().find(t -> t.name.equalsIgnoreCase(args[0])) : GenerationTypes.random();
+            var custom = args.length > 0 ? all.find(type -> type.name.equalsIgnoreCase(args[0])) : next();
             if (custom == null) {
                 Log.err("No generation mode with this name found!");
                 return;
@@ -231,7 +226,7 @@ public class Main extends Plugin {
     }
 
     public void updateText(Player player) {
-        var hex = HexData.getHex(player);
+        var hex = HexData.getClosestHex(player);
         if (hex == null) return;
 
         var locale = findLocale(player);
@@ -311,14 +306,14 @@ public class Main extends Plugin {
     public void reload() {
         var players = Groups.player.copy(new Seq<>());
 
-        type = GenerationTypes.random();
+        type = next();
         startGame();
 
         players.each(player -> {
             boolean admin = player.admin;
             player.reset();
-            player.admin = admin;
-            player.team(netServer.assignTeam(player, new SeqIterable<>(players)));
+            player.admin(admin);
+            player.team(netServer.assignTeam(player, players));
 
             spawn(player);
 

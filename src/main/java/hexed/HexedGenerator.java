@@ -1,6 +1,5 @@
 package hexed;
 
-import arc.func.Floatc;
 import arc.func.Intc2;
 import arc.math.Mathf;
 import arc.math.geom.*;
@@ -13,7 +12,6 @@ import mindustry.content.Planets;
 import mindustry.gen.Call;
 import mindustry.gen.Player;
 import mindustry.maps.Map;
-import mindustry.type.ItemStack;
 import mindustry.world.Tile;
 import mindustry.world.Tiles;
 import mindustry.world.blocks.storage.CoreBlock;
@@ -26,7 +24,7 @@ public class HexedGenerator {
 
     public static void generate(Tiles tiles) {
         int width = tiles.width, height = tiles.height;
-        tiles.each((x, y) -> tiles.set(x, y, new Tile(x, y, Blocks.stone, Blocks.air, Blocks.stoneWall)));
+        tiles.each((x, y) -> tiles.set(x, y, new Tile(x, y, 0, 0, 0)));
 
         type.apply(tiles);
 
@@ -36,13 +34,20 @@ public class HexedGenerator {
                 if (Intersector.isInsideHexagon(x, y, Hex.radius * 2, cx, cy)) tiles.getn(cx, cy).remove();
             });
 
-            // вырезаем проходы
-            circle(3, 360f / 3 / 2f - 90, f -> { // что это ._.
-                Tmp.v1.trnsExact(f, spacing + 12);
-                if (!Structs.inBounds(x + (int) Tmp.v1.x, y + (int) Tmp.v1.y, width, height)) return;
+            for (int side = 0; side < 3; side++) {
+                float angle = side * 120f - 30f;
 
-                Tmp.v1.trnsExact(f, spacing / 2f + 7);
-                Bresenham2.line(x, y, x + (int) Tmp.v1.x, y + (int) Tmp.v1.y, (cx, cy) -> Geometry.circle(cx, cy, width, height, 3, (c2x, c2y) -> tiles.getn(c2x, c2y).remove()));
+                Tmp.v1.trnsExact(angle, spacing + 12).add(x, y);
+                if (!Structs.inBounds((int) Tmp.v1.x, (int) Tmp.v1.y, width, height)) return;
+
+                Tmp.v1.trnsExact(angle, spacing / 2f + 7).add(x, y);
+                Bresenham2.line(x, y, (int) Tmp.v1.x, (int) Tmp.v1.y, (cx, cy) -> Geometry.circle(cx, cy, width, height, 3, (c2x, c2y) -> tiles.getn(c2x, c2y).remove()));
+            }
+
+            // убираем стенки с жидкостных блоков *(хотя они там и так не должны появляться)*
+            tiles.eachTile(tile -> {
+                if (tile.floor().hasLiquids)
+                    tile.remove();
             });
 
             // меняем пол в центре хекса
@@ -70,10 +75,6 @@ public class HexedGenerator {
         }
     }
 
-    public static void circle(int points, float offset, Floatc cons) {
-        for (int i = 0; i < points; i++) cons.get(offset + i * 360f / points);
-    }
-
     public static void loadout(Player player, Hex hex) {
         var start = type.planet == Planets.serpulo ? serpuloStart : erekirStart;
         var coreTile = start.tiles.find(s -> s.block instanceof CoreBlock);
@@ -88,7 +89,7 @@ public class HexedGenerator {
 
             if (stile.config != null) tile.build.configureAny(stile.config);
 
-            if (stile == coreTile) for (ItemStack stack : state.rules.loadout) {
+            if (stile == coreTile) for (var stack : state.rules.loadout) {
                 Call.setItem(tile.build, stack.item, stack.amount);
             }
         });
