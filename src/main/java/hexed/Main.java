@@ -313,7 +313,10 @@ public class Main extends Plugin {
             boolean admin = player.admin;
             player.reset();
             player.admin(admin);
-            player.team(netServer.assignTeam(player, players));
+
+            var team = netServer.assignTeam(player, players);
+            Log.info(team.name);
+            player.team(team);
 
             spawn(player);
 
