@@ -62,10 +62,10 @@ public class GenerationType {
         // Применяем фильтры
         HexedGenerator.applyFilters(tiles, filters);
 
-        var ores = (type.planet == serpulo ? serpuloOres : erekirOres).map(Block::asFloor).map(floor -> new OreFilter() {{
-            threshold = floor.oreThreshold - 0.04f;
-            scl = floor.oreScale + 8f;
-            ore = floor;
+        var ores = (type.planet == serpulo ? serpuloOres : erekirOres).map(block -> new OreFilter() {{
+            threshold = block.asFloor().oreThreshold - 0.04f;
+            scl = block.asFloor().oreScale + 8f;
+            ore = block.asFloor();
         }});
 
         // Добавляем руды

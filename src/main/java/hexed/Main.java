@@ -163,7 +163,7 @@ public class Main extends Plugin {
 
     @Override
     public void registerClientCommands(CommandHandler handler) {
-        handler.<Player>register("top", "Показать топ-10 игроков сервера.", (args, player) -> {
+        handler.<Player>register("top", "Show the best 10 players of the server.", (args, player) -> {
             var leaders = Statistics.getLeaders();
             leaders.setSize(Math.min(10, leaders.size));
 
@@ -182,7 +182,7 @@ public class Main extends Plugin {
             Call.infoMessage(player.con, format("commands.top.list", locale, players.toString()));
         });
 
-        handler.<Player>register("spectator", "Перейти в режим наблюдателя.", (args, player) -> {
+        handler.<Player>register("spectator", "Switch to spectator mode.", (args, player) -> {
             if (player.team() == Team.derelict)
                 bundled(player, "commands.spectator.already"); // почему оно не возвращает в игру?
             else {
@@ -191,7 +191,7 @@ public class Main extends Plugin {
             }
         });
 
-        handler.<Player>register("lb", "Посмотреть текущий список лидеров.", (args, player) -> Call.infoMessage(player.con, getLeaderboard(findLocale(player), false)));
+        handler.<Player>register("lb", "View the current leaderboard.", (args, player) -> Call.infoMessage(player.con, getLeaderboard(findLocale(player), false)));
     }
 
     @Override
@@ -199,13 +199,13 @@ public class Main extends Plugin {
         handler.removeCommand("host");
         handler.removeCommand("gameover");
 
-        handler.register("hexed", "[generation_mode]", "Open the server in hexed mode.", args -> {
+        handler.register("hexed", "[generation_mode...]", "Open the server in hexed mode.", args -> {
             if (!state.isMenu()) {
                 Log.err("Already hosting. Type 'stop' to stop hosting first.");
                 return;
             }
 
-            var custom = args.length > 0 ? all.find(type -> type.name.equalsIgnoreCase(args[0])) : next();
+            var custom = args.length > 0 ? all.find(type -> type.name.contains(args[0])) : next();
             if (custom == null) {
                 Log.err("No generation mode with this name found!");
                 return;
@@ -242,7 +242,7 @@ public class Main extends Plugin {
         else if (hex.controller.player == player)
             message.append(format("hex.captured", locale));
         else if (hex.controller.player != null)
-            message.append(format("hex.captured-by-player", locale, hex.controller.player.team().color, hex.controller.player.coloredName()));
+            message.append(format("hex.captured-by-player", locale, hex.controller.player.team().color, hex.controller.name()));
         else
             message.append(format("hex.unknown", locale));
 
@@ -293,14 +293,13 @@ public class Main extends Plugin {
             endGameMessage.append(winner.name()).append("[white]: [accent]")
                     .append(getForm("decl.wins", locale, statistic.wins))
                     .append(" [lime]\uE803[accent] ")
-                    .append(getForm("decl.wins", locale, statistic.wins + 1));
+                    .append(getForm("decl.wins", locale, ++statistic.wins));
 
             endGameMessage.append(format("restart.final-score", locale, getLeaderboard(locale, true)));
 
             Call.infoMessage(player.con, endGameMessage.toString());
         });
 
-        statistic.wins++;
         Statistics.save();
     }
 
@@ -357,7 +356,7 @@ public class Main extends Plugin {
     public void killTeam(Team team) {
         if (team == Team.derelict || !team.data().active()) return;
 
-        var data = HexData.datas.find(d -> d.player.team() == team);
+        var data = HexData.getData(team);
         if (data.left != null) data.left.cancel();
 
         world.tiles.eachTile(tile -> {
@@ -365,7 +364,7 @@ public class Main extends Plugin {
                 Time.run(Mathf.random(360f), tile::removeNet);
         });
 
-        Groups.unit.each(u -> u.team == team, unit -> Time.run(Mathf.random(360f), () -> Call.unitDespawn(unit)));
+        Groups.unit.each(unit -> unit.team == team, unit -> Time.run(Mathf.random(360f), () -> Call.unitDespawn(unit)));
     }
 
     public void spawn(Player player) {

@@ -2,8 +2,7 @@ package hexed.generation;
 
 import arc.graphics.Color;
 import mindustry.content.Weathers;
-import mindustry.maps.filters.RiverNoiseFilter;
-import mindustry.maps.filters.ScatterFilter;
+import mindustry.maps.filters.*;
 import mindustry.type.Weather.WeatherEntry;
 import mindustry.world.Block;
 
@@ -124,6 +123,10 @@ public class GenerationTypes {
                 {beryllicStone, carbonStone, rhyoliteCrater, carbonVent},
                 {ferricStone, arkyicStone, crystalFloor, ferricStone},
                 {beryllicStone, redIce, ferricStone, carbonStone}
-        });
+        }, new NoiseFilter() {{
+            floor = air;
+            block = graphiticWall;
+            target = carbonWall;
+        }});
     }
 }
