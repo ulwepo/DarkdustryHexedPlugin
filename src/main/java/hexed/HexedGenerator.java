@@ -7,24 +7,23 @@ import arc.struct.Seq;
 import arc.struct.StringMap;
 import arc.util.Structs;
 import arc.util.Tmp;
-import mindustry.content.Blocks;
 import mindustry.content.Planets;
 import mindustry.gen.Call;
 import mindustry.gen.Player;
 import mindustry.maps.Map;
-import mindustry.world.Tile;
 import mindustry.world.Tiles;
 import mindustry.world.blocks.storage.CoreBlock;
 
+import static arc.math.Mathf.chance;
 import static hexed.Hex.*;
 import static hexed.Main.*;
 import static mindustry.Vars.*;
+import static mindustry.content.Blocks.*;
 
 public class HexedGenerator {
 
     public static void generate(Tiles tiles) {
         int width = tiles.width, height = tiles.height;
-        tiles.each((x, y) -> tiles.set(x, y, new Tile(x, y, 0, 0, 0)));
 
         type.apply(tiles);
 
@@ -44,21 +43,24 @@ public class HexedGenerator {
                 Bresenham2.line(x, y, (int) Tmp.v1.x, (int) Tmp.v1.y, (cx, cy) -> Geometry.circle(cx, cy, width, height, 3, (c2x, c2y) -> tiles.getn(c2x, c2y).remove()));
             }
 
-            // убираем стенки с жидкостных блоков *(хотя они там и так не должны появляться)*
-            tiles.eachTile(tile -> {
-                if (tile.floor().hasLiquids)
-                    tile.remove();
-            });
-
             // меняем пол в центре хекса
             for (int cx = x - 2; cx <= x + 2; cx++)
                 for (int cy = y - 2; cy <= y + 2; cy++)
-                    tiles.getn(cx, cy).setFloor(Blocks.coreZone.asFloor());
+                    tiles.getn(cx, cy).setFloor(coreZone.asFloor());
+        });
+
+        // убираем стенки с жидкостных блоков и добавляем немного декораций
+        tiles.eachTile(tile -> {
+            if (tile.floor().liquidDrop != null)
+                tile.remove();
+
+            if (tile.block() == air && tile.floor().decoration != air && chance(0.05d))
+                tile.setBlock(tile.floor().decoration);
         });
 
         state.map = new Map(StringMap.of(
                 "name", type.name,
-                "author", "[cyan]\uE810 [royal]Darkness [cyan]\uE810",
+                "author", "Hexed Plugin",
                 "description", "A map for Darkdustry Hexed. Automatically generated."
         ));
     }
@@ -85,7 +87,7 @@ public class HexedGenerator {
             if (tile == null) return;
 
             tile.setNet(stile.block, player.team(), stile.rotation);
-            tile.getLinkedTiles(new Seq<>()).each(t -> t.floor().isDeep(), t -> t.setFloorNet(Blocks.darkPanel3));
+            tile.getLinkedTiles(new Seq<>()).each(t -> t.floor().isDeep(), t -> t.setFloorNet(darkPanel3));
 
             if (stile.config != null) tile.build.configureAny(stile.config);
 

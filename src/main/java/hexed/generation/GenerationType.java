@@ -48,10 +48,10 @@ public class GenerationType {
         for (int x = 0; x < tiles.width; x++) {
             for (int y = 0; y < tiles.height; y++) {
                 int temp = clamp((int) ((noise2d(seed1, 12, 0.6, 1.0 / 400, x, y) - 0.5) * 10 * blocks.length), 0, blocks.length - 1);
-                int elev = clamp((int) (((noise2d(seed2, 12, 0.6, 1.0 / 700, x, y) - 0.5) * 10 + 0.15f) * blocks[0].length), 0, blocks[0].length - 1);
+                int elev = clamp((int) ((noise2d(seed2, 12, 0.6, 1.0 / 400, x, y) - 0.5) * 10 * blocks[0].length), 0, blocks[0].length - 1);
 
-                var floor = blocks[temp][elev];
-                var wall = floor.asFloor().wall;
+                var floor = blocks[temp][elev].asFloor();
+                var wall = floor.wall;
 
                 tiles.set(x, y, new Tile(x, y, floor.id, 0, wall.id));
             }
