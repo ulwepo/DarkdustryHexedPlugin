@@ -20,6 +20,7 @@ import mindustry.world.blocks.storage.CoreBlock;
 
 import java.util.Locale;
 
+import static arc.util.Align.left;
 import static hexed.components.Bundle.*;
 import static hexed.generation.GenerationType.*;
 import static mindustry.Vars.*;
@@ -87,7 +88,7 @@ public class Main extends Plugin {
 
         Timer.schedule(HexData::updateControl, 0f, 1f);
         Timer.schedule(() -> {
-            if (state.isPlaying()) Groups.player.each(player -> Call.infoToast(player.con, getLeaderboard(findLocale(player), false), 10f));
+            if (state.isPlaying()) Groups.player.each(player -> Call.infoPopup(player.con, getLeaderboard(findLocale(player), false), 12f, left, 0, 2, 50, 0));
         }, 0f, 180f);
 
         Events.run(Trigger.update, () -> {
@@ -176,7 +177,7 @@ public class Main extends Plugin {
                 var statistic = leaders.get(i);
                 players.append("[orange]").append(i + 1).append(". ")
                         .append(statistic.name).append("[accent]: [cyan]")
-                        .append(getForm("decl.wins", locale, statistic.wins)).append("\n");
+                        .append(getForm("wins", locale, statistic.wins)).append("\n");
             }
 
             Call.infoMessage(player.con, format("commands.top.list", locale, players.toString()));
@@ -284,16 +285,16 @@ public class Main extends Plugin {
             var endGameMessage = new StringBuilder(format("restart.header", locale));
 
             if (player == winner.player)
-                endGameMessage.append(format("restart.you-won", locale, getForm("decl.hexes", locale, winner.controlled())));
+                endGameMessage.append(format("restart.you-won", locale, getForm("hexes", locale, winner.controlled())));
             else
-                endGameMessage.append(format("restart.player-won", locale, winner.name(), getForm("decl.hexes", locale, winner.controlled())));
+                endGameMessage.append(format("restart.player-won", locale, winner.name(), getForm("hexes", locale, winner.controlled())));
 
             endGameMessage.append("\n\n");
 
             endGameMessage.append(winner.name()).append("[white]: [accent]")
-                    .append(getForm("decl.wins", locale, statistic.wins))
+                    .append(getForm("wins", locale, statistic.wins))
                     .append(" [lime]\uE803[accent] ")
-                    .append(getForm("decl.wins", locale, ++statistic.wins));
+                    .append(getForm("wins", locale, ++statistic.wins));
 
             endGameMessage.append(format("restart.final-score", locale, getLeaderboard(locale, true)));
 
@@ -339,7 +340,7 @@ public class Main extends Plugin {
         for (int i = 0; i < datas.size; i++) {
             var data = datas.get(i);
             leaders.append("[orange]").append(i + 1).append(". ").append(data.name())
-                    .append("[orange] (").append(getForm("decl.hexes", locale, data.controlled())).append(")")
+                    .append("[orange] (").append(getForm("hexes", locale, data.controlled())).append(")")
                     .append("\n");
         }
         return leaders.toString();
