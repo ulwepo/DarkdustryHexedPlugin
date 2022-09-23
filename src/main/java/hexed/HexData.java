@@ -69,7 +69,7 @@ public class HexData {
     }
 
     public static Hex getClosestHex(Position position) {
-        return hexes.find(hex -> hex.contains(position));
+        return hexes.min(hex -> position.dst(hex.wx, hex.wy));
     }
 
     public static class PlayerData {
