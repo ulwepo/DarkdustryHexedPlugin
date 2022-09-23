@@ -27,7 +27,7 @@ public class HexData {
     }
 
     public static Seq<PlayerData> getLeaderboard() {
-        return datas.copy().filter(data -> data.controls > 0).sort(data -> -data.controls);
+        return datas.copy().filter(data -> data.controlled() > 0).sort(data -> -data.controlled());
     }
 
     public static Player getPlayer(Team team) {
@@ -53,7 +53,6 @@ public class HexData {
     public static class PlayerData {
 
         public Player player;
-        public int controls;
 
         public Task left;
 
@@ -67,6 +66,10 @@ public class HexData {
 
         public boolean active() {
             return player.team() != Team.derelict && player.con.isConnected();
+        }
+
+        public int controlled() {
+            return hexes.count(hex -> hex.controller == this);
         }
     }
 }

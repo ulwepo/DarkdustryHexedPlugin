@@ -2,15 +2,17 @@ package hexed.generation;
 
 import arc.func.Cons;
 import arc.struct.Seq;
+import hexed.HexedGenerator;
 import mindustry.game.Rules;
 import mindustry.maps.filters.GenerateFilter;
-import mindustry.maps.filters.GenerateFilter.GenerateInput;
+import mindustry.maps.filters.OreFilter;
 import mindustry.type.Planet;
 import mindustry.world.*;
 
 import static arc.math.Mathf.*;
 import static arc.util.noise.Simplex.noise2d;
-import static hexed.Main.type;
+import static hexed.Main.*;
+import static mindustry.content.Planets.serpulo;
 
 public class GenerationType {
 
@@ -57,12 +59,17 @@ public class GenerationType {
             }
         }
 
-        var input = new GenerateInput();
-        for (var filter : filters) {
-            filter.randomize();
-            input.begin(tiles.width, tiles.height, tiles::getn);
-            filter.apply(tiles, input);
-        }
+        // Применяем фильтры
+        HexedGenerator.applyFilters(tiles, filters);
+
+        var ores = (type.planet == serpulo ? serpuloOres : erekirOres).map(Block::asFloor).map(floor -> new OreFilter() {{
+            threshold = floor.oreThreshold - 0.04f;
+            scl = floor.oreScale + 8f;
+            ore = floor;
+        }});
+
+        // Добавляем руды
+        HexedGenerator.applyFilters(tiles, ores.toArray(OreFilter.class));
     }
 
     public Rules applyRules(Rules rules) {

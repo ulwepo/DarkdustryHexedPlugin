@@ -95,7 +95,7 @@ public class Main extends Plugin {
 
             HexData.datas.each(PlayerData::active, data -> {
                 updateText(data.player);
-                if (data.controls >= HexData.hexes.size * winCapturePercent) endGame();
+                if (data.controlled() >= HexData.hexes.size * winCapturePercent) endGame();
             });
 
             counter -= Time.delta;
@@ -241,8 +241,8 @@ public class Main extends Plugin {
             }
         else if (hex.controller.player == player)
             message.append(format("hex.captured", locale));
-        else if (hex.controller != null && hex.controller.player !=null) 
-            message.append("[#").append(hex.controller.player.team().color).append("]").append(format("hex.captured-by-player", locale, hex.controller.player.coloredName()));
+        else if (hex.controller.player != null)
+            message.append(format("hex.captured-by-player", locale, hex.controller.player.team().color, hex.controller.player.coloredName()));
         else
             message.append(format("hex.unknown", locale));
 
@@ -284,9 +284,9 @@ public class Main extends Plugin {
             var endGameMessage = new StringBuilder(format("restart.header", locale));
 
             if (player == winner.player)
-                endGameMessage.append(format("restart.you-won", locale, getForm("decl.hexes", locale, winner.controls)));
+                endGameMessage.append(format("restart.you-won", locale, getForm("decl.hexes", locale, winner.controlled())));
             else
-                endGameMessage.append(format("restart.player-won", locale, winner.name(), getForm("decl.hexes", locale, winner.controls)));
+                endGameMessage.append(format("restart.player-won", locale, winner.name(), getForm("decl.hexes", locale, winner.controlled())));
 
             endGameMessage.append("\n\n");
 
@@ -340,7 +340,7 @@ public class Main extends Plugin {
         for (int i = 0; i < datas.size; i++) {
             var data = datas.get(i);
             leaders.append("[orange]").append(i + 1).append(". ").append(data.name())
-                    .append("[orange] (").append(getForm("decl.hexes", locale, data.controls)).append(")")
+                    .append("[orange] (").append(getForm("decl.hexes", locale, data.controlled())).append(")")
                     .append("\n");
         }
         return leaders.toString();

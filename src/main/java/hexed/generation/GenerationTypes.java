@@ -118,7 +118,7 @@ public class GenerationTypes {
             block = whiteTreeDead;
         }});
 
-        wasteland = new GenerationType("[white]\uF75C [#b8510d]Erekir", erekir, new Block[][] {
+        wasteland = new GenerationType("[white]\uF75C [#b8510d]Wasteland", erekir, new Block[][] {
                 {rhyolite, beryllicStone, arkyicStone, rhyolite},
                 {crystallineStone, rhyolite, arkyicStone, carbonStone},
                 {beryllicStone, carbonStone, rhyoliteCrater, carbonVent},

@@ -7,10 +7,11 @@ import arc.struct.Seq;
 import arc.struct.StringMap;
 import arc.util.Structs;
 import arc.util.Tmp;
-import mindustry.content.Planets;
 import mindustry.gen.Call;
 import mindustry.gen.Player;
 import mindustry.maps.Map;
+import mindustry.maps.filters.GenerateFilter;
+import mindustry.maps.filters.GenerateFilter.GenerateInput;
 import mindustry.world.Tiles;
 import mindustry.world.blocks.storage.CoreBlock;
 
@@ -19,6 +20,7 @@ import static hexed.Hex.*;
 import static hexed.Main.*;
 import static mindustry.Vars.*;
 import static mindustry.content.Blocks.*;
+import static mindustry.content.Planets.serpulo;
 
 public class HexedGenerator {
 
@@ -54,7 +56,7 @@ public class HexedGenerator {
             if (tile.floor().liquidDrop != null)
                 tile.remove();
 
-            if (tile.block() == air && tile.floor().decoration != air && chance(0.05d))
+            if (tile.block() == air && tile.floor().decoration != air && chance(0.02d))
                 tile.setBlock(tile.floor().decoration);
         });
 
@@ -77,9 +79,19 @@ public class HexedGenerator {
         }
     }
 
+    public static void applyFilters(Tiles tiles, GenerateFilter... filters) {
+        var input = new GenerateInput();
+
+        for (var filter : filters) {
+            filter.randomize();
+            input.begin(tiles.width, tiles.height, tiles::getn);
+            filter.apply(tiles, input);
+        }
+    }
+
     public static void loadout(Player player, Hex hex) {
-        var start = type.planet == Planets.serpulo ? serpuloStart : erekirStart;
-        var coreTile = start.tiles.find(s -> s.block instanceof CoreBlock);
+        var start = type.planet == serpulo ? serpuloStart : erekirStart;
+        var coreTile = start.tiles.find(stile -> stile.block instanceof CoreBlock);
         int sx = hex.x - coreTile.x, sy = hex.y - coreTile.y;
 
         start.tiles.each(stile -> {

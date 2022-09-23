@@ -36,12 +36,7 @@ public class Hex {
     }
 
     public void updateController() {
-        PlayerData finded = findController();
-        if (finded == controller) return;
-
-        controller.controls--;
-        finded.controls++;
-        controller = finded;
+        controller = findController();
     }
 
     public float getProgressPercent(Team team) {
@@ -69,13 +64,14 @@ public class Hex {
         }
 
         var data = state.teams.getActive()
-                .filter(d -> d.team != Team.derelict)
-                .max(d -> progress[d.team.id]);
+                .filter(team -> team.team != Team.derelict)
+                .max(team -> progress[team.team.id]);
 
         if (data != null && progress[data.team.id] >= Main.itemRequirement) {
             world.tile(x, y).setNet(type.planet.defaultCore, data.team, 0);
             return HexData.getData(data.team);
         }
+
         return null;
     }
 
