@@ -1,7 +1,6 @@
 package hexed;
 
 import arc.math.geom.Position;
-import arc.struct.IntMap;
 import arc.struct.Seq;
 import arc.util.Timer.Task;
 import mindustry.game.Team;
@@ -15,11 +14,6 @@ public class HexData {
     /** All hexes on the map. No order. */
     public static final Seq<Hex> hexes = new Seq<>();
 
-    /** Maps team ID -> player data */
-    private static final IntMap<PlayerData> teamData = new IntMap<>();
-    /** Maps team ID -> player */
-    private static final IntMap<Player> teamPlayer = new IntMap<>();
-
     public static void init() {
         datas.clear();
         Groups.player.each(player -> datas.add(new PlayerData(player)));
@@ -28,40 +22,24 @@ public class HexData {
         HexedGenerator.getHexes((x, y) -> hexes.add(new Hex(hexes.size, x, y)));
     }
 
-    public static void updateTeamMaps() {
-        teamData.clear();
-        datas.each(data -> teamData.put(data.player.team().id, data));
-
-        teamPlayer.clear();
-        Groups.player.each(player -> teamPlayer.put(player.team().id, player));
-    }
-
     public static void updateControl() {
         hexes.each(Hex::updateController);
     }
 
     public static Seq<PlayerData> getLeaderboard() {
-        return datas.copy().filter(data -> data.controls() > 0).sort(data -> -data.controls());
+        return datas.copy().filter(data -> data.controls > 0).sort(data -> -data.controls);
     }
 
     public static Player getPlayer(Team team) {
-        return teamPlayer.get(team.id);
+        return Groups.player.find(player -> player.team() == team);
     }
 
     public static PlayerData getData(Team team) {
-        return teamData.get(team.id);
+        return datas.find(data -> data.player.team() == team);
     }
 
     public static PlayerData getData(String uuid) {
         return datas.find(data -> data.player.uuid().equals(uuid));
-    }
-
-    public static int getControlledSize(Player player) {
-        return teamData.get(player.team().id).controls();
-    }
-
-    public static int hexesAmount() {
-        return hexes.size;
     }
 
     public static Hex getSpawnHex() {
@@ -75,6 +53,7 @@ public class HexData {
     public static class PlayerData {
 
         public Player player;
+        public int controls;
 
         public Task left;
 
@@ -86,8 +65,8 @@ public class HexData {
             return player.coloredName();
         }
 
-        public int controls() {
-            return hexes.count(hex -> hex.controller == player.team());
+        public boolean active() {
+            return player.team() != Team.derelict && player.con.isConnected();
         }
     }
 }

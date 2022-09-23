@@ -3,6 +3,7 @@ package hexed;
 import arc.math.Mathf;
 import arc.math.geom.Intersector;
 import arc.math.geom.Position;
+import hexed.HexData.PlayerData;
 import mindustry.game.Team;
 import mindustry.type.ItemStack;
 import mindustry.world.Tile;
@@ -24,7 +25,7 @@ public class Hex {
     public final float wx, wy;
     public final float[] progress = new float[256];
 
-    public Team controller;
+    public PlayerData controller;
 
     public Hex(int id, int x, int y) {
         this.id = id;
@@ -35,7 +36,12 @@ public class Hex {
     }
 
     public void updateController() {
-        controller = findController();
+        PlayerData finded = findController();
+        if (finded == controller) return;
+
+        controller.controls--;
+        finded.controls++;
+        controller = finded;
     }
 
     public float getProgressPercent(Team team) {
@@ -46,8 +52,8 @@ public class Hex {
         return world.tile(x, y).team() != Team.derelict && world.tile(x, y).block() instanceof CoreBlock;
     }
 
-    public Team findController() {
-        if (hasCore()) return world.tile(x, y).team();
+    public PlayerData findController() {
+        if (hasCore()) return HexData.getData(world.tile(x, y).team());
 
         Arrays.fill(progress, 0);
 
@@ -68,7 +74,7 @@ public class Hex {
 
         if (data != null && progress[data.team.id] >= Main.itemRequirement) {
             world.tile(x, y).setNet(type.planet.defaultCore, data.team, 0);
-            return data.team;
+            return HexData.getData(data.team);
         }
         return null;
     }

@@ -89,9 +89,9 @@ public class Main extends Plugin {
         Events.run(Trigger.update, () -> {
             if (!state.isPlaying()) return;
 
-            Groups.player.each(player -> player.team() != Team.derelict, player -> {
-                updateText(player);
-                if (HexData.getControlledSize(player) >= HexData.hexesAmount() * winCapturePercent) endGame();
+            HexData.datas.each(PlayerData::active, data -> {
+                updateText(data.player);
+                if (data.controls >= HexData.hexes.size * winCapturePercent) endGame();
             });
 
             counter -= Time.delta;
@@ -138,15 +138,12 @@ public class Main extends Plugin {
                 old.player = player;
                 old.left.cancel();
             } else spawn(event.player);
-
-            HexData.updateTeamMaps();
         });
 
         Events.on(PlayerLeave.class, event -> {
             if (event.player.team() == Team.derelict || restarting) return;
             
             HexData.getData(event.player.team()).left = Timer.schedule(() -> killTeam(event.player.team()), leftTeamDestroyTime);
-            HexData.updateTeamMaps();
         });
 
         netServer.assigner = (player, players) -> {
@@ -238,10 +235,10 @@ public class Main extends Plugin {
             } else {
                 message.append(format("hex.empty", locale));
             }
-        else if (hex.controller == player.team())
+        else if (hex.controller.player == player)
             message.append(format("hex.captured", locale));
-        else if (HexData.getPlayer(hex.controller) != null) 
-            message.append("[#").append(hex.controller.color).append("]").append(format("hex.captured-by-player", locale, HexData.getPlayer(hex.controller).coloredName()));
+        else if (hex.controller != null && hex.controller.player !=null) 
+            message.append("[#").append(hex.controller.player.team().color).append("]").append(format("hex.captured-by-player", locale, hex.controller.player.coloredName()));
         else
             message.append(format("hex.unknown", locale));
 
@@ -283,9 +280,9 @@ public class Main extends Plugin {
             var endGameMessage = new StringBuilder(format("restart.header", locale));
 
             if (player == winner.player)
-                endGameMessage.append(format("restart.you-won", locale, getForm("decl.hexes", locale, winner.controls())));
+                endGameMessage.append(format("restart.you-won", locale, getForm("decl.hexes", locale, winner.controls)));
             else
-                endGameMessage.append(format("restart.player-won", locale, winner.name(), getForm("decl.hexes", locale, winner.controls())));
+                endGameMessage.append(format("restart.player-won", locale, winner.name(), getForm("decl.hexes", locale, winner.controls)));
 
             endGameMessage.append("\n\n");
 
@@ -339,7 +336,7 @@ public class Main extends Plugin {
         for (int i = 0; i < datas.size; i++) {
             var data = datas.get(i);
             leaders.append("[orange]").append(i + 1).append(". ").append(data.name())
-                    .append("[orange] (").append(getForm("decl.hexes", locale, data.controls())).append(")")
+                    .append("[orange] (").append(getForm("decl.hexes", locale, data.controls)).append(")")
                     .append("\n");
         }
         return leaders.toString();
@@ -358,8 +355,6 @@ public class Main extends Plugin {
 
         var data = HexData.datas.find(d -> d.player.team() == team);
         if (data.left != null) data.left.cancel();
-        HexData.datas.remove(data);
-        HexData.updateTeamMaps();
 
         world.tiles.eachTile(tile -> {
             if (tile.build != null && tile.block() != Blocks.air && tile.team() == team)
