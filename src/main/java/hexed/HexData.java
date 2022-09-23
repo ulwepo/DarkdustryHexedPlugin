@@ -27,7 +27,7 @@ public class HexData {
     }
 
     public static Seq<PlayerData> getLeaderboard() {
-        return datas.copy().filter(data -> data.controlled() > 0).sort(data -> -data.controlled());
+        return datas.select(data -> data.controlled() > 0).sort(data -> -data.controlled());
     }
 
     public static Player getPlayer(Team team) {
