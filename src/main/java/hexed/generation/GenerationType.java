@@ -74,6 +74,10 @@ public class GenerationType {
 
     public Rules applyRules(Rules rules) {
         ruleSetter.get(rules);
+
+        rules.env = planet.defaultEnv;
+        rules.hiddenBuildItems.addAll(planet.hiddenItems);
+
         return rules;
     }
 }

@@ -4,22 +4,31 @@ import arc.files.Fi;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.util.serialization.Json;
-import arc.util.serialization.JsonValue;
 import arc.util.serialization.Json.JsonSerializable;
-import mindustry.io.JsonIO;
+import arc.util.serialization.JsonValue;
+import arc.util.serialization.JsonWriter.OutputType;
 
-import static mindustry.Vars.*;
+import static mindustry.Vars.dataDirectory;
 
 public class Statistics {
 
-    public static ObjectMap<String, PlayerData> datas;
+    public static final Json json = new Json();
+    public static final Fi statistics = dataDirectory.child("statistics.json");
 
-    public static Fi statistics = dataDirectory.child("statistics.json");
+    public static ObjectMap<String, PlayerData> datas;
 
     @SuppressWarnings("unchecked")
     public static void load() {
-        JsonIO.json.addClassTag("hexed.comp.PlayerData", PlayerData.class); // rly important thing
-        datas = statistics.exists() ? JsonIO.json.fromJson(ObjectMap.class, statistics) : new ObjectMap<>();
+        json.addClassTag("PlayerData", PlayerData.class);
+        json.setOutputType(OutputType.json);
+
+        if (statistics.exists()) { // переносим и упрощаем данные
+            String data = statistics.readString();
+            data = data.replaceAll("hexed.comp.PlayerData", "PlayerData");
+            statistics.writeString(data, false);
+        }
+
+        datas = statistics.exists() ? json.fromJson(ObjectMap.class, statistics) : new ObjectMap<>();
     }
 
     public static PlayerData getData(String uuid) {
@@ -27,7 +36,7 @@ public class Statistics {
     }
 
     public static void save() {
-        JsonIO.json.toJson(datas, statistics);
+        json.toJson(datas, statistics);
     }
 
     public static Seq<PlayerData> getLeaders() {

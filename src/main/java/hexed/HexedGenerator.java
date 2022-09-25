@@ -12,14 +12,17 @@ import mindustry.gen.Player;
 import mindustry.maps.Map;
 import mindustry.maps.filters.GenerateFilter;
 import mindustry.maps.filters.GenerateFilter.GenerateInput;
+import mindustry.world.Tile;
 import mindustry.world.Tiles;
 import mindustry.world.blocks.storage.CoreBlock;
 
+import static arc.Core.app;
 import static arc.math.Mathf.chance;
 import static hexed.Hex.*;
 import static hexed.Main.*;
 import static mindustry.Vars.*;
 import static mindustry.content.Blocks.*;
+import static mindustry.content.Liquids.water;
 import static mindustry.content.Planets.serpulo;
 
 public class HexedGenerator {
@@ -39,16 +42,22 @@ public class HexedGenerator {
                 float angle = side * 120f - 30f;
 
                 Tmp.v1.trnsExact(angle, spacing + 12).add(x, y);
-                if (!Structs.inBounds((int) Tmp.v1.x, (int) Tmp.v1.y, width, height)) return;
+                if (!Structs.inBounds((int) Tmp.v1.x, (int) Tmp.v1.y, width, height)) continue;
 
                 Tmp.v1.trnsExact(angle, spacing / 2f + 7).add(x, y);
                 Bresenham2.line(x, y, (int) Tmp.v1.x, (int) Tmp.v1.y, (cx, cy) -> Geometry.circle(cx, cy, width, height, 3, (c2x, c2y) -> tiles.getn(c2x, c2y).remove()));
             }
 
-            // меняем пол в центре хекса
+            var corePlace = new Seq<Tile>();
+
             for (int cx = x - 2; cx <= x + 2; cx++)
                 for (int cy = y - 2; cy <= y + 2; cy++)
-                    tiles.getn(cx, cy).setFloor(coreZone.asFloor());
+                    corePlace.add(tiles.getn(cx, cy));
+
+            boolean hasWater = corePlace.contains(tile -> tile.floor().liquidDrop == water);
+
+            // меняем пол в центре хекса
+            corePlace.each(tile -> tile.setFloor((hasWater ? sandWater.asFloor() : coreZone.asFloor())));
         });
 
         // убираем стенки с жидкостных блоков и добавляем немного декораций
@@ -107,5 +116,7 @@ public class HexedGenerator {
                 Call.setItem(tile.build, stack.item, stack.amount);
             }
         });
+
+        app.post(() -> Call.setCameraPosition(player.con, hex.wx, hex.wy));
     }
 }

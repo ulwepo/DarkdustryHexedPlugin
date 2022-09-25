@@ -50,7 +50,6 @@ public class Main extends Plugin {
 
     @Override
     public void init() {
-        rules.loadout = ItemStack.list(Items.copper, 350, Items.lead, 250, Items.graphite, 150, Items.metaglass, 100, Items.silicon, 250, Items.titanium, 30);
         rules.buildCostMultiplier = 0.8f;
         rules.buildSpeedMultiplier = 2f;
         rules.blockHealthMultiplier = 1.5f;
@@ -68,6 +67,15 @@ public class Main extends Plugin {
         rules.bannedBlocks.add(Blocks.ripple);
         rules.modeName = "Hexed";
 
+        rules.loadout = ItemStack.list(
+                Items.copper, 350,
+                Items.lead, 250,
+                Items.graphite, 150,
+                Items.metaglass, 100,
+                Items.silicon, 250,
+                Items.titanium, 30
+        );
+
         serpuloOres = Seq.with(Blocks.oreCopper, Blocks.oreLead, Blocks.oreScrap, Blocks.oreCoal, Blocks.oreTitanium, Blocks.oreThorium);
         erekirOres = Seq.with(Blocks.wallOreBeryllium, Blocks.wallOreTungsten, Blocks.wallOreThorium);
 
@@ -80,7 +88,8 @@ public class Main extends Plugin {
 
         // Добавляем кастомные декорации блокам
         Blocks.grass.asFloor().decoration = Blocks.pine;
-        Blocks.moss.asFloor().decoration = Blocks.sporeMoss.asFloor().decoration = Blocks.sporeCluster;
+        Blocks.moss.asFloor().decoration = Blocks.sporeCluster;
+        Blocks.sporeMoss.asFloor().decoration = Blocks.sporePine;
 
         Bundle.load();
         Statistics.load();

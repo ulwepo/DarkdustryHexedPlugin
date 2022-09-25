@@ -43,7 +43,7 @@ public class HexData {
     }
 
     public static Hex getSpawnHex() {
-        return hexes.copy().shuffle().find(hex -> hex.controller == null);
+        return hexes.select(hex -> hex.controller == null).random();
     }
 
     public static Hex getClosestHex(Position position) {
@@ -51,7 +51,6 @@ public class HexData {
     }
 
     public static class PlayerData {
-
         public Player player;
 
         public Task left;
