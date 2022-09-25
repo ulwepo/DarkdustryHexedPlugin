@@ -149,7 +149,7 @@ public class Main extends Plugin {
 
             var old = HexData.getData(event.player.uuid());
             if (old != null && !old.player.team().data().noCores()) {
-                old.player = player;
+                old.player = event.player;
                 old.left.cancel();
             } else spawn(event.player);
         });

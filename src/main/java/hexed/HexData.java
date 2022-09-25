@@ -51,8 +51,8 @@ public class HexData {
     }
 
     public static class PlayerData {
-        public Player player;
 
+        public Player player;
         public Task left;
 
         public PlayerData(Player player) {
