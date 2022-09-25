@@ -9,14 +9,13 @@ import mindustry.type.Weather.WeatherEntry;
 import mindustry.world.Block;
 
 import static mindustry.content.Blocks.*;
-import static mindustry.content.Planets.serpulo;
 
 public class GenerationTypes {
 
     public static GenerationType oilFlats, winter, rivers, lavaLand, spores, erekir;
 
     public static void load() {
-        oilFlats = new GenerationType("[white]\uF826 [accent]Oil Flats", serpulo, rules -> {
+        oilFlats = new GenerationType("[white]\uF826 [accent]Oil Flats", Planets.serpulo, rules -> {
             rules.weather.clear();
             rules.weather.add(new WeatherEntry(Weathers.sandstorm, 14f, 42f, 3.5f, 10.5f) {{
                 intensity = 0.5f;
@@ -29,7 +28,7 @@ public class GenerationTypes {
                 {darksand, shale, darksand, shale, darksand}
         });
 
-        winter = new GenerationType("[white]\uF825 [cyan]Winter", serpulo, rules -> {
+        winter = new GenerationType("[white]\uF825 [cyan]Winter", Planets.serpulo, rules -> {
             rules.weather.clear();
             rules.weather.add(new WeatherEntry(Weathers.snow, 20f, 60f, 5f, 15f) {{
                 intensity = 0.5f;
@@ -47,7 +46,7 @@ public class GenerationTypes {
             block = air;
         }});
 
-        rivers = new GenerationType("[white]\uF828 [accent]Rivers", serpulo, rules -> {
+        rivers = new GenerationType("[white]\uF828 [accent]Rivers", Planets.serpulo, rules -> {
             rules.weather.clear();
             rules.weather.add(new WeatherEntry(Weathers.rain, 20f, 60f, 5f, 15f) {{
                 intensity = 0.7f;
@@ -64,7 +63,7 @@ public class GenerationTypes {
             block = air;
         }});
 
-        lavaLand = new GenerationType("[white]\uF827 [orange]Lava Land", serpulo, new Block[][] {
+        lavaLand = new GenerationType("[white]\uF827 [orange]Lava Land", Planets.serpulo, new Block[][] {
                 {darksand, stone, sand, shale, sand},
                 {shale, basalt, slag, stone, basalt},
                 {darksand, hotrock, hotrock, magmarock, darksand},
@@ -72,7 +71,7 @@ public class GenerationTypes {
                 {dacite, shale, basalt, shale, shale}
         });
 
-        spores = new GenerationType("[white]\uF82B [purple]Spores", serpulo, rules -> {
+        spores = new GenerationType("[white]\uF82B [purple]Spores", Planets.serpulo, rules -> {
             rules.lighting = true;
             rules.ambientLight = new Color(0.01f, 0.01f, 0.04f, 0.3f);
 
@@ -91,10 +90,14 @@ public class GenerationTypes {
         erekir = new GenerationType("[white]\uF6C9 [orange]Erekir", Planets.erekir, new Block[][] {
                 {regolith, beryllicStone, crystallineStone, redStone, rhyolite},
                 {arkyicStone, rhyolite, redmat, carbonStone, redmat},
-                {beryllicStone, arkyciteFloor, arkyciteFloor, arkyicStone, bluemat},
-                {carbonStone, arkyicStone, crystalFloor, ferricStone, yellowStone},
-                {ferricStone, redIce, carbonStone, ferricStone, carbonStone}
+                {beryllicStone, arkyicStone, arkyicStone, arkyicStone, bluemat},
+                {carbonStone, arkyicStone, crystalFloor, ferricStone, roughRhyolite},
+                {ferricStone, ferricCraters, carbonStone, ferricStone, carbonStone}
         }, new NoiseFilter() {{
+            scl = 40f;
+            threshold = 0.75f;
+            floor = arkyciteFloor;
+        }}, new NoiseFilter() {{
             floor = air;
             block = graphiticWall;
             target = carbonWall;

@@ -324,9 +324,7 @@ public class Main extends Plugin {
             player.reset();
             player.admin(admin);
 
-            var team = netServer.assignTeam(player, players);
-            Log.info(team.name);
-            player.team(team);
+            player.team(netServer.assignTeam(player, players));
 
             spawn(player);
 
@@ -352,6 +350,7 @@ public class Main extends Plugin {
                     .append("[orange] (").append(getForm("hexes", locale, data.controlled())).append(")")
                     .append("\n");
         }
+
         return leaders.toString();
     }
 
@@ -374,7 +373,7 @@ public class Main extends Plugin {
                 Time.run(Mathf.random(360f), tile::removeNet);
         });
 
-        Groups.unit.each(unit -> unit.team == team, unit -> Time.run(Mathf.random(360f), () -> Call.unitDespawn(unit)));
+        Groups.unit.each(unit -> unit.team == team, unit -> Time.run(Mathf.random(360f), () -> Call.unitEnvDeath(unit)));
     }
 
     public void spawn(Player player) {
