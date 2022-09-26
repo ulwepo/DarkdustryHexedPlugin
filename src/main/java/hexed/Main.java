@@ -175,7 +175,7 @@ public class Main extends Plugin {
     public void registerClientCommands(CommandHandler handler) {
         handler.<Player>register("top", "Show the best 10 players of the server.", (args, player) -> {
             var leaders = Statistics.getLeaders();
-            leaders.setSize(Math.min(10, leaders.size));
+            leaders.truncate(10);
 
             var locale = findLocale(player);
             var players = new StringBuilder();
@@ -340,7 +340,7 @@ public class Main extends Plugin {
         var leaders = new StringBuilder();
 
         if (!endGame) {
-            datas.setSize(Math.min(4, datas.size));
+            datas.truncate(4);
             leaders.append(format("leaderboard.header", locale, (int) counter / 60 / 60));
         }
 
