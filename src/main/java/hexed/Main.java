@@ -164,7 +164,7 @@ public class Main extends Plugin {
             var data = HexData.getData(player.uuid());
             if (data != null) return data.player.team();
 
-            var teams = Seq.with(Team.all).filter(team -> team != Team.derelict && !team.active());
+            var teams = Seq.with(Team.all).filter(team -> team != Team.derelict && !team.active() && HexData.getData(team) == null);
             return teams.any() ? teams.random() : Team.derelict;
         };
 
