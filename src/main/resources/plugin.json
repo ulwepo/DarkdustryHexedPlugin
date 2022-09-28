@@ -1,10 +1,10 @@
 {
   "name": "hexed-plugin",
-  "minGameVersion": 138,
+  "minGameVersion": 137,
   "displayName": "Hexed Plugin",
   "author": "Skat",
   "description": "A special battle-royal-like gamemode.",
-  "version": "1.2",
+  "version": "2.0",
   "main": "hexed.Main",
   "repo": "Darkdustry-Coders/HexedPlugin"
 }
