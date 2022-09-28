@@ -14,8 +14,8 @@ dependencies {
     val mindustryVersion = json["minGameVersion"]!!
     project.version = json["version"]!!
 
-    compileOnly("com.github.Anuken.Arc:arc-core:$mindustryVersion")
-    compileOnly("com.github.Anuken.Mindustry:core:$mindustryVersion")
+    compileOnly("com.github.Anuken.Arc:arc-core:v$mindustryVersion")
+    compileOnly("com.github.Anuken.Mindustry:core:v$mindustryVersion")
 }
 
 tasks.jar {
