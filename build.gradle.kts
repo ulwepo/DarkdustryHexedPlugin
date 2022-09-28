@@ -15,12 +15,7 @@ dependencies {
     project.version = json["version"]!!
 
     compileOnly("com.github.Anuken.Arc:arc-core:v$mindustryVersion")
-    compileOnly("com.github.Anuken.MindustryJitpack:core:v$mindustryVersion") {
-        exclude("com.github.Anuken.Arc", "flabel")
-        exclude("com.github.Anuken.Arc", "freetype")
-        exclude("com.github.Anuken.Arc", "fx")
-        exclude("com.github.Anuken.Arc", "g3d")
-    }
+    compileOnly("com.github.Anuken.MindustryJitpack:core:030e9a6bef")
 }
 
 tasks.jar {
