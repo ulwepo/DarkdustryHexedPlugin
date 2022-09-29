@@ -99,7 +99,9 @@ public class HexedGenerator {
     }
 
     public static void loadout(Player player, Hex hex) {
+        var loadout = type.planet == serpulo ? serpuloLoadout : erekirLoadout;
         var start = type.planet == serpulo ? serpuloStart : erekirStart;
+
         var coreTile = start.tiles.find(stile -> stile.block instanceof CoreBlock);
         int sx = hex.x - coreTile.x, sy = hex.y - coreTile.y;
 
@@ -110,9 +112,9 @@ public class HexedGenerator {
             tile.setNet(stile.block, player.team(), stile.rotation);
             tile.getLinkedTiles(new Seq<>()).each(t -> t.floor().isDeep(), t -> t.setFloorNet(darkPanel3));
 
-            if (stile.config != null) tile.build.configureAny(stile.config);
+            tile.build.configureAny(stile.config);
 
-            if (stile == coreTile) for (var stack : state.rules.loadout) {
+            if (stile == coreTile) for (var stack : loadout) {
                 Call.setItem(tile.build, stack.item, stack.amount);
             }
         });

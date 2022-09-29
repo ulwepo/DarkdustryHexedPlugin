@@ -19,7 +19,7 @@ public class HexData {
         Groups.player.each(player -> datas.add(new PlayerData(player)));
 
         hexes.clear();
-        HexedGenerator.getHexes((x, y) -> hexes.add(new Hex(hexes.size, x, y)));
+        HexedGenerator.getHexes((x, y) -> hexes.add(new Hex(hexes.size + 1, x, y)));
     }
 
     public static void updateControl() {

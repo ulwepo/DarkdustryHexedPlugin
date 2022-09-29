@@ -22,12 +22,6 @@ public class Statistics {
         json.addClassTag("PlayerData", PlayerData.class);
         json.setOutputType(OutputType.json);
 
-        if (statistics.exists()) { // переносим и упрощаем данные
-            String data = statistics.readString();
-            data = data.replaceAll("hexed.comp.PlayerData", "PlayerData");
-            statistics.writeString(data, false);
-        }
-
         datas = statistics.exists() ? json.fromJson(ObjectMap.class, statistics) : new ObjectMap<>();
     }
 
@@ -46,7 +40,6 @@ public class Statistics {
     }
 
     public static class PlayerData implements JsonSerializable {
-
         public String name;
         public int wins;
 

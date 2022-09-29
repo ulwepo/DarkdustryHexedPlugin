@@ -21,6 +21,7 @@ import mindustry.world.blocks.storage.CoreBlock;
 import java.util.Locale;
 
 import static arc.util.Align.left;
+import static arc.util.Strings.autoFixed;
 import static hexed.components.Bundle.*;
 import static hexed.generation.GenerationType.*;
 import static mindustry.Vars.*;
@@ -42,6 +43,7 @@ public class Main extends Plugin {
     };
 
     public static Seq<Block> serpuloOres, erekirOres;
+    public static Seq<ItemStack> serpuloLoadout, erekirLoadout;
     public static Schematic serpuloStart, erekirStart;
 
     public static boolean restarting = false;
@@ -67,17 +69,11 @@ public class Main extends Plugin {
         rules.bannedBlocks.add(Blocks.ripple);
         rules.modeName = "Hexed";
 
-        rules.loadout = ItemStack.list(
-                Items.copper, 350,
-                Items.lead, 250,
-                Items.graphite, 150,
-                Items.metaglass, 100,
-                Items.silicon, 250,
-                Items.titanium, 30
-        );
-
         serpuloOres = Seq.with(Blocks.oreCopper, Blocks.oreLead, Blocks.oreScrap, Blocks.oreCoal, Blocks.oreTitanium, Blocks.oreThorium);
         erekirOres = Seq.with(Blocks.wallOreBeryllium, Blocks.wallOreTungsten, Blocks.wallOreThorium);
+
+        serpuloLoadout = ItemStack.list(Items.copper, 350, Items.lead, 250, Items.graphite, 150, Items.metaglass, 100, Items.silicon, 250, Items.titanium, 30);
+        erekirLoadout = ItemStack.list(Items.beryllium, 300, Items.tungsten, 200, Items.graphite, 150, Items.silicon, 250);
 
         serpuloStart = Schematics.readBase64("bXNjaAF4nE2SW1LDMAxFZSd2/EgpXUhWxPBhUgOdSeNM0vLYOj8g+ZaBpOm1LOlYlk2RDg21czpnMq/5Ix8pHvM2rqflciozEdkpPeVpI/3wuKM4lmXJ6/CepokO/4xhSutLJjeW+S1/lpW6bUyXS14pboV9w5LmPFGT1pG6p+r5pMM/1y/gOk8lHTmvH8uah/k6Tvm6kT3nWWbDUt55ybkcM8V0WofnNF4Ks4gyf6TqjzS//LQQA7GkRTuqpoN4qk+AREgPyg7WXgIVxkoGDf+1mKxMBaYCU4GphNmyREiPyRvsnrT6K45fBjG3ll6ZGkwNpgZTC7PjuJ605N0JSgvT8qSWyuTlnIaMYaf2zHey9QbBLRpRqw8sBtad2C2Ka6U4i7oCS0M1jlMii3HSCVvHUcbfX1rcPYJ3wjNYy4Bn0TkrnbOyOdIdb4J5jq0oZXJ2Rzt162+H8E6SHYuE+Dq/l207nK5DnySgioN4+GrvHc7zdsQel0MCuGIvBYjUy+EB84B5wDxgHjCPg/Q4SC9bFNkj5B4NVbhLt/YaSEUHoAPQAeiAexdQZwA64N4FrBBkhR8RWUj7");
         erekirStart = Schematics.readBase64("bXNjaAF4nGNgZWBlZmDJS8xNZWC72HCx+WI7A3dKanFyUWZBSWZ+HgMDA1tOYlJqTjEDU3QsIwNPcn5Rqm5yZkliSmoOUJKRgYEJCBkA4IsSVg==");
@@ -215,7 +211,7 @@ public class Main extends Plugin {
                 return;
             }
 
-            var custom = args.length > 0 ? all.find(type -> type.name.contains(args[0])) : next();
+            var custom = args.length > 0 ? all.find(type -> type.name.toLowerCase().contains(args[0].toLowerCase())) : next();
             if (custom == null) {
                 Log.err("No generation mode with this name found!");
                 return;
@@ -244,11 +240,10 @@ public class Main extends Plugin {
         var message = new StringBuilder(format("hex", locale, hex.id)).append("\n");
 
         if (hex.controller == null)
-            if (hex.getProgressPercent(player.team()) > 0) {
-                message.append(format("hex.capture-progress", locale, Strings.autoFixed(hex.getProgressPercent(player.team()), 4)));
-            } else {
+            if (hex.getProgressPercent(player.team()) > 0)
+                message.append(format("hex.capture-progress", locale, autoFixed(hex.getProgressPercent(player.team()), 4)));
+            else
                 message.append(format("hex.empty", locale));
-            }
         else if (hex.controller.player == player)
             message.append(format("hex.captured", locale));
         else if (hex.controller.player != null)
@@ -340,7 +335,7 @@ public class Main extends Plugin {
         var leaders = new StringBuilder();
 
         if (!endGame) {
-            datas.truncate(4);
+            datas.truncate(5);
             leaders.append(format("leaderboard.header", locale, (int) counter / 60 / 60));
         }
 
@@ -377,7 +372,7 @@ public class Main extends Plugin {
     }
 
     public void spawn(Player player) {
-        Hex hex = HexData.getSpawnHex();
+        var hex = HexData.getSpawnHex();
         if (hex != null) {
             HexedGenerator.loadout(player, hex);
             hex.findController();
@@ -390,7 +385,7 @@ public class Main extends Plugin {
     }
 
     public static String getForm(String key, Locale locale, int value) {
-        var words = Bundle.get(key, locale).split("\\|");
-        return value + " " + words[(value % 10 == 1 && value % 100 != 11) ? 0 : value % 10 >= 2 && value % 10 <= 4 && (value % 100 < 10 || value % 100 >= 20) ? 1 : 2];
+        var words = get(key, locale).split("\\|");
+        return value + " " + words[value % 10 == 1 && value % 100 != 11 ? 0 : value % 10 >= 2 && value % 10 <= 4 && (value % 100 < 10 || value % 100 >= 20) ? 1 : 2];
     }
 }
