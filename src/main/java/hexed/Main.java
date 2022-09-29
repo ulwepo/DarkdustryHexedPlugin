@@ -298,13 +298,14 @@ public class Main extends Plugin {
             endGameMessage.append(winner.name()).append("[white]: [accent]")
                     .append(getForm("wins", locale, statistic.wins))
                     .append(" [lime]\uE803[accent] ")
-                    .append(getForm("wins", locale, ++statistic.wins));
+                    .append(getForm("wins", locale, statistic.wins + 1));
 
             endGameMessage.append(format("restart.final-score", locale, getLeaderboard(locale, true)));
 
             Call.infoMessage(player.con, endGameMessage.toString());
         });
 
+        statistic.wins++;
         Statistics.save();
     }
 
