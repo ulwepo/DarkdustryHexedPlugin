@@ -3,8 +3,7 @@ package hexed.generation;
 import arc.graphics.Color;
 import mindustry.content.Planets;
 import mindustry.content.Weathers;
-import mindustry.maps.filters.NoiseFilter;
-import mindustry.maps.filters.RiverNoiseFilter;
+import mindustry.maps.filters.*;
 import mindustry.type.Weather.WeatherEntry;
 import mindustry.world.Block;
 
@@ -88,7 +87,7 @@ public class GenerationTypes {
         });
 
         erekir = new GenerationType("[white]\uF6C9 [orange]Erekir", Planets.erekir, new Block[][] {
-                {regolith, beryllicStone, crystallineStone, redStone, rhyolite},
+                {regolith, beryllicStone, crystallineStone, denseRedStone, rhyolite},
                 {arkyicStone, rhyolite, redmat, carbonStone, redmat},
                 {beryllicStone, arkyicStone, arkyicStone, arkyicStone, bluemat},
                 {carbonStone, arkyicStone, crystalFloor, ferricStone, roughRhyolite},

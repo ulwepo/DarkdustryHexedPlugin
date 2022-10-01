@@ -5,8 +5,7 @@ import arc.math.Mathf;
 import arc.math.geom.*;
 import arc.struct.Seq;
 import arc.struct.StringMap;
-import arc.util.Structs;
-import arc.util.Tmp;
+import arc.util.*;
 import mindustry.gen.Call;
 import mindustry.gen.Player;
 import mindustry.maps.Map;
@@ -65,8 +64,9 @@ public class HexedGenerator {
             if (tile.floor().liquidDrop != null)
                 tile.remove();
 
-            if (tile.block() == air && tile.floor().decoration != air && chance(0.02d))
+            if (tile.block() == air && tile.floor().decoration != air && chance(0.02d)) {
                 tile.setBlock(tile.floor().decoration);
+            }
         });
 
         state.map = new Map(StringMap.of(

@@ -16,6 +16,7 @@ import mindustry.gen.*;
 import mindustry.mod.Plugin;
 import mindustry.type.ItemStack;
 import mindustry.world.Block;
+import mindustry.world.blocks.environment.SteamVent;
 import mindustry.world.blocks.storage.CoreBlock;
 
 import java.util.Locale;
@@ -25,6 +26,7 @@ import static arc.util.Strings.autoFixed;
 import static hexed.components.Bundle.*;
 import static hexed.generation.GenerationType.*;
 import static mindustry.Vars.*;
+import static mindustry.content.Blocks.*;
 
 public class Main extends Plugin {
 
@@ -66,11 +68,11 @@ public class Main extends Plugin {
         rules.reactorExplosions = true;
         rules.fire = false;
 
-        rules.bannedBlocks.add(Blocks.ripple);
+        rules.bannedBlocks.add(ripple);
         rules.modeName = "Hexed";
 
-        serpuloOres = Seq.with(Blocks.oreCopper, Blocks.oreLead, Blocks.oreScrap, Blocks.oreCoal, Blocks.oreTitanium, Blocks.oreThorium);
-        erekirOres = Seq.with(Blocks.wallOreBeryllium, Blocks.wallOreTungsten, Blocks.wallOreThorium);
+        serpuloOres = Seq.with(oreCopper, oreLead, oreScrap, oreCoal, oreTitanium, oreThorium);
+        erekirOres = Seq.with(wallOreBeryllium, wallOreTungsten, wallOreThorium);
 
         serpuloLoadout = ItemStack.list(Items.copper, 350, Items.lead, 250, Items.graphite, 150, Items.metaglass, 100, Items.silicon, 250, Items.titanium, 30);
         erekirLoadout = ItemStack.list(Items.beryllium, 300, Items.tungsten, 200, Items.graphite, 150, Items.silicon, 250);
@@ -79,13 +81,19 @@ public class Main extends Plugin {
         erekirStart = Schematics.readBase64("bXNjaAF4nGNgZWBlZmDJS8xNZWC72HCx+WI7A3dKanFyUWZBSWZ+HgMDA1tOYlJqTjEDU3QsIwNPcn5Rqm5yZkliSmoOUJKRgYEJCBkA4IsSVg==");
 
         // Добавляем кастомные стены блокам
-        Blocks.grass.asFloor().wall = Blocks.pine;
-        Blocks.sand.asFloor().wall = Blocks.sandWall;
+        grass.asFloor().wall = pine;
+        sand.asFloor().wall = sandWall;
 
         // Добавляем кастомные декорации блокам
-        Blocks.grass.asFloor().decoration = Blocks.pine;
-        Blocks.moss.asFloor().decoration = Blocks.sporeCluster;
-        Blocks.sporeMoss.asFloor().decoration = Blocks.sporePine;
+        grass.asFloor().decoration = pine;
+        moss.asFloor().decoration = sporeCluster;
+        sporeMoss.asFloor().decoration = sporePine;
+
+        content.blocks().each(block -> {
+            if (block instanceof SteamVent vent) {
+                vent.parent.asFloor().decoration = vent;
+            }
+        });
 
         Bundle.load();
         Statistics.load();
@@ -364,7 +372,7 @@ public class Main extends Plugin {
         if (data.left != null) data.left.cancel();
 
         world.tiles.eachTile(tile -> {
-            if (tile.build != null && tile.block() != Blocks.air && tile.team() == team)
+            if (tile.build != null && tile.block() != air && tile.team() == team)
                 Time.run(Mathf.random(360f), tile::removeNet);
         });
 
