@@ -5,13 +5,13 @@ import arc.math.Mathf;
 import arc.math.geom.*;
 import arc.struct.Seq;
 import arc.struct.StringMap;
-import arc.util.*;
+import arc.util.Structs;
+import arc.util.Tmp;
 import mindustry.gen.Call;
 import mindustry.gen.Player;
 import mindustry.maps.Map;
 import mindustry.maps.filters.GenerateFilter;
 import mindustry.maps.filters.GenerateFilter.GenerateInput;
-import mindustry.world.Tile;
 import mindustry.world.Tiles;
 import mindustry.world.blocks.storage.CoreBlock;
 
@@ -23,6 +23,7 @@ import static mindustry.Vars.*;
 import static mindustry.content.Blocks.*;
 import static mindustry.content.Liquids.water;
 import static mindustry.content.Planets.serpulo;
+import static mindustry.world.blocks.environment.SteamVent.offsets;
 
 public class HexedGenerator {
 
@@ -46,27 +47,33 @@ public class HexedGenerator {
                 Tmp.v1.trnsExact(angle, spacing / 2f + 7).add(x, y);
                 Bresenham2.line(x, y, (int) Tmp.v1.x, (int) Tmp.v1.y, (cx, cy) -> Geometry.circle(cx, cy, width, height, 3, (c2x, c2y) -> tiles.getn(c2x, c2y).remove()));
             }
-
-            var corePlace = new Seq<Tile>();
-
-            for (int cx = x - 2; cx <= x + 2; cx++)
-                for (int cy = y - 2; cy <= y + 2; cy++)
-                    corePlace.add(tiles.getn(cx, cy));
-
-            boolean hasWater = corePlace.contains(tile -> tile.floor().liquidDrop == water);
-
-            // меняем пол в центре хекса
-            corePlace.each(tile -> tile.setFloor((hasWater ? sandWater.asFloor() : coreZone.asFloor())));
         });
 
         // убираем стенки с жидкостных блоков и добавляем немного декораций
         tiles.eachTile(tile -> {
-            if (tile.floor().liquidDrop != null)
-                tile.remove();
+            var floor = tile.floor();
+            var block = tile.block();
 
-            if (tile.block() == air && tile.floor().decoration != air && chance(0.02d)) {
-                tile.setBlock(tile.floor().decoration);
-            }
+            if (floor.liquidDrop != null) tile.remove();
+
+            if (block == air && floor.decoration != air && chance(0.02d))
+                tile.setBlock(floor.decoration);
+
+            if (block == air && vents.containsKey(floor) && chance(0.0075d))
+                for (var point : offsets)
+                    tiles.getc(tile.x + point.x, tile.y + point.y).setFloor(vents.get(floor).asFloor());
+        });
+
+        // меняем пол в центре хекса
+        getHexes((x, y) -> {
+            var corePlace = tiles.getn(x, y).getLinkedTilesAs(coreNucleus, new Seq<>());
+
+            boolean hasWater = corePlace.contains(tile -> tile.floor().liquidDrop == water);
+
+            corePlace.each(tile -> {
+                tile.remove();
+                tile.setFloor(hasWater ? sandWater.asFloor() : coreZone.asFloor());
+            });
         });
 
         state.map = new Map(StringMap.of(
@@ -77,11 +84,11 @@ public class HexedGenerator {
     }
 
     public static void getHexes(Intc2 intc) {
-        float h = Mathf.sqrt3 * spacing / 2;
+        float h = Mathf.sqrt3 * spacing / 4f;
         for (int x = 0; x < size / spacing - 2; x++) {
-            for (int y = 0; y < size / (h / 2) - 2; y++) {
-                int cx = (int) (x * spacing * 1.5 + (y % 2) * spacing * 3.0 / 4) + spacing / 2;
-                int cy = (int) (y * h / 2) + spacing / 2;
+            for (int y = 0; y < size / h - 2; y++) {
+                int cx = (int) (x * spacing * 1.5f + (y % 2) * spacing * 0.75f) + spacing / 2;
+                int cy = (int) (y * h) + spacing / 2;
 
                 intc.get(cx, cy);
             }

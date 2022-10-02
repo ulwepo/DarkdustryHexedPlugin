@@ -42,6 +42,10 @@ public class HexData {
         return datas.find(data -> data.player.uuid().equals(uuid));
     }
 
+    public static void removeData(Team team) {
+        datas.remove(data -> data.player.team() == team);
+    }
+
     public static Hex getSpawnHex() {
         return hexes.select(hex -> hex.controller == null).random();
     }

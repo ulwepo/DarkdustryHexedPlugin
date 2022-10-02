@@ -2,6 +2,7 @@ package hexed;
 
 import arc.Events;
 import arc.math.Mathf;
+import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.util.*;
 import hexed.HexData.PlayerData;
@@ -43,6 +44,8 @@ public class Main extends Plugin {
             return Gamemode.pvp;
         }
     };
+
+    public static final ObjectMap<Block, Block> vents = new ObjectMap<>();
 
     public static Seq<Block> serpuloOres, erekirOres;
     public static Seq<ItemStack> serpuloLoadout, erekirLoadout;
@@ -91,9 +94,12 @@ public class Main extends Plugin {
 
         content.blocks().each(block -> {
             if (block instanceof SteamVent vent) {
-                vent.parent.asFloor().decoration = vent;
+                vents.put(vent.parent, vent);
             }
         });
+
+        vents.put(regolith, yellowStoneVent);
+        vents.put(ferricStone, carbonVent);
 
         Bundle.load();
         Statistics.load();
@@ -151,17 +157,19 @@ public class Main extends Plugin {
 
             if (event.player.team() == Team.derelict || restarting) return;
 
-            var old = HexData.getData(event.player.uuid());
-            if (old != null && !old.player.team().data().noCores()) {
-                old.player = event.player;
-                old.left.cancel();
+            var data = HexData.getData(event.player.uuid());
+            if (data != null && !data.player.team().data().noCores()) {
+                data.player = event.player;
+                data.left.cancel();
             } else spawn(event.player);
         });
 
         Events.on(PlayerLeave.class, event -> {
             if (event.player.team() == Team.derelict || restarting) return;
-            
-            HexData.getData(event.player.team()).left = Timer.schedule(() -> killTeam(event.player.team()), leftTeamDestroyTime);
+
+            var data = HexData.getData(event.player.uuid());
+            if (data != null)
+                data.left = Timer.schedule(() -> killTeam(event.player.team()), leftTeamDestroyTime);
         });
 
         netServer.assigner = (player, players) -> {
@@ -370,7 +378,9 @@ public class Main extends Plugin {
         if (team == Team.derelict || !team.data().active()) return;
 
         var data = HexData.getData(team);
-        if (data.left != null) data.left.cancel();
+        if (data != null && data.left != null) data.left.cancel();
+
+        HexData.removeData(team);
 
         world.tiles.eachTile(tile -> {
             if (tile.build != null && tile.block() != air && tile.team() == team)
