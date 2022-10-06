@@ -1,1 +1,1 @@
-# HexPvP plugin.
+# Hexed plugin.
