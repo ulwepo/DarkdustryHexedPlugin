@@ -117,13 +117,12 @@ public class HexedGenerator {
             if (tile == null) return;
 
             tile.setNet(stile.block, player.team(), stile.rotation);
-            tile.getLinkedTiles(new Seq<>()).each(t -> t.floor().isDeep(), t -> t.setFloorNet(darkPanel3));
+            tile.getLinkedTiles(t -> t.setFloorNet(t.floor().isDeep() ? darkPanel3 : tile.floor()));
 
             tile.build.configureAny(stile.config);
 
-            if (stile == coreTile) for (var stack : loadout) {
-                Call.setItem(tile.build, stack.item, stack.amount);
-            }
+            if (stile == coreTile)
+                loadout.each(stack -> Call.setItem(tile.build, stack.item, stack.amount));
         });
 
         app.post(() -> Call.setCameraPosition(player.con, hex.wx, hex.wy));

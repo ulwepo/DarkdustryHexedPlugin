@@ -74,6 +74,14 @@ public class Main extends Plugin {
         rules.bannedBlocks.add(ripple);
         rules.modeName = "Hexed";
 
+        for (var team : Team.all) {
+            var teamRule = rules.teams.get(team);
+            teamRule.aiCoreSpawn = false;
+            teamRule.rtsAi = true;
+            teamRule.rtsMinSquad = 1;
+            teamRule.rtsMaxSquad = 100;
+        }
+
         serpuloOres = Seq.with(oreCopper, oreLead, oreScrap, oreCoal, oreTitanium, oreThorium);
         erekirOres = Seq.with(wallOreBeryllium, wallOreTungsten, wallOreThorium);
 
@@ -238,7 +246,7 @@ public class Main extends Plugin {
             netServer.openServer();
         });
 
-        handler.register("end", "Finish the round.", args -> {
+        handler.register("gameover", "End the round.", args -> {
             if (state.isMenu()) {
                 Log.err("The server is not running. Use 'hexed' to run it.");
                 return;
