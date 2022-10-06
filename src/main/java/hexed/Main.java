@@ -10,7 +10,8 @@ import hexed.components.Bundle;
 import hexed.components.Statistics;
 import hexed.generation.GenerationType;
 import hexed.generation.GenerationTypes;
-import mindustry.content.*;
+import mindustry.content.Fx;
+import mindustry.content.Items;
 import mindustry.game.EventType.*;
 import mindustry.game.*;
 import mindustry.gen.*;
@@ -22,12 +23,14 @@ import mindustry.world.blocks.storage.CoreBlock;
 
 import java.util.Locale;
 
+import static arc.struct.Seq.with;
 import static arc.util.Align.left;
 import static arc.util.Strings.autoFixed;
 import static hexed.components.Bundle.*;
 import static hexed.generation.GenerationType.*;
 import static mindustry.Vars.*;
 import static mindustry.content.Blocks.*;
+import static mindustry.type.ItemStack.list;
 
 public class Main extends Plugin {
 
@@ -54,6 +57,11 @@ public class Main extends Plugin {
     public static boolean restarting = false;
     public static float counter = roundTime;
     public static GenerationType type;
+
+    public static String getForm(String key, Locale locale, int value) {
+        var words = get(key, locale).split("\\|");
+        return value + " " + words[value % 10 == 1 && value % 100 != 11 ? 0 : value % 10 >= 2 && value % 10 <= 4 && (value % 100 < 10 || value % 100 >= 20) ? 1 : 2];
+    }
 
     @Override
     public void init() {
@@ -82,11 +90,11 @@ public class Main extends Plugin {
             teamRule.rtsMaxSquad = 100;
         }
 
-        serpuloOres = Seq.with(oreCopper, oreLead, oreScrap, oreCoal, oreTitanium, oreThorium);
-        erekirOres = Seq.with(wallOreBeryllium, wallOreTungsten, wallOreThorium);
+        serpuloOres = with(oreCopper, oreLead, oreScrap, oreCoal, oreTitanium, oreThorium);
+        erekirOres = with(wallOreBeryllium, wallOreTungsten, wallOreThorium);
 
-        serpuloLoadout = ItemStack.list(Items.copper, 350, Items.lead, 250, Items.graphite, 150, Items.metaglass, 100, Items.silicon, 250, Items.titanium, 30);
-        erekirLoadout = ItemStack.list(Items.beryllium, 300, Items.tungsten, 200, Items.graphite, 150, Items.silicon, 250);
+        serpuloLoadout = list(Items.copper, 350, Items.lead, 250, Items.graphite, 150, Items.metaglass, 100, Items.silicon, 250, Items.titanium, 30);
+        erekirLoadout = list(Items.beryllium, 300, Items.tungsten, 200, Items.graphite, 150, Items.silicon, 250);
 
         serpuloStart = Schematics.readBase64("bXNjaAF4nE2SW1LDMAxFZSd2/EgpXUhWxPBhUgOdSeNM0vLYOj8g+ZaBpOm1LOlYlk2RDg21czpnMq/5Ix8pHvM2rqflciozEdkpPeVpI/3wuKM4lmXJ6/CepokO/4xhSutLJjeW+S1/lpW6bUyXS14pboV9w5LmPFGT1pG6p+r5pMM/1y/gOk8lHTmvH8uah/k6Tvm6kT3nWWbDUt55ybkcM8V0WofnNF4Ks4gyf6TqjzS//LQQA7GkRTuqpoN4qk+AREgPyg7WXgIVxkoGDf+1mKxMBaYCU4GphNmyREiPyRvsnrT6K45fBjG3ll6ZGkwNpgZTC7PjuJ605N0JSgvT8qSWyuTlnIaMYaf2zHey9QbBLRpRqw8sBtad2C2Ka6U4i7oCS0M1jlMii3HSCVvHUcbfX1rcPYJ3wjNYy4Bn0TkrnbOyOdIdb4J5jq0oZXJ2Rzt162+H8E6SHYuE+Dq/l207nK5DnySgioN4+GrvHc7zdsQel0MCuGIvBYjUy+EB84B5wDxgHjCPg/Q4SC9bFNkj5B4NVbhLt/YaSEUHoAPQAeiAexdQZwA64N4FrBBkhR8RWUj7");
         erekirStart = Schematics.readBase64("bXNjaAF4nGNgZWBlZmDJS8xNZWC72HCx+WI7A3dKanFyUWZBSWZ+HgMDA1tOYlJqTjEDU3QsIwNPcn5Rqm5yZkliSmoOUJKRgYEJCBkA4IsSVg==");
@@ -115,7 +123,8 @@ public class Main extends Plugin {
 
         Timer.schedule(HexData::updateControl, 0f, 1f);
         Timer.schedule(() -> {
-            if (state.isPlaying()) Groups.player.each(player -> Call.infoPopup(player.con, getLeaderboard(findLocale(player), false), 12f, left, 0, 2, 50, 0));
+            if (state.isPlaying())
+                Groups.player.each(player -> Call.infoPopup(player.con, getLeaderboard(findLocale(player), false), 12f, left, 0, 2, 50, 0));
         }, 0f, 180f);
 
         Events.run(Trigger.update, () -> {
@@ -184,7 +193,7 @@ public class Main extends Plugin {
             var data = HexData.getData(player.uuid());
             if (data != null) return data.player.team();
 
-            var teams = Seq.with(Team.all).filter(team -> team != Team.derelict && !team.active() && HexData.getData(team) == null);
+            var teams = with(Team.all).filter(team -> team != Team.derelict && !team.active() && HexData.getData(team) == null);
             return teams.any() ? teams.random() : Team.derelict;
         };
 
@@ -409,10 +418,5 @@ public class Main extends Plugin {
             player.clearUnit();
             player.team(Team.derelict);
         }
-    }
-
-    public static String getForm(String key, Locale locale, int value) {
-        var words = get(key, locale).split("\\|");
-        return value + " " + words[value % 10 == 1 && value % 100 != 11 ? 0 : value % 10 >= 2 && value % 10 <= 4 && (value % 100 < 10 || value % 100 >= 20) ? 1 : 2];
     }
 }
