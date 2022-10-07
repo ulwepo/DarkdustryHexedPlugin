@@ -210,21 +210,13 @@ public class Main extends Plugin {
 
             if (leaders.isEmpty())
                 builder.append(format("commands.top.none", locale));
-            else {
-                for (int i = 0; i < leaders.size; i++) {
-                    var data = leaders.get(i);
-                    builder.append("[orange]").append(i + 1).append(". ")
-                            .append(data.name).append("[accent]: [cyan]")
-                            .append(getForm("wins", locale, data.wins)).append("\n");
-                }
-
-                builder.append("\n[lightgray]...\n\n");
-
-                var data = Statistics.getData(player.uuid());
-                builder.append("[orange]").append(Statistics.getPosition(player.uuid()) + 1).append(". ")
+            else for (int i = 0; i < leaders.size; i++) {
+                var data = leaders.get(i);
+                builder.append("[orange]").append(i + 1).append(". ")
                         .append(data.name).append("[accent]: [cyan]")
                         .append(getForm("wins", locale, data.wins)).append("\n");
             }
+
 
             Call.infoMessage(player.con, format("commands.top.list", locale, builder.toString()));
         });

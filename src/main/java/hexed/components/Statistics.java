@@ -29,10 +29,6 @@ public class Statistics {
         return datas.get(uuid, PlayerData::new);
     }
 
-    public static int getPosition(String uuid) {
-        return datas.values().toSeq().sort(data -> data.wins == 0 ? Float.POSITIVE_INFINITY : -data.wins).indexOf(getData(uuid));
-    }
-
     public static void save() {
         json.toJson(datas, statistics);
     }
