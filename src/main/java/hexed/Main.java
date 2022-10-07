@@ -206,18 +206,27 @@ public class Main extends Plugin {
             leaders.truncate(10);
 
             var locale = findLocale(player);
-            var players = new StringBuilder();
+            var builder = new StringBuilder();
 
             if (leaders.isEmpty())
-                players.append(format("commands.top.none", locale));
-            else for (int i = 0; i < leaders.size; i++) {
-                var statistic = leaders.get(i);
-                players.append("[orange]").append(i + 1).append(". ")
-                        .append(statistic.name).append("[accent]: [cyan]")
-                        .append(getForm("wins", locale, statistic.wins)).append("\n");
+                builder.append(format("commands.top.none", locale));
+            else {
+                for (int i = 0; i < leaders.size; i++) {
+                    var data = leaders.get(i);
+                    builder.append("[orange]").append(i + 1).append(". ")
+                            .append(data.name).append("[accent]: [cyan]")
+                            .append(getForm("wins", locale, data.wins)).append("\n");
+                }
+
+                builder.append("\n\n[lightgray]...\n\n");
+
+                var data = Statistics.getData(player.uuid());
+                builder.append("[orange]").append(Statistics.getPosition(player.uuid()) + 1).append(". ")
+                        .append(data.name).append(data.name).append("[accent]: [cyan]")
+                        .append(getForm("wins", locale, data.wins)).append("\n");
             }
 
-            Call.infoMessage(player.con, format("commands.top.list", locale, players.toString()));
+            Call.infoMessage(player.con, format("commands.top.list", locale, builder.toString()));
         });
 
         handler.<Player>register("spectator", "Switch to spectator mode.", (args, player) -> {
@@ -269,21 +278,21 @@ public class Main extends Plugin {
         if (hex == null) return;
 
         var locale = findLocale(player);
-        var message = new StringBuilder(format("hex", locale, hex.id)).append("\n");
+        var builder = new StringBuilder(format("hex", locale, hex.id)).append("\n");
 
         if (hex.controller == null)
             if (hex.getProgressPercent(player.team()) > 0)
-                message.append(format("hex.capture-progress", locale, autoFixed(hex.getProgressPercent(player.team()), 4)));
+                builder.append(format("hex.capture-progress", locale, autoFixed(hex.getProgressPercent(player.team()), 4)));
             else
-                message.append(format("hex.empty", locale));
+                builder.append(format("hex.empty", locale));
         else if (hex.controller.player == player)
-            message.append(format("hex.captured", locale));
+            builder.append(format("hex.captured", locale));
         else if (hex.controller.player != null)
-            message.append(format("hex.captured-by-player", locale, hex.controller.player.team().color, hex.controller.name()));
+            builder.append(format("hex.captured-by-player", locale, hex.controller.player.team().color, hex.controller.name()));
         else
-            message.append(format("hex.unknown", locale));
+            builder.append(format("hex.unknown", locale));
 
-        Call.setHudText(player.con, message.toString());
+        Call.setHudText(player.con, builder.toString());
     }
 
     public void startGame() {
@@ -318,23 +327,23 @@ public class Main extends Plugin {
 
         Groups.player.each(player -> {
             var locale = findLocale(player);
-            var endGameMessage = new StringBuilder(format("restart.header", locale));
+            var builder = new StringBuilder(format("restart.header", locale));
 
             if (player == winner.player)
-                endGameMessage.append(format("restart.you-won", locale, getForm("hexes", locale, winner.controlled())));
+                builder.append(format("restart.you-won", locale, getForm("hexes", locale, winner.controlled())));
             else
-                endGameMessage.append(format("restart.player-won", locale, winner.name(), getForm("hexes", locale, winner.controlled())));
+                builder.append(format("restart.player-won", locale, winner.name(), getForm("hexes", locale, winner.controlled())));
 
-            endGameMessage.append("\n\n");
+            builder.append("\n\n");
 
-            endGameMessage.append(winner.name()).append("[white]: [accent]")
+            builder.append(winner.name()).append("[white]: [accent]")
                     .append(getForm("wins", locale, statistic.wins))
                     .append(" [lime]\uE803[accent] ")
                     .append(getForm("wins", locale, statistic.wins + 1));
 
-            endGameMessage.append(format("restart.final-score", locale, getLeaderboard(locale, true)));
+            builder.append(format("restart.final-score", locale, getLeaderboard(locale, true)));
 
-            Call.infoMessage(player.con, endGameMessage.toString());
+            Call.infoMessage(player.con, builder.toString());
         });
 
         statistic.wins++;
@@ -365,21 +374,21 @@ public class Main extends Plugin {
 
     public String getLeaderboard(Locale locale, boolean endGame) {
         var datas = HexData.getLeaderboard();
-        var leaders = new StringBuilder();
+        var builder = new StringBuilder();
 
         if (!endGame) {
             datas.truncate(5);
-            leaders.append(format("leaderboard.header", locale, (int) counter / 60 / 60));
+            builder.append(format("leaderboard.header", locale, (int) counter / 60 / 60));
         }
 
         for (int i = 0; i < datas.size; i++) {
             var data = datas.get(i);
-            leaders.append("[orange]").append(i + 1).append(". ").append(data.name())
+            builder.append("[orange]").append(i + 1).append(". ").append(data.name())
                     .append("[orange] (").append(getForm("hexes", locale, data.controlled())).append(")")
                     .append("\n");
         }
 
-        return leaders.toString();
+        return builder.toString();
     }
 
     public void killPlayer(Player player) {
