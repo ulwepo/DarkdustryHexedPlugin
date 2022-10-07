@@ -93,11 +93,11 @@ public class GenerationTypes {
                 {carbonStone, arkyicStone, crystalFloor, ferricStone, roughRhyolite},
                 {ferricStone, ferricCraters, carbonStone, ferricStone, carbonStone}
         }, new NoiseFilter() {{
-            scl = 40f;
             threshold = 0.75f;
             floor = arkyciteFloor;
         }}, new NoiseFilter() {{
-            floor = air;
+            scl = 10f;
+            floor = carbonStone;
             block = graphiticWall;
             target = carbonWall;
         }});

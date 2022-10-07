@@ -12,7 +12,6 @@ import mindustry.world.*;
 import static arc.math.Mathf.*;
 import static arc.util.noise.Simplex.noise2d;
 import static hexed.Main.*;
-import static mindustry.content.Planets.serpulo;
 
 public class GenerationType {
 
@@ -62,7 +61,7 @@ public class GenerationType {
         // Применяем фильтры
         HexedGenerator.applyFilters(tiles, filters);
 
-        var ores = (type.planet == serpulo ? serpuloOres : erekirOres).map(block -> new OreFilter() {{
+        var ores = planets.get(planet).ores().map(block -> new OreFilter() {{
             threshold = block.asFloor().oreThreshold - 0.04f;
             scl = block.asFloor().oreScale + 8f;
             ore = block.asFloor();

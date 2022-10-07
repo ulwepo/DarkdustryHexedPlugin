@@ -22,7 +22,6 @@ import static hexed.Main.*;
 import static mindustry.Vars.*;
 import static mindustry.content.Blocks.*;
 import static mindustry.content.Liquids.water;
-import static mindustry.content.Planets.serpulo;
 import static mindustry.world.blocks.environment.SteamVent.offsets;
 
 public class HexedGenerator {
@@ -51,17 +50,19 @@ public class HexedGenerator {
 
         // убираем стенки с жидкостных блоков и добавляем немного декораций
         tiles.eachTile(tile -> {
-            var floor = tile.floor();
-            var block = tile.block();
+            if (tile.floor().liquidDrop != null) tile.remove();
 
-            if (floor.liquidDrop != null) tile.remove();
+            if (tile.block() == graphiticWall && tile.overlay().wallOre)
+                tile.setBlock(carbonWall);
 
-            if (block == air && floor.decoration != air && chance(0.02d))
-                tile.setBlock(floor.decoration);
+            if (tile.block() == air && tile.floor().decoration != air && chance(0.02d))
+                tile.setBlock(tile.floor().decoration);
 
-            if (block == air && vents.containsKey(floor) && chance(0.0075d))
+            if (tile.block() == air && vents.containsKey(tile.floor()) && chance(0.0075d)) {
+                var vent = vents.get(tile.floor()).asFloor();
                 for (var point : offsets)
-                    tiles.getc(tile.x + point.x, tile.y + point.y).setFloor(vents.get(floor).asFloor());
+                    tiles.getc(tile.x + point.x, tile.y + point.y).setFloor(vent);
+            }
         });
 
         // меняем пол в центре хекса
@@ -106,8 +107,8 @@ public class HexedGenerator {
     }
 
     public static void loadout(Player player, Hex hex) {
-        var loadout = type.planet == serpulo ? serpuloLoadout : erekirLoadout;
-        var start = type.planet == serpulo ? serpuloStart : erekirStart;
+        var loadout = planets.get(type.planet).loadout();
+        var start = planets.get(type.planet).startScheme();
 
         var coreTile = start.tiles.find(stile -> stile.block instanceof CoreBlock);
         int sx = hex.x - coreTile.x, sy = hex.y - coreTile.y;

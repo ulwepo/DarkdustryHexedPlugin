@@ -6,8 +6,7 @@ import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.util.*;
 import hexed.HexData.PlayerData;
-import hexed.components.Bundle;
-import hexed.components.Statistics;
+import hexed.components.*;
 import hexed.generation.GenerationType;
 import hexed.generation.GenerationTypes;
 import mindustry.content.Fx;
@@ -16,7 +15,7 @@ import mindustry.game.EventType.*;
 import mindustry.game.*;
 import mindustry.gen.*;
 import mindustry.mod.Plugin;
-import mindustry.type.ItemStack;
+import mindustry.type.Planet;
 import mindustry.world.Block;
 import mindustry.world.blocks.environment.SteamVent;
 import mindustry.world.blocks.storage.CoreBlock;
@@ -30,6 +29,8 @@ import static hexed.components.Bundle.*;
 import static hexed.generation.GenerationType.*;
 import static mindustry.Vars.*;
 import static mindustry.content.Blocks.*;
+import static mindustry.content.Planets.*;
+import static mindustry.game.Schematics.readBase64;
 import static mindustry.type.ItemStack.list;
 
 public class Main extends Plugin {
@@ -48,11 +49,8 @@ public class Main extends Plugin {
         }
     };
 
+    public static final ObjectMap<Planet, PlanetData> planets = new ObjectMap<>();
     public static final ObjectMap<Block, Block> vents = new ObjectMap<>();
-
-    public static Seq<Block> serpuloOres, erekirOres;
-    public static Seq<ItemStack> serpuloLoadout, erekirLoadout;
-    public static Schematic serpuloStart, erekirStart;
 
     public static boolean restarting = false;
     public static float counter = roundTime;
@@ -86,18 +84,19 @@ public class Main extends Plugin {
             var teamRule = rules.teams.get(team);
             teamRule.aiCoreSpawn = false;
             teamRule.rtsAi = true;
-            teamRule.rtsMinSquad = 1;
-            teamRule.rtsMaxSquad = 100;
         }
 
-        serpuloOres = with(oreCopper, oreLead, oreScrap, oreCoal, oreTitanium, oreThorium);
-        erekirOres = with(wallOreBeryllium, wallOreTungsten, wallOreThorium);
+        planets.put(serpulo, new PlanetData(
+                with(oreCopper, oreLead, oreScrap, oreCoal, oreTitanium, oreThorium),
+                list(Items.copper, 350, Items.lead, 250, Items.graphite, 150, Items.metaglass, 100, Items.silicon, 250, Items.titanium, 30),
+                readBase64("bXNjaAF4nE2SW1LDMAxFZSd2/EgpXUhWxPBhUgOdSeNM0vLYOj8g+ZaBpOm1LOlYlk2RDg21czpnMq/5Ix8pHvM2rqflciozEdkpPeVpI/3wuKM4lmXJ6/CepokO/4xhSutLJjeW+S1/lpW6bUyXS14pboV9w5LmPFGT1pG6p+r5pMM/1y/gOk8lHTmvH8uah/k6Tvm6kT3nWWbDUt55ybkcM8V0WofnNF4Ks4gyf6TqjzS//LQQA7GkRTuqpoN4qk+AREgPyg7WXgIVxkoGDf+1mKxMBaYCU4GphNmyREiPyRvsnrT6K45fBjG3ll6ZGkwNpgZTC7PjuJ605N0JSgvT8qSWyuTlnIaMYaf2zHey9QbBLRpRqw8sBtad2C2Ka6U4i7oCS0M1jlMii3HSCVvHUcbfX1rcPYJ3wjNYy4Bn0TkrnbOyOdIdb4J5jq0oZXJ2Rzt162+H8E6SHYuE+Dq/l207nK5DnySgioN4+GrvHc7zdsQel0MCuGIvBYjUy+EB84B5wDxgHjCPg/Q4SC9bFNkj5B4NVbhLt/YaSEUHoAPQAeiAexdQZwA64N4FrBBkhR8RWUj7")
+        ));
 
-        serpuloLoadout = list(Items.copper, 350, Items.lead, 250, Items.graphite, 150, Items.metaglass, 100, Items.silicon, 250, Items.titanium, 30);
-        erekirLoadout = list(Items.beryllium, 500, Items.tungsten, 300, Items.graphite, 300, Items.silicon, 250);
-
-        serpuloStart = Schematics.readBase64("bXNjaAF4nE2SW1LDMAxFZSd2/EgpXUhWxPBhUgOdSeNM0vLYOj8g+ZaBpOm1LOlYlk2RDg21czpnMq/5Ix8pHvM2rqflciozEdkpPeVpI/3wuKM4lmXJ6/CepokO/4xhSutLJjeW+S1/lpW6bUyXS14pboV9w5LmPFGT1pG6p+r5pMM/1y/gOk8lHTmvH8uah/k6Tvm6kT3nWWbDUt55ybkcM8V0WofnNF4Ks4gyf6TqjzS//LQQA7GkRTuqpoN4qk+AREgPyg7WXgIVxkoGDf+1mKxMBaYCU4GphNmyREiPyRvsnrT6K45fBjG3ll6ZGkwNpgZTC7PjuJ605N0JSgvT8qSWyuTlnIaMYaf2zHey9QbBLRpRqw8sBtad2C2Ka6U4i7oCS0M1jlMii3HSCVvHUcbfX1rcPYJ3wjNYy4Bn0TkrnbOyOdIdb4J5jq0oZXJ2Rzt162+H8E6SHYuE+Dq/l207nK5DnySgioN4+GrvHc7zdsQel0MCuGIvBYjUy+EB84B5wDxgHjCPg/Q4SC9bFNkj5B4NVbhLt/YaSEUHoAPQAeiAexdQZwA64N4FrBBkhR8RWUj7");
-        erekirStart = Schematics.readBase64("bXNjaAF4nGNgZWBlZmDJS8xNZWC72HCx+WI7A3dKanFyUWZBSWZ+HgMDA1tOYlJqTjEDU3QsIwNPcn5Rqm5yZkliSmoOUJKRgYEJCBkA4IsSVg==");
+        planets.put(erekir, new PlanetData(
+                with(wallOreBeryllium, wallOreTungsten, wallOreThorium),
+                list(Items.beryllium, 500, Items.tungsten, 300, Items.graphite, 300, Items.silicon, 250),
+                readBase64("bXNjaAF4nGNgZWBlZmDJS8xNZWC72HCx+WI7A3dKanFyUWZBSWZ+HgMDA1tOYlJqTjEDU3QsIwNPcn5Rqm5yZkliSmoOUJKRgYEJCBkA4IsSVg==")
+        ));
 
         // Добавляем кастомные стены блокам
         grass.asFloor().wall = pine;
