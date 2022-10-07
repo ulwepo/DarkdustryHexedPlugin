@@ -218,11 +218,11 @@ public class Main extends Plugin {
                             .append(getForm("wins", locale, data.wins)).append("\n");
                 }
 
-                builder.append("\n\n[lightgray]...\n\n");
+                builder.append("\n[lightgray]...\n\n");
 
                 var data = Statistics.getData(player.uuid());
                 builder.append("[orange]").append(Statistics.getPosition(player.uuid()) + 1).append(". ")
-                        .append(data.name).append(data.name).append("[accent]: [cyan]")
+                        .append(data.name).append("[accent]: [cyan]")
                         .append(getForm("wins", locale, data.wins)).append("\n");
             }
 
