@@ -405,6 +405,8 @@ public class Main extends Plugin {
         });
 
         Groups.unit.each(unit -> unit.team == team, unit -> Time.run(Mathf.random(360f), () -> Call.unitEnvDeath(unit)));
+
+        team.data().plans.clear();
     }
 
     public void spawn(Player player) {
