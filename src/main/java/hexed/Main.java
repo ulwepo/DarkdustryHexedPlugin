@@ -84,6 +84,7 @@ public class Main extends Plugin {
             var teamRule = rules.teams.get(team);
             teamRule.aiCoreSpawn = false;
             teamRule.rtsAi = true;
+            teamRule.rtsMinWeight = 24f;
         }
 
         planets.put(serpulo, new PlanetData(
@@ -94,7 +95,7 @@ public class Main extends Plugin {
 
         planets.put(erekir, new PlanetData(
                 with(wallOreBeryllium, wallOreTungsten, wallOreThorium),
-                list(Items.beryllium, 500, Items.tungsten, 300, Items.graphite, 300, Items.silicon, 250),
+                list(Items.beryllium, 500, Items.tungsten, 300, Items.graphite, 350, Items.silicon, 250),
                 readBase64("bXNjaAF4nGNgZWBlZmDJS8xNZWC72HCx+WI7A3dKanFyUWZBSWZ+HgMDA1tOYlJqTjEDU3QsIwNPcn5Rqm5yZkliSmoOUJKRgYEJCBkA4IsSVg==")
         ));
 
