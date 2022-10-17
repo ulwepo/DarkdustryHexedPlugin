@@ -9,7 +9,7 @@ import mindustry.world.blocks.storage.CoreBlock;
 
 import java.util.Arrays;
 
-import static hexed.Main.type;
+import static hexed.Main.*;
 import static mindustry.Vars.*;
 
 public class Hex {
@@ -38,7 +38,7 @@ public class Hex {
     }
 
     public float getProgressPercent(Team team) {
-        return progress[team.id] / Main.itemRequirement * 100;
+        return progress[team.id] / itemRequirement * 100;
     }
 
     public boolean hasCore() {
@@ -65,7 +65,7 @@ public class Hex {
                 .filter(team -> team.team != Team.derelict)
                 .max(team -> progress[team.team.id]);
 
-        if (data != null && progress[data.team.id] >= Main.itemRequirement) {
+        if (data != null && progress[data.team.id] >= itemRequirement) {
             world.tile(x, y).setNet(type.planet.defaultCore, data.team, 0);
             return HexData.getData(data.team);
         }

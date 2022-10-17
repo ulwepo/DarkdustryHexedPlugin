@@ -12,7 +12,8 @@ import hexed.generation.GenerationTypes;
 import mindustry.content.Fx;
 import mindustry.content.Items;
 import mindustry.game.EventType.*;
-import mindustry.game.*;
+import mindustry.game.Rules;
+import mindustry.game.Team;
 import mindustry.gen.*;
 import mindustry.mod.Plugin;
 import mindustry.type.Planet;
@@ -42,12 +43,7 @@ public class Main extends Plugin {
 
     public static final int itemRequirement = 2560;
 
-    public static final Rules rules = new Rules() {
-        @Override
-        public Gamemode mode() {
-            return Gamemode.pvp;
-        }
-    };
+    public static final Rules rules = new Rules();
 
     public static final ObjectMap<Planet, PlanetData> planets = new ObjectMap<>();
     public static final ObjectMap<Block, Block> vents = new ObjectMap<>();
@@ -71,7 +67,7 @@ public class Main extends Plugin {
         rules.unitDamageMultiplier = 1.25f;
         rules.logicUnitBuild = true;
         rules.pvp = false;
-        rules.attackMode = true;
+        rules.attackMode = false;
         rules.canGameOver = false;
         rules.coreCapture = true;
         rules.reactorExplosions = true;
@@ -79,13 +75,6 @@ public class Main extends Plugin {
 
         rules.bannedBlocks.add(ripple);
         rules.modeName = "Hexed";
-
-        for (var team : Team.all) {
-            var teamRule = rules.teams.get(team);
-            teamRule.aiCoreSpawn = false;
-            teamRule.rtsAi = true;
-            teamRule.rtsMinWeight = 24f;
-        }
 
         planets.put(serpulo, new PlanetData(
                 with(oreCopper, oreLead, oreScrap, oreCoal, oreTitanium, oreThorium),
