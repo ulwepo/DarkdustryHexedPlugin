@@ -26,6 +26,7 @@ import java.util.Locale;
 import static arc.struct.Seq.with;
 import static arc.util.Align.left;
 import static arc.util.Strings.autoFixed;
+import static hexed.Hex.radius;
 import static hexed.components.Bundle.*;
 import static hexed.generation.GenerationType.*;
 import static mindustry.Vars.*;
@@ -63,8 +64,7 @@ public class Main extends Plugin {
         rules.buildSpeedMultiplier = 2f;
         rules.blockHealthMultiplier = 1.5f;
         rules.unitBuildSpeedMultiplier = 1.25f;
-        rules.enemyCoreBuildRadius = Hex.radius * tilesize;
-        rules.unitDamageMultiplier = 1.25f;
+        rules.enemyCoreBuildRadius = radius * tilesize;
         rules.logicUnitBuild = true;
         rules.pvp = false;
         rules.attackMode = false;

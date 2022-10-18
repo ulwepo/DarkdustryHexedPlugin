@@ -86,20 +86,32 @@ public class GenerationTypes {
                 {sand, moss, sporeMoss, darksand, moss}
         });
 
-        erekir = new GenerationType("[white]\uF6C9 [orange]Erekir", Planets.erekir, new Block[][] {
-                {regolith, beryllicStone, crystallineStone, denseRedStone, rhyolite},
-                {arkyicStone, rhyolite, redmat, carbonStone, redmat},
-                {beryllicStone, arkyicStone, arkyicStone, arkyicStone, bluemat},
-                {carbonStone, arkyicStone, crystalFloor, ferricStone, roughRhyolite},
-                {ferricStone, ferricCraters, carbonStone, ferricStone, carbonStone}
+        erekir = new GenerationType("[white]\uF6C9 [orange]Erekir", Planets.erekir, rules -> {
+            rules.buildCostMultiplier = 0.75f;
+            rules.buildSpeedMultiplier = 2.5f;
+            rules.blockHealthMultiplier = 1.5f;
+            rules.unitBuildSpeedMultiplier = 0.8f;
+        }, new Block[][] {
+                    {regolith, beryllicStone, crystallineStone, denseRedStone, rhyolite},
+                    {arkyicStone, rhyolite, redmat, carbonStone, redmat},
+                    {beryllicStone, arkyicStone, arkyicStone, arkyicStone, bluemat},
+                    {carbonStone, arkyicStone, crystalFloor, ferricStone, roughRhyolite},
+                    {ferricStone, ferricCraters, carbonStone, ferricStone, carbonStone}
         }, new NoiseFilter() {{
             threshold = 0.75f;
             floor = arkyciteFloor;
         }}, new NoiseFilter() {{
             scl = 10f;
-            floor = carbonStone;
             block = graphiticWall;
             target = carbonWall;
+        }}, new NoiseFilter() {{
+            scl = 10f;
+            block = graphiticWall;
+            target = ferricStoneWall;
+        }}, new NoiseFilter() {{
+            scl = 10f;
+            block = graphiticWall;
+            target = crystallineStoneWall;
         }});
     }
 }
