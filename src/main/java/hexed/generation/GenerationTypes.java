@@ -101,15 +101,22 @@ public class GenerationTypes {
             threshold = 0.75f;
             floor = arkyciteFloor;
         }}, new NoiseFilter() {{
+            threshold = 0.825f;
+            floor = slag;
+            target = regolith;
+        }}, new NoiseFilter() {{
             scl = 10f;
+            floor = air;
             block = graphiticWall;
             target = carbonWall;
         }}, new NoiseFilter() {{
             scl = 10f;
+            floor = air;
             block = graphiticWall;
             target = ferricStoneWall;
         }}, new NoiseFilter() {{
             scl = 10f;
+            floor = air;
             block = graphiticWall;
             target = crystallineStoneWall;
         }});

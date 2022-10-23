@@ -58,7 +58,7 @@ public class HexedGenerator {
             if (tile.block() == air && tile.floor().decoration != air && chance(0.02d))
                 tile.setBlock(tile.floor().decoration);
 
-            if (tile.block() == air && vents.containsKey(tile.floor()) && chance(0.0075d)) {
+            if (tile.block() == air && vents.containsKey(tile.floor()) && chance(0.005d)) {
                 var vent = vents.get(tile.floor()).asFloor();
                 for (var point : offsets)
                     tiles.getc(tile.x + point.x, tile.y + point.y).setFloor(vent);
