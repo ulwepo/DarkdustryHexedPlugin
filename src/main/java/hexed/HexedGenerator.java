@@ -22,6 +22,7 @@ import static hexed.Main.*;
 import static mindustry.Vars.*;
 import static mindustry.content.Blocks.*;
 import static mindustry.content.Liquids.water;
+import static mindustry.world.blocks.ConstructBlock.get;
 import static mindustry.world.blocks.environment.SteamVent.offsets;
 
 public class HexedGenerator {
@@ -34,7 +35,7 @@ public class HexedGenerator {
         getHexes((x, y) -> {
             // вырезаем хекс
             Geometry.circle(x, y, width, height, Hex.radius * 2, (cx, cy) -> {
-                if (Intersector.isInsideHexagon(x, y, Hex.radius * 2, cx, cy)) tiles.getn(cx, cy).remove();
+                if (Intersector.isInsideHexagon(x, y, Hex.radius * 2, cx, cy)) tiles.getc(cx, cy).remove();
             });
 
             for (int side = 0; side < 3; side++) {
@@ -44,7 +45,7 @@ public class HexedGenerator {
                 if (!Structs.inBounds((int) Tmp.v1.x, (int) Tmp.v1.y, width, height)) continue;
 
                 Tmp.v1.trnsExact(angle, spacing / 2f + 7).add(x, y);
-                Bresenham2.line(x, y, (int) Tmp.v1.x, (int) Tmp.v1.y, (cx, cy) -> Geometry.circle(cx, cy, width, height, 3, (c2x, c2y) -> tiles.getn(c2x, c2y).remove()));
+                Bresenham2.line(x, y, (int) Tmp.v1.x, (int) Tmp.v1.y, (cx, cy) -> Geometry.circle(cx, cy, width, height, 3, (c2x, c2y) -> tiles.getc(c2x, c2y).remove()));
             }
         });
 
@@ -67,7 +68,7 @@ public class HexedGenerator {
 
         // меняем пол в центре хекса
         getHexes((x, y) -> {
-            var corePlace = tiles.getn(x, y).getLinkedTilesAs(coreNucleus, new Seq<>());
+            var corePlace = tiles.getn(x, y).getLinkedTilesAs(get(5), new Seq<>());
 
             boolean hasWater = corePlace.contains(tile -> tile.floor().liquidDrop == water);
 
