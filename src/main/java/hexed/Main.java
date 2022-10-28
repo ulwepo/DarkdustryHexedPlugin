@@ -20,6 +20,7 @@ import mindustry.type.Planet;
 import mindustry.world.Block;
 import mindustry.world.blocks.environment.SteamVent;
 import mindustry.world.blocks.storage.CoreBlock;
+import useful.Bundle;
 
 import java.util.Locale;
 
@@ -27,13 +28,13 @@ import static arc.struct.Seq.with;
 import static arc.util.Align.left;
 import static arc.util.Strings.autoFixed;
 import static hexed.Hex.radius;
-import static hexed.components.Bundle.*;
 import static hexed.generation.GenerationType.*;
 import static mindustry.Vars.*;
 import static mindustry.content.Blocks.*;
 import static mindustry.content.Planets.*;
 import static mindustry.game.Schematics.readBase64;
 import static mindustry.type.ItemStack.list;
+import static useful.Bundle.*;
 
 public class Main extends Plugin {
 
@@ -106,14 +107,14 @@ public class Main extends Plugin {
         vents.put(regolith, yellowStoneVent);
         vents.put(ferricStone, carbonVent);
 
-        Bundle.load();
+        Bundle.load(Main.class);
         Statistics.load();
         GenerationTypes.load();
 
         Timer.schedule(HexData::updateControl, 0f, 1f);
         Timer.schedule(() -> {
             if (state.isPlaying())
-                Groups.player.each(player -> Call.infoPopup(player.con, getLeaderboard(findLocale(player), false), 12f, left, 0, 2, 50, 0));
+                Groups.player.each(player -> Call.infoPopup(player.con, getLeaderboard(locale(player), false), 12f, left, 0, 2, 50, 0));
         }, 0f, 180f);
 
         Events.run(Trigger.update, () -> {
@@ -145,7 +146,7 @@ public class Main extends Plugin {
             if (player != null) {
                 killPlayer(player);
                 sendToChat("events.player-lost", player.coloredName());
-                Call.infoMessage(player.con, format("events.you-lost", findLocale(player)));
+                Call.infoMessage(player.con, format("events.you-lost", player));
             } else {
                 killTeam(team);
                 sendToChat("events.team-lost", team.color, team.name);
@@ -195,7 +196,7 @@ public class Main extends Plugin {
             var leaders = Statistics.getLeaders();
             leaders.truncate(10);
 
-            var locale = findLocale(player);
+            var locale = locale(player);
             var builder = new StringBuilder();
 
             if (leaders.isEmpty())
@@ -220,7 +221,7 @@ public class Main extends Plugin {
             }
         });
 
-        handler.<Player>register("lb", "View the current leaderboard.", (args, player) -> Call.infoMessage(player.con, getLeaderboard(findLocale(player), false)));
+        handler.<Player>register("lb", "View the current leaderboard.", (args, player) -> Call.infoMessage(player.con, getLeaderboard(locale(player), false)));
     }
 
     @Override
@@ -259,7 +260,7 @@ public class Main extends Plugin {
         var hex = HexData.getClosestHex(player);
         if (hex == null) return;
 
-        var locale = findLocale(player);
+        var locale = locale(player);
         var builder = new StringBuilder(format("hex", locale, hex.id)).append("\n");
 
         if (hex.controller == null)
@@ -308,7 +309,7 @@ public class Main extends Plugin {
         var statistic = Statistics.getData(winner.player.uuid());
 
         Groups.player.each(player -> {
-            var locale = findLocale(player);
+            var locale = locale(player);
             var builder = new StringBuilder(format("restart.header", locale));
 
             if (player == winner.player)
@@ -406,7 +407,7 @@ public class Main extends Plugin {
             hex.findController();
             HexData.datas.add(new PlayerData(player));
         } else {
-            Call.infoMessage(player.con, format("events.no-empty-hex", findLocale(player)));
+            Call.infoMessage(player.con, format("events.no-empty-hex", player));
             player.clearUnit();
             player.team(Team.derelict);
         }
