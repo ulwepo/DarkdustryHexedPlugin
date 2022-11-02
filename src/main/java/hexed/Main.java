@@ -6,7 +6,8 @@ import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.util.*;
 import hexed.HexData.PlayerData;
-import hexed.components.*;
+import hexed.components.PlanetData;
+import hexed.components.Statistics;
 import hexed.generation.GenerationType;
 import hexed.generation.GenerationTypes;
 import mindustry.content.Fx;
@@ -21,8 +22,6 @@ import mindustry.world.Block;
 import mindustry.world.blocks.environment.SteamVent;
 import mindustry.world.blocks.storage.CoreBlock;
 import useful.Bundle;
-
-import java.util.Locale;
 
 import static arc.struct.Seq.with;
 import static arc.util.Align.left;
@@ -54,8 +53,8 @@ public class Main extends Plugin {
     public static float counter = roundTime;
     public static GenerationType type;
 
-    public static String getForm(String key, Locale locale, int value) {
-        var words = get(key, locale).split("\\|");
+    public static String getForm(String key, Player player, int value) {
+        var words = get(key, player).split("\\|");
         return value + " " + words[value % 10 == 1 && value % 100 != 11 ? 0 : value % 10 >= 2 && value % 10 <= 4 && (value % 100 < 10 || value % 100 >= 20) ? 1 : 2];
     }
 
@@ -74,7 +73,7 @@ public class Main extends Plugin {
         rules.reactorExplosions = true;
         rules.fire = false;
 
-        rules.bannedBlocks.add(ripple);
+        rules.bannedBlocks.addAll(ripple, swarmer);
         rules.modeName = "Hexed";
 
         planets.put(serpulo, new PlanetData(
@@ -91,7 +90,6 @@ public class Main extends Plugin {
 
         // Добавляем кастомные стены блокам
         grass.asFloor().wall = pine;
-        sand.asFloor().wall = sandWall;
 
         // Добавляем кастомные декорации блокам
         grass.asFloor().decoration = pine;
@@ -99,9 +97,8 @@ public class Main extends Plugin {
         sporeMoss.asFloor().decoration = sporePine;
 
         content.blocks().each(block -> {
-            if (block instanceof SteamVent vent) {
+            if (block instanceof SteamVent vent)
                 vents.put(vent.parent, vent);
-            }
         });
 
         vents.put(regolith, yellowStoneVent);
@@ -114,7 +111,7 @@ public class Main extends Plugin {
         Timer.schedule(HexData::updateControl, 0f, 1f);
         Timer.schedule(() -> {
             if (state.isPlaying())
-                Groups.player.each(player -> Call.infoPopup(player.con, getLeaderboard(locale(player), false), 12f, left, 0, 2, 50, 0));
+                Groups.player.each(player -> Call.infoPopup(player.con, getLeaderboard(player, false), 12f, left, 0, 2, 50, 0));
         }, 0f, 180f);
 
         Events.run(Trigger.update, () -> {
@@ -196,20 +193,19 @@ public class Main extends Plugin {
             var leaders = Statistics.getLeaders();
             leaders.truncate(10);
 
-            var locale = locale(player);
             var builder = new StringBuilder();
 
             if (leaders.isEmpty())
-                builder.append(format("commands.top.none", locale));
+                builder.append(format("commands.top.none", player));
             else for (int i = 0; i < leaders.size; i++) {
                 var data = leaders.get(i);
                 builder.append("[orange]").append(i + 1).append(". ")
                         .append(data.name).append("[accent]: [cyan]")
-                        .append(getForm("wins", locale, data.wins)).append("\n");
+                        .append(getForm("wins", player, data.wins)).append("\n");
             }
 
 
-            Call.infoMessage(player.con, format("commands.top.list", locale, builder.toString()));
+            Call.infoMessage(player.con, format("commands.top.list", player, builder.toString()));
         });
 
         handler.<Player>register("spectator", "Switch to spectator mode.", (args, player) -> {
@@ -221,7 +217,7 @@ public class Main extends Plugin {
             }
         });
 
-        handler.<Player>register("lb", "View the current leaderboard.", (args, player) -> Call.infoMessage(player.con, getLeaderboard(locale(player), false)));
+        handler.<Player>register("lb", "View the current leaderboard.", (args, player) -> Call.infoMessage(player.con, getLeaderboard(player, false)));
     }
 
     @Override
@@ -260,20 +256,19 @@ public class Main extends Plugin {
         var hex = HexData.getClosestHex(player);
         if (hex == null) return;
 
-        var locale = locale(player);
-        var builder = new StringBuilder(format("hex", locale, hex.id)).append("\n");
+        var builder = new StringBuilder(format("hex", player, hex.id)).append("\n");
 
         if (hex.controller == null)
             if (hex.getProgressPercent(player.team()) > 0)
-                builder.append(format("hex.capture-progress", locale, autoFixed(hex.getProgressPercent(player.team()), 4)));
+                builder.append(format("hex.capture-progress", player, autoFixed(hex.getProgressPercent(player.team()), 4)));
             else
-                builder.append(format("hex.empty", locale));
+                builder.append(format("hex.empty", player));
         else if (hex.controller.player == player)
-            builder.append(format("hex.captured", locale));
+            builder.append(format("hex.captured", player));
         else if (hex.controller.player != null)
-            builder.append(format("hex.captured-by-player", locale, hex.controller.player.team().color, hex.controller.name()));
+            builder.append(format("hex.captured-by-player", player, hex.controller.player.team().color, hex.controller.name()));
         else
-            builder.append(format("hex.unknown", locale));
+            builder.append(format("hex.unknown", player));
 
         Call.setHudText(player.con, builder.toString());
     }
@@ -309,22 +304,21 @@ public class Main extends Plugin {
         var statistic = Statistics.getData(winner.player.uuid());
 
         Groups.player.each(player -> {
-            var locale = locale(player);
-            var builder = new StringBuilder(format("restart.header", locale));
+            var builder = new StringBuilder(format("restart.header", player));
 
             if (player == winner.player)
-                builder.append(format("restart.you-won", locale, getForm("hexes", locale, winner.controlled())));
+                builder.append(format("restart.you-won", player, getForm("hexes", player, winner.controlled())));
             else
-                builder.append(format("restart.player-won", locale, winner.name(), getForm("hexes", locale, winner.controlled())));
+                builder.append(format("restart.player-won", player, winner.name(), getForm("hexes", player, winner.controlled())));
 
             builder.append("\n\n");
 
             builder.append(winner.name()).append("[white]: [accent]")
-                    .append(getForm("wins", locale, statistic.wins))
+                    .append(getForm("wins", player, statistic.wins))
                     .append(" [lime]\uE803[accent] ")
-                    .append(getForm("wins", locale, statistic.wins + 1));
+                    .append(getForm("wins", player, statistic.wins + 1));
 
-            builder.append(format("restart.final-score", locale, getLeaderboard(locale, true)));
+            builder.append(format("restart.final-score", player, getLeaderboard(player, true)));
 
             Call.infoMessage(player.con, builder.toString());
         });
@@ -355,19 +349,19 @@ public class Main extends Plugin {
         restarting = false;
     }
 
-    public String getLeaderboard(Locale locale, boolean endGame) {
+    public String getLeaderboard(Player player, boolean endGame) {
         var datas = HexData.getLeaderboard();
         var builder = new StringBuilder();
 
         if (!endGame) {
             datas.truncate(5);
-            builder.append(format("leaderboard.header", locale, (int) counter / 60 / 60));
+            builder.append(format("leaderboard.header", player, (int) counter / 60 / 60));
         }
 
         for (int i = 0; i < datas.size; i++) {
             var data = datas.get(i);
             builder.append("[orange]").append(i + 1).append(". ").append(data.name())
-                    .append("[orange] (").append(getForm("hexes", locale, data.controlled())).append(")")
+                    .append("[orange] (").append(getForm("hexes", player, data.controlled())).append(")")
                     .append("\n");
         }
 

@@ -51,7 +51,7 @@ public class HexedGenerator {
 
         // убираем стенки с жидкостных блоков и добавляем немного декораций
         tiles.eachTile(tile -> {
-            if (tile.floor().liquidDrop != null) tile.remove();
+            if (tile.floor().isLiquid) tile.remove();
 
             if (tile.block() == graphiticWall && tile.overlay().wallOre)
                 tile.setBlock(carbonWall);
@@ -68,11 +68,11 @@ public class HexedGenerator {
 
         // меняем пол в центре хекса
         getHexes((x, y) -> {
-            var corePlace = tiles.getn(x, y).getLinkedTilesAs(get(5), new Seq<>());
+            var coreTiles = tiles.getn(x, y).getLinkedTilesAs(get(5), new Seq<>());
 
-            boolean hasWater = corePlace.contains(tile -> tile.floor().liquidDrop == water);
+            boolean hasWater = coreTiles.contains(tile -> tile.floor().liquidDrop == water);
 
-            corePlace.each(tile -> {
+            coreTiles.each(tile -> {
                 tile.remove();
                 tile.setFloor(hasWater ? sandWater.asFloor() : coreZone.asFloor());
             });

@@ -1,6 +1,6 @@
 {
   "name": "hexed-plugin",
-  "minGameVersion": "139",
+  "minGameVersion": "140",
   "displayName": "Hexed Plugin",
   "author": "Skat",
   "description": "A special battle-royal-like gamemode for Darkdustry.",
