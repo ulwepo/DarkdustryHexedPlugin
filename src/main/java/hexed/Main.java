@@ -10,7 +10,6 @@ import hexed.components.PlanetData;
 import hexed.components.Statistics;
 import hexed.generation.GenerationType;
 import hexed.generation.GenerationTypes;
-import mindustry.content.Fx;
 import mindustry.content.Items;
 import mindustry.game.EventType.*;
 import mindustry.game.Rules;
@@ -130,10 +129,7 @@ public class Main extends Plugin {
             if (!(event.tile.block() instanceof CoreBlock)) return;
 
             var hex = HexData.getClosestHex(event.tile);
-            if (hex != null) {
-                hex.updateController();
-                Call.effect(Fx.reactorExplosion, hex.wx, hex.wy, Mathf.random(360f), Tmp.c1.rand());
-            }
+            if (hex != null) hex.updateController();
 
             var team = event.tile.team();
             var player = HexData.getPlayer(team);
@@ -266,7 +262,7 @@ public class Main extends Plugin {
         else if (hex.controller.player == player)
             builder.append(format("hex.captured", player));
         else if (hex.controller.player != null)
-            builder.append(format("hex.captured-by-player", player, hex.controller.player.team().color, hex.controller.name()));
+            builder.append(format("hex.captured-by-player", player, hex.controller.color(), hex.controller.name()));
         else
             builder.append(format("hex.unknown", player));
 

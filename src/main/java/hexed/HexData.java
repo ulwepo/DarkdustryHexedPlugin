@@ -1,5 +1,6 @@
 package hexed;
 
+import arc.graphics.Color;
 import arc.math.geom.Position;
 import arc.struct.Seq;
 import arc.util.Timer.Task;
@@ -64,6 +65,10 @@ public class HexData {
 
         public String name() {
             return player.coloredName();
+        }
+
+        public Color color() {
+            return player.team().color;
         }
 
         public boolean active() {
