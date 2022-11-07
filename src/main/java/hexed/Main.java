@@ -66,18 +66,17 @@ public class Main extends Plugin {
         rules.enemyCoreBuildRadius = radius * tilesize;
         rules.logicUnitBuild = true;
         rules.pvp = false;
-        rules.attackMode = false;
         rules.canGameOver = false;
         rules.coreCapture = true;
         rules.reactorExplosions = true;
-        rules.fire = false;
+        rules.damageExplosions = true;
 
         rules.bannedBlocks.addAll(ripple, swarmer);
         rules.modeName = "Hexed";
 
         planets.put(serpulo, new PlanetData(
                 with(oreCopper, oreLead, oreScrap, oreCoal, oreTitanium, oreThorium),
-                list(Items.copper, 350, Items.lead, 250, Items.graphite, 150, Items.metaglass, 100, Items.silicon, 250, Items.titanium, 30),
+                list(Items.copper, 350, Items.lead, 250, Items.graphite, 150, Items.metaglass, 150, Items.silicon, 250, Items.titanium, 50),
                 readBase64("bXNjaAF4nE2SW1LDMAxFZSd2/EgpXUhWxPBhUgOdSeNM0vLYOj8g+ZaBpOm1LOlYlk2RDg21czpnMq/5Ix8pHvM2rqflciozEdkpPeVpI/3wuKM4lmXJ6/CepokO/4xhSutLJjeW+S1/lpW6bUyXS14pboV9w5LmPFGT1pG6p+r5pMM/1y/gOk8lHTmvH8uah/k6Tvm6kT3nWWbDUt55ybkcM8V0WofnNF4Ks4gyf6TqjzS//LQQA7GkRTuqpoN4qk+AREgPyg7WXgIVxkoGDf+1mKxMBaYCU4GphNmyREiPyRvsnrT6K45fBjG3ll6ZGkwNpgZTC7PjuJ605N0JSgvT8qSWyuTlnIaMYaf2zHey9QbBLRpRqw8sBtad2C2Ka6U4i7oCS0M1jlMii3HSCVvHUcbfX1rcPYJ3wjNYy4Bn0TkrnbOyOdIdb4J5jq0oZXJ2Rzt162+H8E6SHYuE+Dq/l207nK5DnySgioN4+GrvHc7zdsQel0MCuGIvBYjUy+EB84B5wDxgHjCPg/Q4SC9bFNkj5B4NVbhLt/YaSEUHoAPQAeiAexdQZwA64N4FrBBkhR8RWUj7")
         ));
 
@@ -129,7 +128,10 @@ public class Main extends Plugin {
             if (!(event.tile.block() instanceof CoreBlock)) return;
 
             var hex = HexData.getClosestHex(event.tile);
-            if (hex != null) hex.updateController();
+            if (hex != null) {
+                hex.updateController();
+                Groups.fire.each(hex::contains, Fire::remove);
+            }
 
             var team = event.tile.team();
             var player = HexData.getPlayer(team);

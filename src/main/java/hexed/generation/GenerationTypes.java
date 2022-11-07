@@ -15,6 +15,8 @@ public class GenerationTypes {
 
     public static void load() {
         oilFlats = new GenerationType("[white]\uF826 [accent]Oil Flats", Planets.serpulo, rules -> {
+            rules.fire = false;
+
             rules.weather.clear();
             rules.weather.add(new WeatherEntry(Weathers.sandstorm, 14f, 42f, 3.5f, 10.5f) {{
                 intensity = 0.5f;
