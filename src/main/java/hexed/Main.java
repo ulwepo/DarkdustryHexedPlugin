@@ -282,8 +282,8 @@ public class Main extends Plugin {
 
         Log.info("Location generated.");
 
-        state.rules = type.applyRules(rules.copy());
         logic.play();
+        state.rules = type.applyRules(rules.copy());
     }
 
     public void endGame() {
