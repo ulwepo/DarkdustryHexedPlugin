@@ -1,6 +1,5 @@
 package hexed;
 
-import arc.math.Mathf;
 import arc.math.geom.Intersector;
 import arc.math.geom.Position;
 import hexed.HexData.PlayerData;
@@ -55,7 +54,7 @@ public class Hex {
                 var tile = world.tile(cx, cy);
                 if (tile != null && tile.synthetic() && contains(tile) && tile.block().requirements != null) {
                     for (var stack : tile.block().requirements) {
-                        progress[tile.team().id] += stack.amount * Mathf.sqrt(stack.item.cost);
+                        progress[tile.team().id] += stack.amount * stack.item.cost;
                     }
                 }
             }

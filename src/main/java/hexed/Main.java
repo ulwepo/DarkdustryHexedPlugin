@@ -41,7 +41,7 @@ public class Main extends Plugin {
     public static final float roundTime = 60 * 60 * 90f;
     public static final float leftTeamDestroyTime = 90f;
 
-    public static final int itemRequirement = 2560;
+    public static final int itemRequirement = 3072;
 
     public static final Rules rules = new Rules();
 
@@ -128,10 +128,10 @@ public class Main extends Plugin {
             if (!(event.tile.block() instanceof CoreBlock)) return;
 
             var hex = HexData.getClosestHex(event.tile);
-            if (hex != null) {
-                hex.updateController();
-                Groups.fire.each(hex::contains, Fire::remove);
-            }
+            if (hex == null) return;
+
+            hex.updateController();
+            Groups.fire.each(hex::contains, Fire::remove);
 
             var team = event.tile.team();
             var player = HexData.getPlayer(team);
