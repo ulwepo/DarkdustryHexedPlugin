@@ -16,6 +16,7 @@ import mindustry.game.Rules;
 import mindustry.game.Team;
 import mindustry.gen.*;
 import mindustry.mod.Plugin;
+import mindustry.net.WorldReloader;
 import mindustry.type.Planet;
 import mindustry.world.Block;
 import mindustry.world.blocks.environment.SteamVent;
@@ -272,8 +273,8 @@ public class Main extends Plugin {
     }
 
     public void startGame() {
-        logic.reset();
-        Call.worldDataBegin();
+        var reloader = new WorldReloader();
+        reloader.begin();
 
         Log.info("Generating location for scenario @...", type.name);
 
@@ -284,6 +285,8 @@ public class Main extends Plugin {
 
         logic.play();
         state.rules = type.applyRules(rules.copy());
+
+        reloader.end();
     }
 
     public void endGame() {

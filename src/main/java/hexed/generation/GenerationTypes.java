@@ -91,7 +91,8 @@ public class GenerationTypes {
         erekir = new GenerationType("[white]\uF6C9 [orange]Erekir", Planets.erekir, rules -> {
             rules.buildCostMultiplier = 0.75f;
             rules.buildSpeedMultiplier = 2.5f;
-            rules.blockHealthMultiplier = 1.5f;
+            rules.blockHealthMultiplier = 1.2f;
+            rules.blockDamageMultiplier = 0.8f;
             rules.unitBuildSpeedMultiplier = 0.8f;
         }, new Block[][] {
                     {regolith, beryllicStone, crystallineStone, denseRedStone, rhyolite},
