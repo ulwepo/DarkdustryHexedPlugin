@@ -51,7 +51,8 @@ public class HexedGenerator {
 
         // убираем стенки с жидкостных блоков и добавляем немного декораций
         tiles.eachTile(tile -> {
-            if (tile.floor().isLiquid) tile.remove();
+            if (tile.floor().isLiquid)
+                tile.remove();
 
             if (tile.block() == graphiticWall && tile.overlay().wallOre)
                 tile.setBlock(carbonWall);
@@ -69,7 +70,6 @@ public class HexedGenerator {
         // меняем пол в центре хекса
         getHexes((x, y) -> {
             var coreTiles = tiles.getn(x, y).getLinkedTilesAs(get(5), new Seq<>());
-
             boolean hasWater = coreTiles.contains(tile -> tile.floor().liquidDrop == water);
 
             coreTiles.each(tile -> {
@@ -85,14 +85,14 @@ public class HexedGenerator {
         ));
     }
 
-    public static void getHexes(Intc2 intc) {
-        float h = Mathf.sqrt3 * spacing / 4f;
+    public static void getHexes(Intc2 cons) {
+        float height = Mathf.sqrt3 * spacing / 4f;
         for (int x = 0; x < size / spacing - 2; x++) {
-            for (int y = 0; y < size / h - 2; y++) {
+            for (int y = 0; y < size / height - 2; y++) {
                 int cx = (int) (x * spacing * 1.5f + (y % 2) * spacing * 0.75f) + spacing / 2;
-                int cy = (int) (y * h) + spacing / 2;
+                int cy = (int) (y * height) + spacing / 2;
 
-                intc.get(cx, cy);
+                cons.get(cx, cy);
             }
         }
     }

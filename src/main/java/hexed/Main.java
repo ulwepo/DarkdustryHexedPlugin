@@ -6,8 +6,7 @@ import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.util.*;
 import hexed.HexData.PlayerData;
-import hexed.components.PlanetData;
-import hexed.components.Statistics;
+import hexed.components.*;
 import hexed.generation.GenerationType;
 import hexed.generation.GenerationTypes;
 import mindustry.content.Items;
@@ -51,6 +50,7 @@ public class Main extends Plugin {
 
     public static boolean restarting = false;
     public static float counter = roundTime;
+
     public static GenerationType type;
 
     public static String getForm(String key, Player player, int value) {

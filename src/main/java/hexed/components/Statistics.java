@@ -4,8 +4,6 @@ import arc.files.Fi;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.util.serialization.Json;
-import arc.util.serialization.Json.JsonSerializable;
-import arc.util.serialization.JsonValue;
 import arc.util.serialization.JsonWriter.OutputType;
 
 import static mindustry.Vars.dataDirectory;
@@ -13,7 +11,7 @@ import static mindustry.Vars.dataDirectory;
 public class Statistics {
 
     public static final Json json = new Json();
-    public static final Fi statistics = dataDirectory.child("statistics.json");
+    public static final Fi file = dataDirectory.child("statistics.json");
 
     public static ObjectMap<String, PlayerData> datas;
 
@@ -22,7 +20,7 @@ public class Statistics {
         json.addClassTag("PlayerData", PlayerData.class);
         json.setOutputType(OutputType.json);
 
-        datas = statistics.exists() ? json.fromJson(ObjectMap.class, statistics) : new ObjectMap<>();
+        datas = file.exists() ? json.fromJson(ObjectMap.class, file) : new ObjectMap<>();
     }
 
     public static PlayerData getData(String uuid) {
@@ -30,27 +28,17 @@ public class Statistics {
     }
 
     public static void save() {
-        json.toJson(datas, statistics);
+        json.toJson(datas, file);
     }
 
     public static Seq<PlayerData> getLeaders() {
-        return datas.values().toSeq()
+        return Seq.with(datas.values())
                 .filter(data -> data.wins > 0)
                 .sort(data -> -data.wins);
     }
 
-    public static class PlayerData implements JsonSerializable {
+    public static class PlayerData {
         public String name;
         public int wins;
-
-        public void write(Json json) {
-            json.writeValue("name", name);
-            json.writeValue("wins", wins);
-        }
-
-        public void read(Json json, JsonValue data) {
-            name = data.getString("name");
-            wins = data.getInt("wins");
-        }
     }
 }
