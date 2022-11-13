@@ -3,7 +3,8 @@ package hexed.generation;
 import arc.graphics.Color;
 import mindustry.content.Planets;
 import mindustry.content.Weathers;
-import mindustry.maps.filters.*;
+import mindustry.maps.filters.NoiseFilter;
+import mindustry.maps.filters.RiverNoiseFilter;
 import mindustry.type.Weather.WeatherEntry;
 import mindustry.world.Block;
 
@@ -95,11 +96,11 @@ public class GenerationTypes {
             rules.blockDamageMultiplier = 0.8f;
             rules.unitBuildSpeedMultiplier = 0.8f;
         }, new Block[][] {
-                    {regolith, beryllicStone, crystallineStone, denseRedStone, rhyolite},
-                    {arkyicStone, rhyolite, redmat, carbonStone, redmat},
-                    {beryllicStone, arkyicStone, arkyicStone, arkyicStone, bluemat},
-                    {carbonStone, arkyicStone, crystalFloor, ferricStone, roughRhyolite},
-                    {ferricStone, ferricCraters, carbonStone, ferricStone, carbonStone}
+                {regolith, beryllicStone, crystallineStone, denseRedStone, rhyolite},
+                {arkyicStone, rhyolite, redmat, carbonStone, redmat},
+                {beryllicStone, arkyicStone, arkyicStone, arkyicStone, bluemat},
+                {carbonStone, arkyicStone, crystalFloor, ferricStone, roughRhyolite},
+                {ferricStone, ferricCraters, carbonStone, ferricStone, carbonStone}
         }, new NoiseFilter() {{
             threshold = 0.75f;
             floor = arkyciteFloor;
