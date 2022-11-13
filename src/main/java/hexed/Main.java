@@ -6,7 +6,8 @@ import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.util.*;
 import hexed.HexData.PlayerData;
-import hexed.components.*;
+import hexed.components.PlanetData;
+import hexed.components.Statistics;
 import hexed.generation.GenerationType;
 import hexed.generation.GenerationTypes;
 import mindustry.content.Items;
@@ -23,7 +24,6 @@ import mindustry.world.blocks.storage.CoreBlock;
 import useful.Bundle;
 
 import static arc.struct.Seq.with;
-import static arc.util.Align.left;
 import static arc.util.Strings.autoFixed;
 import static hexed.Hex.radius;
 import static hexed.generation.GenerationType.*;
@@ -70,6 +70,7 @@ public class Main extends Plugin {
         rules.coreCapture = true;
         rules.reactorExplosions = true;
         rules.damageExplosions = true;
+        rules.fire = false;
 
         rules.bannedBlocks.addAll(ripple, swarmer);
         rules.modeName = "Hexed";
@@ -107,10 +108,7 @@ public class Main extends Plugin {
         GenerationTypes.load();
 
         Timer.schedule(HexData::updateControl, 0f, 1f);
-        Timer.schedule(() -> {
-            if (state.isPlaying())
-                Groups.player.each(player -> Call.infoPopup(player.con, getLeaderboard(player, false), 12f, left, 0, 2, 50, 0));
-        }, 0f, 180f);
+        Timer.schedule(() -> Groups.player.each(player -> Call.infoPopup(player.con, getLeaderboard(player, false), 12f, 8, 0, 2, 50, 0)), 0f, 180f);
 
         Events.run(Trigger.update, () -> {
             if (!state.isPlaying()) return;
@@ -131,7 +129,6 @@ public class Main extends Plugin {
             if (hex == null) return;
 
             hex.updateController();
-            Groups.fire.each(hex::contains, Fire::remove);
 
             var team = event.tile.team();
             var player = HexData.getPlayer(team);
@@ -151,7 +148,7 @@ public class Main extends Plugin {
         Events.on(BlockBuildEndEvent.class, event -> {
             var hex = HexData.getClosestHex(event.tile);
             if (hex != null) hex.updateController();
-        }); // чисто для красоты
+        });
 
         Events.on(PlayerJoin.class, event -> {
             Statistics.getData(event.player.uuid()).name = event.player.name;
