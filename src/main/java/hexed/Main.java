@@ -32,7 +32,6 @@ import static mindustry.content.Blocks.*;
 import static mindustry.content.Planets.*;
 import static mindustry.game.Schematics.readBase64;
 import static mindustry.type.ItemStack.list;
-import static useful.Bundle.*;
 
 public class Main extends Plugin {
 
@@ -54,7 +53,7 @@ public class Main extends Plugin {
     public static GenerationType type;
 
     public static String getForm(String key, Player player, int value) {
-        var words = get(key, player).split("\\|");
+        var words = Bundle.get(key, player).split("\\|");
         return value + " " + words[value % 10 == 1 && value % 100 != 11 ? 0 : value % 10 >= 2 && value % 10 <= 4 && (value % 100 < 10 || value % 100 >= 20) ? 1 : 2];
     }
 
@@ -141,11 +140,11 @@ public class Main extends Plugin {
 
             if (player != null) {
                 killPlayer(player);
-                sendToChat("events.player-lost", player.coloredName());
-                Call.infoMessage(player.con, format("events.you-lost", player));
+                Bundle.sendToChat("events.player-lost", player.coloredName());
+                Call.infoMessage(player.con, Bundle.format("events.you-lost", player));
             } else {
                 killTeam(team);
-                sendToChat("events.team-lost", team.color, team.name);
+                Bundle.sendToChat("events.team-lost", team.color, team.name);
             }
         });
 
@@ -195,7 +194,7 @@ public class Main extends Plugin {
             var builder = new StringBuilder();
 
             if (leaders.isEmpty())
-                builder.append(format("commands.top.none", player));
+                builder.append(Bundle.format("commands.top.none", player));
             else for (int i = 0; i < leaders.size; i++) {
                 var data = leaders.get(i);
                 builder.append("[orange]").append(i + 1).append(". ")
@@ -204,15 +203,15 @@ public class Main extends Plugin {
             }
 
 
-            Call.infoMessage(player.con, format("commands.top.list", player, builder.toString()));
+            Call.infoMessage(player.con, Bundle.format("commands.top.list", player, builder.toString()));
         });
 
         handler.<Player>register("spectator", "Switch to spectator mode.", (args, player) -> {
             if (player.team() == Team.derelict)
-                bundled(player, "commands.spectator.already"); // почему оно не возвращает в игру?
+                Bundle.bundled(player, "commands.spectator.already"); // почему оно не возвращает в игру?
             else {
                 killPlayer(player);
-                bundled(player, "commands.spectator.success");
+                Bundle.bundled(player, "commands.spectator.success");
             }
         });
 
@@ -222,7 +221,6 @@ public class Main extends Plugin {
     @Override
     public void registerServerCommands(CommandHandler handler) {
         handler.removeCommand("host");
-        handler.removeCommand("gameover");
 
         handler.register("hexed", "[generation_mode...]", "Open the server in hexed mode.", args -> {
             if (!state.isMenu()) {
@@ -236,8 +234,7 @@ public class Main extends Plugin {
                 return;
             }
 
-            type = custom;
-            startGame();
+            startGame(custom);
             netServer.openServer();
         });
 
@@ -255,24 +252,26 @@ public class Main extends Plugin {
         var hex = HexData.getClosestHex(player);
         if (hex == null) return;
 
-        var builder = new StringBuilder(format("hex", player, hex.id)).append("\n");
+        var builder = new StringBuilder(Bundle.format("hex", player, hex.id)).append("\n");
 
         if (hex.controller == null)
             if (hex.getProgressPercent(player.team()) > 0)
-                builder.append(format("hex.capture-progress", player, autoFixed(hex.getProgressPercent(player.team()), 4)));
+                builder.append(Bundle.format("hex.capture-progress", player, autoFixed(hex.getProgressPercent(player.team()), 4)));
             else
-                builder.append(format("hex.empty", player));
+                builder.append(Bundle.format("hex.empty", player));
         else if (hex.controller.player == player)
-            builder.append(format("hex.captured", player));
+            builder.append(Bundle.format("hex.captured", player));
         else if (hex.controller.player != null)
-            builder.append(format("hex.captured-by-player", player, hex.controller.color(), hex.controller.name()));
+            builder.append(Bundle.format("hex.captured-by-player", player, hex.controller.color(), hex.controller.name()));
         else
-            builder.append(format("hex.unknown", player));
+            builder.append(Bundle.format("hex.unknown", player));
 
         Call.setHudText(player.con, builder.toString());
     }
 
-    public void startGame() {
+    public void startGame(GenerationType next) {
+        type = next;
+
         var reloader = new WorldReloader();
         reloader.begin();
 
@@ -293,7 +292,7 @@ public class Main extends Plugin {
         if (restarting) return;
         restarting = true;
 
-        Events.fire("HexedGameOver");
+        Events.fire("Gameover");
         Log.info("The round is over.");
 
         Time.runTask(60f * 15f, this::reload);
@@ -305,12 +304,12 @@ public class Main extends Plugin {
         var statistic = Statistics.getData(winner.player.uuid());
 
         Groups.player.each(player -> {
-            var builder = new StringBuilder(format("restart.header", player));
+            var builder = new StringBuilder(Bundle.format("restart.header", player));
 
             if (player == winner.player)
-                builder.append(format("restart.you-won", player, getForm("hexes", player, winner.controlled())));
+                builder.append(Bundle.format("restart.you-won", player, getForm("hexes", player, winner.controlled())));
             else
-                builder.append(format("restart.player-won", player, winner.name(), getForm("hexes", player, winner.controlled())));
+                builder.append(Bundle.format("restart.player-won", player, winner.name(), getForm("hexes", player, winner.controlled())));
 
             builder.append("\n\n");
 
@@ -319,7 +318,7 @@ public class Main extends Plugin {
                     .append(" [lime]\uE803[accent] ")
                     .append(getForm("wins", player, statistic.wins + 1));
 
-            builder.append(format("restart.final-score", player, getLeaderboard(player, true)));
+            builder.append(Bundle.format("restart.final-score", player, getLeaderboard(player, true)));
 
             Call.infoMessage(player.con, builder.toString());
         });
@@ -331,19 +330,11 @@ public class Main extends Plugin {
     public void reload() {
         var players = Groups.player.copy(new Seq<>());
 
-        type = next();
-        startGame();
+        startGame(next());
 
         players.each(player -> {
-            boolean admin = player.admin;
-            player.reset();
-            player.admin(admin);
-
             player.team(netServer.assignTeam(player, players));
-
             spawn(player);
-
-            netServer.sendWorldData(player);
         });
 
         counter = roundTime;
@@ -351,16 +342,16 @@ public class Main extends Plugin {
     }
 
     public String getLeaderboard(Player player, boolean endGame) {
-        var datas = HexData.getLeaderboard();
+        var leaderboard = HexData.getLeaderboard();
         var builder = new StringBuilder();
 
         if (!endGame) {
-            datas.truncate(5);
-            builder.append(format("leaderboard.header", player, (int) counter / 60 / 60));
+            leaderboard.truncate(5);
+            builder.append(Bundle.format("leaderboard.header", player, (int) counter / 60 / 60));
         }
 
-        for (int i = 0; i < datas.size; i++) {
-            var data = datas.get(i);
+        for (int i = 0; i < leaderboard.size; i++) {
+            var data = leaderboard.get(i);
             builder.append("[orange]").append(i + 1).append(". ").append(data.name())
                     .append("[orange] (").append(getForm("hexes", player, data.controlled())).append(")")
                     .append("\n");
@@ -402,7 +393,7 @@ public class Main extends Plugin {
             hex.findController();
             HexData.datas.add(new PlayerData(player));
         } else {
-            Call.infoMessage(player.con, format("events.no-empty-hex", player));
+            Call.infoMessage(player.con, Bundle.format("events.no-empty-hex", player));
             player.clearUnit();
             player.team(Team.derelict);
         }

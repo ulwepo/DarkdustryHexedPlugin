@@ -17,9 +17,8 @@ public class HexData {
 
     public static void init() {
         datas.clear();
-        Groups.player.each(player -> datas.add(new PlayerData(player)));
-
         hexes.clear();
+
         HexedGenerator.getHexes((x, y) -> hexes.add(new Hex(hexes.size + 1, x, y)));
     }
 

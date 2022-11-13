@@ -78,11 +78,7 @@ public class HexedGenerator {
             });
         });
 
-        state.map = new Map(StringMap.of(
-                "name", type.name,
-                "author", "Hexed Plugin",
-                "description", "A map for Darkdustry Hexed. Automatically generated."
-        ));
+        state.map = new Map(StringMap.of("name", type.name));
     }
 
     public static void getHexes(Intc2 cons) {
