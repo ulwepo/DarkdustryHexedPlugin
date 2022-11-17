@@ -17,6 +17,7 @@ dependencies {
     compileOnly("com.github.Anuken.Arc:arc-core:v$mindustryVersion")
     compileOnly("com.github.Anuken.Mindustry:core:v$mindustryVersion")
 
+    compileOnly("com.github.Darkdustry-Coders:DarkdustryPlugin:2.6.2.1")
     implementation("com.github.xzxADIxzx.useful-stuffs:server-bundle:main-SNAPSHOT")
 }
 
