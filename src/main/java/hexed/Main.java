@@ -5,9 +5,7 @@ import arc.math.Mathf;
 import arc.struct.ObjectMap;
 import arc.struct.Seq;
 import arc.util.*;
-import hexed.HexData.PlayerData;
 import hexed.components.PlanetData;
-import hexed.components.Statistics;
 import hexed.generation.GenerationType;
 import hexed.generation.GenerationTypes;
 import mindustry.content.Items;
@@ -23,8 +21,11 @@ import mindustry.world.blocks.environment.SteamVent;
 import mindustry.world.blocks.storage.CoreBlock;
 import useful.Bundle;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import static arc.struct.Seq.with;
 import static arc.util.Strings.autoFixed;
+import static darkdustry.components.Database.*;
 import static hexed.Hex.radius;
 import static hexed.generation.GenerationType.*;
 import static mindustry.Vars.*;
@@ -46,7 +47,6 @@ public class Main extends Plugin {
 
     public static final ObjectMap<Planet, PlanetData> planets = new ObjectMap<>();
     public static final ObjectMap<Block, Block> vents = new ObjectMap<>();
-
     public static boolean restarting = false;
     public static float counter = roundTime;
 
@@ -104,7 +104,6 @@ public class Main extends Plugin {
         vents.put(ferricStone, carbonVent);
 
         Bundle.load(Main.class);
-        Statistics.load();
         GenerationTypes.load();
 
         Timer.schedule(HexData::updateControl, 0f, 1f);
@@ -113,7 +112,7 @@ public class Main extends Plugin {
         Events.run(Trigger.update, () -> {
             if (!state.isPlaying()) return;
 
-            HexData.datas.each(PlayerData::active, data -> {
+            HexData.datas.each(HexData.PlayerData::active, data -> {
                 updateText(data.player);
                 if (data.controlled() >= HexData.hexes.size * winCapturePercent) endGame();
             });
@@ -151,9 +150,6 @@ public class Main extends Plugin {
         });
 
         Events.on(PlayerJoin.class, event -> {
-            Statistics.getData(event.player.uuid()).name = event.player.name;
-            Statistics.save();
-
             if (event.player.team() == Team.derelict || restarting) return;
 
             var data = HexData.getData(event.player.uuid());
@@ -178,29 +174,24 @@ public class Main extends Plugin {
             var teams = with(Team.all).filter(team -> team != Team.derelict && !team.active() && HexData.getData(team) == null);
             return teams.any() ? teams.random() : Team.derelict;
         };
-
-        netServer.chatFormatter = (player, message) -> player != null ? "[coral][[[cyan]" + Statistics.getData(player.uuid()).wins + " [sky]#[white] " + player.coloredName() + "[coral]]: [white]" + message : message;
     }
 
     @Override
     public void registerClientCommands(CommandHandler handler) {
         handler.<Player>register("top", "Show the best 10 players of the server.", (args, player) -> {
-            var leaders = Statistics.getLeaders();
-            leaders.truncate(10);
-
             var builder = new StringBuilder();
+            AtomicInteger place = new AtomicInteger();
 
-            if (leaders.isEmpty())
-                builder.append(Bundle.format("commands.top.none", player));
-            else for (int i = 0; i < leaders.size; i++) {
-                var data = leaders.get(i);
-                builder.append("[orange]").append(i + 1).append(". ")
+            rankPlayers("hexedWins", 10).doOnNext(data -> {
+                builder.append("[orange]").append(place.addAndGet(1)).append(". ")
                         .append(data.name).append("[accent]: [cyan]")
-                        .append(getForm("wins", player, data.wins)).append("\n");
-            }
+                        .append(getForm("wins", player, data.hexedWins)).append("\n");
+            }).doOnComplete(() -> {
+                if (!builder.isEmpty())
+                    Call.infoMessage(player.con, Bundle.format("commands.top.list", player, builder.toString()));
+                else Call.infoMessage(player.con, Bundle.format("commands.top.none", player));
+            }).subscribe();
 
-
-            Call.infoMessage(player.con, Bundle.format("commands.top.list", player, builder.toString()));
         });
 
         handler.<Player>register("spectator", "Switch to spectator mode.", (args, player) -> {
@@ -298,9 +289,7 @@ public class Main extends Plugin {
         if (datas.isEmpty()) return;
 
         var winner = datas.first();
-        var statistic = Statistics.getData(winner.player.uuid());
-
-        Groups.player.each(player -> {
+        getPlayerData(winner.player).subscribe(data -> Groups.player.each(player -> {
             var builder = new StringBuilder(Bundle.format("restart.header", player));
 
             if (player == winner.player)
@@ -311,17 +300,17 @@ public class Main extends Plugin {
             builder.append("\n\n");
 
             builder.append(winner.name()).append("[white]: [accent]")
-                    .append(getForm("wins", player, statistic.wins))
+                    .append(getForm("wins", player, data.hexedWins))
                     .append(" [lime]\uE803[accent] ")
-                    .append(getForm("wins", player, statistic.wins + 1));
+                    .append(getForm("wins", player, data.hexedWins + 1));
 
             builder.append(Bundle.format("restart.final-score", player, getLeaderboard(player, true)));
 
             Call.infoMessage(player.con, builder.toString());
-        });
 
-        statistic.wins++;
-        Statistics.save();
+            data.hexedWins += 1;
+            setPlayerData(data).subscribe();
+        }));
     }
 
     public void reload() {
@@ -388,7 +377,7 @@ public class Main extends Plugin {
         if (hex != null) {
             HexedGenerator.loadout(player, hex);
             hex.findController();
-            HexData.datas.add(new PlayerData(player));
+            HexData.datas.add(new HexData.PlayerData(player));
         } else {
             Call.infoMessage(player.con, Bundle.format("events.no-empty-hex", player));
             player.clearUnit();
