@@ -53,9 +53,8 @@ public class Hex {
             for (int cy = y - radius; cy < y + radius; cy++) {
                 var tile = world.tile(cx, cy);
                 if (tile != null && tile.synthetic() && contains(tile) && tile.block().requirements != null) {
-                    for (var stack : tile.block().requirements) {
+                    for (var stack : tile.block().requirements)
                         progress[tile.team().id] += stack.amount * stack.item.cost;
-                    }
                 }
             }
         }
