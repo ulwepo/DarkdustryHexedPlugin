@@ -18,6 +18,7 @@ dependencies {
     compileOnly("com.github.Anuken.Mindustry:core:v$mindustryVersion")
 
     compileOnly("com.github.Darkdustry-Coders:DarkdustryPlugin:b81f99ffae")
+    implementation("com.github.xzxADIxzx.useful-stuffs:server-bundle:main-SNAPSHOT")
 }
 
 tasks.jar {
