@@ -6,6 +6,5 @@
   "description": "A special battle-royal-like gamemode for Darkdustry.",
   "version": "2.0",
   "main": "hexed.Main",
-  "repo": "Darkdustry-Coders/HexedPlugin",
-  "dependencies": ["darkdustry-plugin"]
+  "repo": "Darkdustry-Coders/HexedPlugin"
 }
