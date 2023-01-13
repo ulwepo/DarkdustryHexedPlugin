@@ -98,7 +98,7 @@ public class HexedGenerator {
 
         for (var filter : filters) {
             filter.randomize();
-            input.begin(tiles.width, tiles.height, tiles::getn);
+            input.begin(tiles.width, tiles.height, tiles::get);
             filter.apply(tiles, input);
         }
     }

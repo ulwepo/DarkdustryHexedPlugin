@@ -59,21 +59,7 @@ public class Main extends Plugin {
 
     @Override
     public void init() {
-        rules.buildCostMultiplier = 0.8f;
-        rules.buildSpeedMultiplier = 2f;
-        rules.blockHealthMultiplier = 1.5f;
-        rules.unitBuildSpeedMultiplier = 1.25f;
-        rules.enemyCoreBuildRadius = radius * tilesize;
-        rules.logicUnitBuild = true;
-        rules.pvp = false;
-        rules.canGameOver = false;
-        rules.coreCapture = true;
-        rules.reactorExplosions = true;
-        rules.damageExplosions = true;
-        rules.fire = false;
 
-        rules.bannedBlocks.addAll(ripple, swarmer);
-        rules.modeName = "Hexed";
 
         planets.put(serpulo, new PlanetData(
                 with(oreCopper, oreLead, oreScrap, oreCoal, oreTitanium, oreThorium),
