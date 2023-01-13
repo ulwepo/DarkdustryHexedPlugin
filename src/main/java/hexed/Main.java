@@ -40,7 +40,7 @@ public class Main extends Plugin {
     public static final float roundTime = 60 * 60 * 90f;
     public static final float leftTeamDestroyTime = 90f;
 
-    public static final int itemRequirement = 3072;
+    public static final int itemRequirement = 2560;
 
     public static final Rules rules = new Rules();
 
@@ -59,7 +59,21 @@ public class Main extends Plugin {
 
     @Override
     public void init() {
+        rules.buildCostMultiplier = 0.8f;
+        rules.buildSpeedMultiplier = 2f;
+        rules.blockHealthMultiplier = 1.5f;
+        rules.unitBuildSpeedMultiplier = 1.25f;
+        rules.enemyCoreBuildRadius = radius * tilesize;
+        rules.logicUnitBuild = true;
+        rules.pvp = false;
+        rules.canGameOver = false;
+        rules.coreCapture = true;
+        rules.reactorExplosions = true;
+        rules.damageExplosions = true;
+        rules.fire = false;
 
+        rules.bannedBlocks.addAll(ripple, swarmer);
+        rules.modeName = "Hexed";
 
         planets.put(serpulo, new PlanetData(
                 with(oreCopper, oreLead, oreScrap, oreCoal, oreTitanium, oreThorium),
@@ -184,7 +198,6 @@ public class Main extends Plugin {
                         .append(data.name).append("[accent]: [cyan]")
                         .append(getForm("wins", player, data.wins)).append("\n");
             }
-
 
             Call.infoMessage(player.con, Bundle.format("commands.top.list", player, builder.toString()));
         });
