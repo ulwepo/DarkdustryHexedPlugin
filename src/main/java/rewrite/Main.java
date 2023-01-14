@@ -3,6 +3,7 @@ package rewrite;
 import arc.Events;
 import arc.func.Cons;
 import arc.struct.Seq;
+import arc.util.Timer;
 import mindustry.game.EventType.*;
 import mindustry.game.Rules;
 import mindustry.mod.Plugin;
@@ -54,11 +55,29 @@ public class Main extends Plugin {
 
         });
 
+        Events.on(BlockBuildEndEvent.class, event -> {
+            Hex hex = hexes.min(h -> event.tile.dst(h));
+            if (hex == null || hex.hasCore()) return;
+
+            int speed = 1; // TODO for Darkness: different capture speed for different blocks
+            hex.increaseSpeed(event.unit.team, event.breaking ? -speed : speed); // negative speed if the block was broken
+        });
+
+        Events.on(BlockDestroyEvent.class, event -> {
+            Hex hex = hexes.min(h -> event.tile.dst(h));
+            if (hex == null) return;
+
+            int speed = 1;
+            hex.increaseSpeed(event.tile.team(), -speed);
+        });
+
         Events.on(PlayEvent.class, event -> Generators.erekir.applyRules(state.rules));
 
         Events.run(Trigger.update, () -> {
 
         });
+
+        Timer.schedule(() -> hexes.each(Hex::update), 0f, 1f);
 
         world.loadGenerator(size, size, Generators.erekir::generate);
 

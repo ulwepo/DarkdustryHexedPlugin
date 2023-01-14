@@ -2,10 +2,10 @@ package rewrite;
 
 import arc.math.geom.Intersector;
 import arc.math.geom.Position;
+import mindustry.content.Blocks;
 import mindustry.game.Team;
 import mindustry.gen.Building;
 import mindustry.world.Tile;
-import mindustry.world.blocks.storage.CoreBlock;
 import mindustry.world.blocks.storage.CoreBlock.CoreBuild;
 
 import static mindustry.Vars.*;
@@ -16,7 +16,7 @@ public class Hex implements Position {
     public final int x, y;
     public final int id;
 
-    public final float[] progress = new float[256];
+    public final int[] capture = new int[256];
 
     public Fraction controller;
 
@@ -30,7 +30,10 @@ public class Hex implements Position {
     public void update() {
         if (hasCore()) return;
 
-
+        for (Fraction fraction : fractions) {
+            increaseProgress(fraction.team, getSpeed(fraction.team));
+            if (getProgress(fraction.team) >= 1000) captured(fraction);
+        }
     }
 
     public boolean hasCore() {
@@ -62,4 +65,33 @@ public class Hex implements Position {
     public float getY() {
         return y * tilesize;
     }
+
+    // region progress
+
+    public void captured(Fraction fraction) {
+        this.controller = fraction;
+        tileOn().setNet(Blocks.coreBastion, fraction.team, 0);
+    }
+
+    /** Returns capturing progress of the team in tenths of a percent. */
+    public int getProgress(Team team) {
+        return capture[team.id] & 0xFFFF; // second part of integer
+    }
+
+    /** Increases capture progress of the team by the given amount. */
+    public void increaseProgress(Team team, int amount) {
+        capture[team.id] += amount;
+    }
+
+    /** Returns capture speed of the team in tenths of a percent. */
+    public int getSpeed(Team team) {
+        return capture[team.id] >> 16;
+    }
+
+    /** Increases capture speed of the team by the given amount. */
+    public void increaseSpeed(Team team, int amount) {
+        capture[team.id] += amount << 16;
+    }
+
+    // endregion
 }
