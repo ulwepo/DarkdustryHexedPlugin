@@ -18,6 +18,7 @@ import mindustry.world.blocks.environment.Floor;
 import static arc.math.geom.Geometry.d4c;
 import static mindustry.Vars.state;
 import static rewrite.Main.*;
+import static rewrite.utils.Decorations.*;
 import static rewrite.utils.Utils.*;
 
 public abstract class Generator {
@@ -65,7 +66,7 @@ public abstract class Generator {
         });
 
         var input = new GenerateInput();
-        generateOres(tiles, input);
+        //generateOres(tiles, input);
         generateLandscape(tiles, input);
 
         generateDecorations(tiles);
@@ -88,7 +89,7 @@ public abstract class Generator {
                 if (nearby == null || nearby.solid() || nearby.floor().isLiquid) return;
             }
 
-            tile.setBlock(tile.floor().decoration);
+            tile.setBlock(props.get(tile.floor(), tile.floor().decoration));
         });
     }
 
@@ -121,6 +122,6 @@ public abstract class Generator {
     }
 
     public Block block(int temp, int elev) {
-        return floor(temp, elev).wall;
+        return walls.get(floor(temp, elev), floor(temp, elev).wall);
     }
 }

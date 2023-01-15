@@ -17,7 +17,11 @@ import static rewrite.utils.Utils.*;
 public class ErekirGenerator extends Generator {
 
     public ErekirGenerator(String name, Block[][] terrain, Cons<Rules> ruleSetter) {
-        super(name, Planets.erekir, terrain, ruleSetter);
+        super(name, Planets.erekir, terrain, rules -> {
+            rules.loadout = null; // TODO
+
+            ruleSetter.get(rules);
+        });
     }
 
     @Override
@@ -100,7 +104,7 @@ public class ErekirGenerator extends Generator {
             if (vent == null || anyWithin(tiles, tile.x, tile.y, 3, other -> other.solid() || other.floor() instanceof SteamVent || other.floor().isLiquid)) return;
 
             for (var point : offsets)
-                tile.nearby(point.x + 1, point.y + 1).setFloor(vent);
+                tile.nearby(point.x + 1, point.y + 1).setFloor(vent.asFloor());
         });
     }
 

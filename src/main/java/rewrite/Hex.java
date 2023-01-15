@@ -2,6 +2,7 @@ package rewrite;
 
 import arc.math.geom.Intersector;
 import arc.math.geom.Position;
+import arc.struct.Seq;
 import mindustry.content.Blocks;
 import mindustry.game.Team;
 import mindustry.gen.Building;
@@ -10,15 +11,21 @@ import mindustry.world.blocks.storage.CoreBlock.CoreBuild;
 
 import static mindustry.Vars.*;
 import static rewrite.Main.*;
+import static rewrite.HexTeam.teams;
 
 public class Hex implements Position {
 
-    public final int x, y;
-    public final int id;
+    public static final Seq<Hex> hexes = new Seq<>();
 
-    public final int[] capture = new int[256];
+    public int x, y;
+    public int id;
 
-    public Fraction controller;
+    public int[] capture = new int[256];
+    public HexTeam controller;
+
+    public static Hex get(Tile tile) {
+        return hexes.find(hex -> hex.in(tile));
+    }
 
     public Hex(int x, int y) {
         this.x = x;
@@ -30,9 +37,9 @@ public class Hex implements Position {
     public void update() {
         if (hasCore()) return;
 
-        for (Fraction fraction : fractions) {
-            increaseProgress(fraction.team, getSpeed(fraction.team));
-            if (getProgress(fraction.team) >= 1000) captured(fraction);
+        for (HexTeam fraction : teams) {
+            increaseProgress(fraction.player.team(), getSpeed(fraction.player.team()));
+            if (getProgress(fraction.player.team()) >= 1000) captured(fraction);
         }
     }
 
@@ -68,9 +75,9 @@ public class Hex implements Position {
 
     // region progress
 
-    public void captured(Fraction fraction) {
+    public void captured(HexTeam fraction) {
         this.controller = fraction;
-        tileOn().setNet(Blocks.coreBastion, fraction.team, 0);
+        tileOn().setNet(Blocks.coreBastion, fraction.player.team(), 0);
     }
 
     /** Returns capturing progress of the team in tenths of a percent. */

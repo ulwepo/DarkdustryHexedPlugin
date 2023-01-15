@@ -12,15 +12,13 @@ import rewrite.world.Generators;
 import useful.Bundle;
 
 import static mindustry.Vars.*;
+import static rewrite.Hex.hexes;
 
 public class Main extends Plugin {
 
     public static final int size = 516;
     public static final int spacing = 78;
     public static final int radius = 37, diameter = radius * 2;
-
-    public static final Seq<Hex> hexes = new Seq<>();
-    public static final Seq<Fraction> fractions = new Seq<>();
 
     public static final Cons<Rules> defaultRuleSetter = rules -> {
         rules.buildCostMultiplier = 0.8f;
@@ -48,7 +46,10 @@ public class Main extends Plugin {
         Generators.load();
 
         Events.on(PlayerJoin.class, event -> {
-
+            var team = HexTeam.get(event.player);
+            if (team != null) {
+                // TODO
+            }
         });
 
         Events.on(PlayerLeave.class, event -> {
@@ -56,7 +57,7 @@ public class Main extends Plugin {
         });
 
         Events.on(BlockBuildEndEvent.class, event -> {
-            Hex hex = hexes.min(h -> event.tile.dst(h));
+            var hex = Hex.get(event.tile);
             if (hex == null || hex.hasCore()) return;
 
             int speed = 1; // TODO for Darkness: different capture speed for different blocks
@@ -64,14 +65,14 @@ public class Main extends Plugin {
         });
 
         Events.on(BlockDestroyEvent.class, event -> {
-            Hex hex = hexes.min(h -> event.tile.dst(h));
+            var hex = Hex.get(event.tile);
             if (hex == null) return;
 
             int speed = 1;
             hex.increaseSpeed(event.tile.team(), -speed);
         });
 
-        Events.on(PlayEvent.class, event -> Generators.erekir.applyRules(state.rules));
+        Events.on(PlayEvent.class, event -> Generators.winter.applyRules(state.rules));
 
         Events.run(Trigger.update, () -> {
 
@@ -79,7 +80,7 @@ public class Main extends Plugin {
 
         Timer.schedule(() -> hexes.each(Hex::update), 0f, 1f);
 
-        world.loadGenerator(size, size, Generators.erekir::generate);
+        world.loadGenerator(size, size, Generators.tarFields::generate);
 
         netServer.openServer();
     }

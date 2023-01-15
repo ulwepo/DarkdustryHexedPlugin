@@ -16,10 +16,6 @@ import static rewrite.Main.*;
 
 public class Utils {
 
-    public static boolean anyWithin(Tiles tiles, int x, int y, int radius, Block block) {
-        return anyWithin(tiles, x, y, radius, tile -> tile.floor() == block || tile.block() == block || tile.overlay() == block);
-    }
-
     public static boolean anyWithin(Tiles tiles, int x, int y, int radius, Boolf<Tile> boolf) {
         for (int cx = -radius; cx <= radius; cx++) {
             for (int cy = -radius; cy <= radius; cy++) {
